@@ -1,0 +1,310 @@
+generator client {
+  provider = "prisma-client-py"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String      @id @default(uuid()) @db.Char(36)
+  username         String      @db.VarChar(64)
+  email            String      @db.VarChar(255)
+  password_hash    String      @db.VarChar(255)
+  display_name     String?     @db.VarChar(128)
+  phone            String?     @db.VarChar(32)
+  avatar_url       String?     @db.VarChar(500)
+  status           String      @default("active") @db.VarChar(32)
+  is_super_admin   Boolean     @default(false)
+  last_login_at    DateTime?   @db.DateTime(3)
+  last_login_ip    String?     @db.VarChar(45)
+  remark           String?     @db.Text
+  deleted_at       DateTime?   @db.DateTime(3)
+  created_at       DateTime    @default(now()) @db.DateTime(3)
+  updated_at       DateTime    @updatedAt @db.DateTime(3)
+  created_by       String?     @db.Char(36)
+  updated_by       String?     @db.Char(36)
+  deleted_by       String?     @db.Char(36)
+  created_by_user  User?       @relation("user_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user  User?       @relation("user_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user  User?       @relation("user_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  created_users    User[]      @relation("user_created_by")
+  updated_users    User[]      @relation("user_updated_by")
+  deleted_users    User[]      @relation("user_deleted_by")
+  created_roles           Role[]           @relation("role_created_by")
+  updated_roles           Role[]           @relation("role_updated_by")
+  deleted_roles           Role[]           @relation("role_deleted_by")
+  created_permissions     Permission[]     @relation("permission_created_by")
+  updated_permissions     Permission[]     @relation("permission_updated_by")
+  deleted_permissions     Permission[]     @relation("permission_deleted_by")
+  created_user_roles      UserRole[]       @relation("user_role_created_by")
+  updated_user_roles      UserRole[]       @relation("user_role_updated_by")
+  deleted_user_roles      UserRole[]       @relation("user_role_deleted_by")
+  created_role_permissions RolePermission[] @relation("role_permission_created_by")
+  updated_role_permissions RolePermission[] @relation("role_permission_updated_by")
+  deleted_role_permissions RolePermission[] @relation("role_permission_deleted_by")
+  created_feature_nodes   FeatureNode[]    @relation("feature_node_created_by")
+  updated_feature_nodes   FeatureNode[]    @relation("feature_node_updated_by")
+  deleted_feature_nodes   FeatureNode[]    @relation("feature_node_deleted_by")
+  created_features        Feature[]        @relation("feature_created_by")
+  updated_features        Feature[]        @relation("feature_updated_by")
+  deleted_features        Feature[]        @relation("feature_deleted_by")
+  user_roles       UserRole[]
+  request_logs     RequestLog[]
+  audit_logs       AuditLog[]
+  login_logs       LoginLog[]
+
+  @@unique([username, deleted_at])
+  @@unique([email, deleted_at])
+  @@index([status, deleted_at])
+  @@index([created_at])
+  @@map("users")
+}
+
+model Role {
+  id                    String           @id @default(uuid()) @db.Char(36)
+  name                  String           @db.VarChar(128)
+  code                  String           @db.VarChar(64)
+  description           String?          @db.Text
+  is_system             Boolean          @default(false)
+  status                String           @default("active") @db.VarChar(32)
+  deleted_at            DateTime?        @db.DateTime(3)
+  created_at            DateTime         @default(now()) @db.DateTime(3)
+  updated_at            DateTime         @updatedAt @db.DateTime(3)
+  created_by            String?          @db.Char(36)
+  updated_by            String?          @db.Char(36)
+  deleted_by            String?          @db.Char(36)
+  created_by_user       User?            @relation("role_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user       User?            @relation("role_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user       User?            @relation("role_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  user_roles            UserRole[]
+  role_permissions      RolePermission[]
+
+  @@unique([code, deleted_at])
+  @@unique([name, deleted_at])
+  @@index([status, deleted_at])
+  @@map("roles")
+}
+
+model Permission {
+  id                    String           @id @default(uuid()) @db.Char(36)
+  name                  String           @db.VarChar(128)
+  code                  String           @db.VarChar(128)
+  module                String           @db.VarChar(64)
+  resource              String           @db.VarChar(64)
+  action                String           @db.VarChar(64)
+  description           String?          @db.Text
+  deleted_at            DateTime?        @db.DateTime(3)
+  created_at            DateTime         @default(now()) @db.DateTime(3)
+  updated_at            DateTime         @updatedAt @db.DateTime(3)
+  created_by            String?          @db.Char(36)
+  updated_by            String?          @db.Char(36)
+  deleted_by            String?          @db.Char(36)
+  created_by_user       User?            @relation("permission_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user       User?            @relation("permission_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user       User?            @relation("permission_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  role_permissions      RolePermission[]
+
+  @@unique([code, deleted_at])
+  @@unique([module, resource, action, deleted_at])
+  @@index([module, deleted_at])
+  @@map("permissions")
+}
+
+model UserRole {
+  id              String    @id @default(uuid()) @db.Char(36)
+  user_id         String    @db.Char(36)
+  role_id         String    @db.Char(36)
+  deleted_at      DateTime? @db.DateTime(3)
+  created_at      DateTime  @default(now()) @db.DateTime(3)
+  updated_at      DateTime  @updatedAt @db.DateTime(3)
+  created_by      String?   @db.Char(36)
+  updated_by      String?   @db.Char(36)
+  deleted_by      String?   @db.Char(36)
+  user            User      @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  role            Role      @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  created_by_user User?     @relation("user_role_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user User?     @relation("user_role_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user User?     @relation("user_role_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([user_id, role_id, deleted_at])
+  @@index([role_id, deleted_at])
+  @@map("user_roles")
+}
+
+model RolePermission {
+  id                String      @id @default(uuid()) @db.Char(36)
+  role_id           String      @db.Char(36)
+  permission_id     String      @db.Char(36)
+  deleted_at        DateTime?   @db.DateTime(3)
+  created_at        DateTime    @default(now()) @db.DateTime(3)
+  updated_at        DateTime    @updatedAt @db.DateTime(3)
+  created_by        String?     @db.Char(36)
+  updated_by        String?     @db.Char(36)
+  deleted_by        String?     @db.Char(36)
+  role              Role        @relation(fields: [role_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  permission        Permission  @relation(fields: [permission_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  created_by_user   User?       @relation("role_permission_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user   User?       @relation("role_permission_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user   User?       @relation("role_permission_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([role_id, permission_id, deleted_at])
+  @@index([permission_id, deleted_at])
+  @@map("role_permissions")
+}
+
+model FeatureNode {
+  id                    String         @id @default(uuid()) @db.Char(36)
+  parent_id             String?        @db.Char(36)
+  name                  String         @db.VarChar(200)
+  code                  String         @db.VarChar(128)
+  node_type             String         @default("folder") @db.VarChar(32)
+  path                  String         @db.VarChar(1024)
+  level                 Int            @default(1)
+  sort_order            Int            @default(0)
+  is_visible            Boolean        @default(true)
+  is_locked             Boolean        @default(false)
+  source_node_id        String?        @db.Char(36)
+  copied_from_node_id   String?        @db.Char(36)
+  moved_from_node_id    String?        @db.Char(36)
+  move_operation_id     String?        @db.Char(36)
+  copy_operation_id     String?        @db.Char(36)
+  remark                String?        @db.Text
+  deleted_at            DateTime?      @db.DateTime(3)
+  created_at            DateTime       @default(now()) @db.DateTime(3)
+  updated_at            DateTime       @updatedAt @db.DateTime(3)
+  created_by            String?        @db.Char(36)
+  updated_by            String?        @db.Char(36)
+  deleted_by            String?        @db.Char(36)
+  parent                FeatureNode?   @relation("feature_node_tree", fields: [parent_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  children              FeatureNode[]  @relation("feature_node_tree")
+  source_node           FeatureNode?   @relation("feature_node_source", fields: [source_node_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  derived_nodes         FeatureNode[]  @relation("feature_node_source")
+  copied_from_node      FeatureNode?   @relation("feature_node_copied_from", fields: [copied_from_node_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  copied_nodes          FeatureNode[]  @relation("feature_node_copied_from")
+  moved_from_node       FeatureNode?   @relation("feature_node_moved_from", fields: [moved_from_node_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  moved_nodes           FeatureNode[]  @relation("feature_node_moved_from")
+  created_by_user       User?          @relation("feature_node_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user       User?          @relation("feature_node_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user       User?          @relation("feature_node_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  features              Feature[]
+
+  @@unique([parent_id, code, deleted_at])
+  @@index([path(255)])
+  @@index([is_visible, deleted_at])
+  @@index([source_node_id])
+  @@index([copied_from_node_id])
+  @@index([moved_from_node_id])
+  @@map("feature_nodes")
+}
+
+model Feature {
+  id                    String      @id @default(uuid()) @db.Char(36)
+  node_id               String      @db.Char(36)
+  title                 String      @db.VarChar(200)
+  code                  String      @db.VarChar(128)
+  summary               String?     @db.VarChar(500)
+  description           String?     @db.Text
+  platform              String?     @db.VarChar(64)
+  status                String      @default("draft") @db.VarChar(32)
+  priority              String      @default("medium") @db.VarChar(32)
+  version               String?     @db.VarChar(64)
+  tags                  String?     @db.Text
+  is_visible            Boolean     @default(true)
+  is_archived           Boolean     @default(false)
+  source_feature_id     String?     @db.Char(36)
+  copied_from_id        String?     @db.Char(36)
+  moved_from_node_id    String?     @db.Char(36)
+  move_operation_id     String?     @db.Char(36)
+  copy_operation_id     String?     @db.Char(36)
+  last_copied_at        DateTime?   @db.DateTime(3)
+  last_moved_at         DateTime?   @db.DateTime(3)
+  remark                String?     @db.Text
+  deleted_at            DateTime?   @db.DateTime(3)
+  created_at            DateTime    @default(now()) @db.DateTime(3)
+  updated_at            DateTime    @updatedAt @db.DateTime(3)
+  created_by            String?     @db.Char(36)
+  updated_by            String?     @db.Char(36)
+  deleted_by            String?     @db.Char(36)
+  node                  FeatureNode @relation(fields: [node_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  source_feature        Feature?    @relation("feature_source", fields: [source_feature_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  derived_features      Feature[]   @relation("feature_source")
+  copied_from           Feature?    @relation("feature_copied_from", fields: [copied_from_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  copied_features       Feature[]   @relation("feature_copied_from")
+  moved_from_node       FeatureNode? @relation("feature_moved_from_node", fields: [moved_from_node_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  created_by_user       User?        @relation("feature_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user       User?        @relation("feature_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user       User?        @relation("feature_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([node_id, code, deleted_at])
+  @@index([status, deleted_at])
+  @@index([is_visible, deleted_at])
+  @@index([source_feature_id])
+  @@index([copied_from_id])
+  @@index([moved_from_node_id])
+  @@map("features")
+}
+
+model RequestLog {
+  id              String    @id @default(uuid()) @db.Char(36)
+  request_id      String    @db.Char(36)
+  user_id         String?   @db.Char(36)
+  method          String    @db.VarChar(16)
+  path            String    @db.VarChar(500)
+  query_string    String?   @db.Text
+  request_body    String?   @db.LongText
+  response_status Int
+  response_body   String?   @db.LongText
+  duration_ms     Int
+  ip_address      String?   @db.VarChar(45)
+  user_agent      String?   @db.Text
+  trace_id        String?   @db.VarChar(128)
+  created_at      DateTime  @default(now()) @db.DateTime(3)
+  user            User?     @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([request_id])
+  @@index([user_id, created_at])
+  @@index([path, created_at])
+  @@map("request_logs")
+}
+
+model AuditLog {
+  id               String    @id @default(uuid()) @db.Char(36)
+  user_id          String?   @db.Char(36)
+  request_id       String?   @db.Char(36)
+  action           String    @db.VarChar(64)
+  target_type      String    @db.VarChar(64)
+  target_id        String?   @db.Char(36)
+  target_name      String?   @db.VarChar(255)
+  change_summary   String?   @db.VarChar(500)
+  before_data      String?   @db.LongText
+  after_data       String?   @db.LongText
+  ip_address       String?   @db.VarChar(45)
+  user_agent       String?   @db.Text
+  created_at       DateTime  @default(now()) @db.DateTime(3)
+  user             User?     @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([user_id, created_at])
+  @@index([target_type, target_id])
+  @@index([request_id])
+  @@map("audit_logs")
+}
+
+model LoginLog {
+  id               String    @id @default(uuid()) @db.Char(36)
+  user_id          String?   @db.Char(36)
+  username         String    @db.VarChar(64)
+  login_type       String    @default("password") @db.VarChar(32)
+  login_status     String    @db.VarChar(32)
+  failure_reason   String?   @db.VarChar(255)
+  ip_address       String?   @db.VarChar(45)
+  user_agent       String?   @db.Text
+  occurred_at      DateTime  @default(now()) @db.DateTime(3)
+  user             User?     @relation(fields: [user_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([user_id, occurred_at])
+  @@index([username, occurred_at])
+  @@index([login_status, occurred_at])
+  @@map("login_logs")
+}

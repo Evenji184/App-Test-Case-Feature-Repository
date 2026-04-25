@@ -1,0 +1,27 @@
+[project]
+name = "app-feature-repository-backend"
+version = "0.1.0"
+description = "APP 特征库管理系统后端基础框架"
+requires-python = ">=3.11"
+dependencies = []
+
+[tool.black]
+line-length = 88
+target-version = ["py311"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
