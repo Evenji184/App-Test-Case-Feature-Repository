@@ -2,23 +2,26 @@ import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { Button, Form, Input, Selector, Space, TextArea, Toast } from 'antd-mobile';
 import {
+  COPY_FEATURE_MUTATION,
   CREATE_FEATURE_MUTATION,
   DELETE_FEATURE_MUTATION,
   HIDE_FEATURE_MUTATION,
+  MOVE_FEATURE_MUTATION,
   SHOW_FEATURE_MUTATION,
   UPDATE_FEATURE_MUTATION,
 } from '@/api/mutations/feature';
-import { CREATE_NODE_MUTATION, DELETE_NODE_MUTATION, UPDATE_NODE_MUTATION } from '@/api/mutations/node';
+import { COPY_NODE_MUTATION, CREATE_NODE_MUTATION, DELETE_NODE_MUTATION, MOVE_NODE_MUTATION, UPDATE_NODE_MUTATION } from '@/api/mutations/node';
 import { FEATURE_LIST_QUERY } from '@/api/queries/feature';
 import { NODE_TREE_QUERY } from '@/api/queries/node';
 import { BottomActions } from '@/components/BottomActions';
 import { FeatureList } from '@/components/FeatureList';
 import { FormDrawer } from '@/components/FormDrawer';
+import { FormModal } from '@/components/FormModal';
 import { SearchBar } from '@/components/SearchBar';
 import { TreeView } from '@/components/TreeView';
 import { useAppStore } from '@/stores/app';
 import type { FeatureItem, NodeItem } from '@/types/models';
-import type { FeatureListQueryData, FeatureListQueryVariables, NodeTreeQueryData } from '@/types/graphql';
+import type { FeatureListQueryData, FeatureListQueryVariables, FeatureMutationData, NodeMutationData, NodeTreeQueryData } from '@/types/graphql';
 
 function findNodeById(nodes: NodeItem[], nodeId?: string): NodeItem | undefined {
   return nodes.find((item) => item.id === nodeId);
@@ -43,6 +46,12 @@ export function FeatureManagePage() {
   const [nodeDrawerOpen, setNodeDrawerOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<FeatureItem | null>(null);
   const [editingNode, setEditingNode] = useState<NodeItem | null>(null);
+  const [copyingNode, setCopyingNode] = useState<NodeItem | null>(null);
+  const [movingNode, setMovingNode] = useState<NodeItem | null>(null);
+  const [copyingFeature, setCopyingFeature] = useState<FeatureItem | null>(null);
+  const [movingFeature, setMovingFeature] = useState<FeatureItem | null>(null);
+  const [targetNodeId, setTargetNodeId] = useState<string>();
+  const [copyNodeName, setCopyNodeName] = useState('');
   const [featureForm] = Form.useForm();
   const [nodeForm] = Form.useForm();
 
@@ -56,9 +65,13 @@ export function FeatureManagePage() {
   const [deleteFeature] = useMutation(DELETE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY] });
   const [hideFeature] = useMutation(HIDE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY] });
   const [showFeature] = useMutation(SHOW_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY] });
+  const [copyFeature] = useMutation<FeatureMutationData>(COPY_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY, NODE_TREE_QUERY] });
+  const [moveFeature] = useMutation<FeatureMutationData>(MOVE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY, NODE_TREE_QUERY] });
   const [createNode] = useMutation(CREATE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY] });
   const [updateNode] = useMutation(UPDATE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY] });
   const [deleteNode] = useMutation(DELETE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
+  const [copyNode] = useMutation<NodeMutationData>(COPY_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
+  const [moveNode] = useMutation<NodeMutationData>(MOVE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
 
   const features = useMemo(() => {
     const items = featureQuery.data?.featureList.items ?? [];
@@ -95,6 +108,21 @@ export function FeatureManagePage() {
     return walk((nodeTreeQuery.data?.nodeTree ?? []) as NodeItem[]);
   }, [nodeTreeQuery.data]);
 
+  const resetNodeActionState = () => {
+    setCopyingNode(null);
+    setMovingNode(null);
+    setTargetNodeId(undefined);
+    setCopyNodeName('');
+  };
+
+  const resetFeatureActionState = () => {
+    setCopyingFeature(null);
+    setMovingFeature(null);
+    setTargetNodeId(undefined);
+  };
+
+  const currentNode = findNodeById(flatNodes, selectedNodeId);
+
   return (
     <div className="split-layout">
       <div className="card-section" style={{ display: 'grid', gap: 12 }}>
@@ -124,6 +152,30 @@ export function FeatureManagePage() {
         >
           编辑当前节点
         </Button>
+        <BottomActions
+          triggerText="节点更多操作"
+          actions={[
+            {
+              key: 'copy-node',
+              text: '复制当前节点',
+              onClick: () => {
+                if (!currentNode) return;
+                setCopyingNode(currentNode);
+                setCopyNodeName(`${currentNode.name}-副本`);
+                setTargetNodeId(currentNode.parentId ?? undefined);
+              },
+            },
+            {
+              key: 'move-node',
+              text: '移动当前节点',
+              onClick: () => {
+                if (!currentNode) return;
+                setMovingNode(currentNode);
+                setTargetNodeId(currentNode.parentId ?? undefined);
+              },
+            },
+          ]}
+        />
         <Button
           block
           color="danger"
@@ -165,6 +217,22 @@ export function FeatureManagePage() {
                       ? await hideFeature({ variables: { featureId: item.id } })
                       : await showFeature({ variables: { featureId: item.id } });
                     Toast.show({ content: data?.hideFeature?.message ?? data?.showFeature?.message ?? '操作成功' });
+                  },
+                },
+                {
+                  key: 'copy',
+                  text: '复制',
+                  onClick: () => {
+                    setCopyingFeature(item);
+                    setTargetNodeId(item.nodeId);
+                  },
+                },
+                {
+                  key: 'move',
+                  text: '移动',
+                  onClick: () => {
+                    setMovingFeature(item);
+                    setTargetNodeId(item.nodeId);
                   },
                 },
                 {
@@ -278,6 +346,79 @@ export function FeatureManagePage() {
           </Form.Item>
         </Form>
       </FormDrawer>
+
+      <FormModal
+        open={Boolean(copyingNode)}
+        title="复制节点"
+        onClose={resetNodeActionState}
+        onConfirm={async () => {
+          if (!copyingNode) return;
+          const { data } = await copyNode({ variables: { nodeId: copyingNode.id, targetParentId: targetNodeId, newName: copyNodeName || undefined } });
+          Toast.show({ content: data?.copyNode?.message ?? '节点复制成功' });
+          resetNodeActionState();
+        }}
+        content={
+          <div style={{ display: 'grid', gap: 12 }}>
+            <Input value={copyNodeName} onChange={setCopyNodeName} placeholder="请输入复制后的节点名称" />
+            <div style={{ fontSize: 14, fontWeight: 600 }}>选择目标父节点</div>
+            <TreeView tree={nodeTreeQuery.data?.nodeTree ?? []} selectedId={targetNodeId} onSelect={(node) => setTargetNodeId(node.id)} />
+          </div>
+        }
+      />
+
+      <FormModal
+        open={Boolean(movingNode)}
+        title="移动节点"
+        onClose={resetNodeActionState}
+        onConfirm={async () => {
+          if (!movingNode) return;
+          const { data } = await moveNode({ variables: { nodeId: movingNode.id, targetParentId: targetNodeId } });
+          Toast.show({ content: data?.moveNode?.message ?? '节点移动成功' });
+          resetNodeActionState();
+        }}
+        content={
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div>选择目标父节点</div>
+            <TreeView tree={nodeTreeQuery.data?.nodeTree ?? []} selectedId={targetNodeId} onSelect={(node) => setTargetNodeId(node.id)} />
+          </div>
+        }
+      />
+
+      <FormModal
+        open={Boolean(copyingFeature)}
+        title="复制特征"
+        onClose={resetFeatureActionState}
+        onConfirm={async () => {
+          if (!copyingFeature || !targetNodeId) return;
+          const { data } = await copyFeature({ variables: { featureId: copyingFeature.id, targetNodeId } });
+          Toast.show({ content: data?.copyFeature?.message ?? '特征复制成功' });
+          resetFeatureActionState();
+        }}
+        content={
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div>选择目标节点</div>
+            <TreeView tree={nodeTreeQuery.data?.nodeTree ?? []} selectedId={targetNodeId} onSelect={(node) => setTargetNodeId(node.id)} />
+          </div>
+        }
+      />
+
+      <FormModal
+        open={Boolean(movingFeature)}
+        title="移动特征"
+        onClose={resetFeatureActionState}
+        onConfirm={async () => {
+          if (!movingFeature || !targetNodeId) return;
+          const { data } = await moveFeature({ variables: { featureId: movingFeature.id, targetNodeId } });
+          Toast.show({ content: data?.moveFeature?.message ?? '特征移动成功' });
+          resetFeatureActionState();
+        }}
+        content={
+          <div style={{ display: 'grid', gap: 12 }}>
+            <div>选择目标节点</div>
+            <TreeView tree={nodeTreeQuery.data?.nodeTree ?? []} selectedId={targetNodeId} onSelect={(node) => setTargetNodeId(node.id)} />
+          </div>
+        }
+      />
     </div>
   );
 }

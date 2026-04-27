@@ -49,3 +49,22 @@ class RequestLogType:
 class RequestLogListType:
     items: list[RequestLogType]
     page_info: PageInfo
+
+
+@strawberry.type
+class LoginLogType:
+    id: str
+    user_id: str | None
+    username: str
+    login_type: str
+    login_status: str
+    failure_reason: str | None
+    ip_address: str | None
+    user_agent: str | None
+    occurred_at: str
+
+
+@strawberry.type
+class LoginLogListType:
+    items: list[LoginLogType]
+    page_info: PageInfo

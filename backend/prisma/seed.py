@@ -19,6 +19,14 @@ from app.core.security import hash_password
 def build_permissions() -> list[dict[str, str]]:
     return [
         {
+            "name": "用户列表页访问",
+            "code": "user:list",
+            "module": "system",
+            "resource": "user_page",
+            "action": "list",
+            "description": "访问用户管理页面",
+        },
+        {
             "name": "用户查看",
             "code": "system:user:view",
             "module": "system",
@@ -35,6 +43,14 @@ def build_permissions() -> list[dict[str, str]]:
             "description": "创建、编辑、禁用用户",
         },
         {
+            "name": "角色列表页访问",
+            "code": "role:list",
+            "module": "system",
+            "resource": "role_page",
+            "action": "list",
+            "description": "访问角色管理相关页面",
+        },
+        {
             "name": "角色管理",
             "code": "system:role:manage",
             "module": "system",
@@ -43,12 +59,28 @@ def build_permissions() -> list[dict[str, str]]:
             "description": "维护角色与角色授权",
         },
         {
+            "name": "权限列表页访问",
+            "code": "permission:list",
+            "module": "system",
+            "resource": "permission_page",
+            "action": "list",
+            "description": "访问权限管理页面",
+        },
+        {
             "name": "权限查看",
             "code": "system:permission:view",
             "module": "system",
             "resource": "permission",
             "action": "view",
             "description": "查看权限定义",
+        },
+        {
+            "name": "节点列表页访问",
+            "code": "node:list",
+            "module": "feature",
+            "resource": "feature_node_page",
+            "action": "list",
+            "description": "访问节点管理与节点树查询",
         },
         {
             "name": "节点查看",
@@ -65,6 +97,14 @@ def build_permissions() -> list[dict[str, str]]:
             "resource": "feature_node",
             "action": "manage",
             "description": "创建、编辑、移动、复制节点",
+        },
+        {
+            "name": "特征列表页访问",
+            "code": "feature:list",
+            "module": "feature",
+            "resource": "feature_page",
+            "action": "list",
+            "description": "访问特征管理页面与特征列表查询",
         },
         {
             "name": "特征查看",

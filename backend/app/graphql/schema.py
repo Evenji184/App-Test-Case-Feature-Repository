@@ -6,7 +6,7 @@ import strawberry
 from strawberry.types import Info
 
 from app.graphql.directives.auth import IsAuthenticated
-from app.graphql.types.audit import AuditLogListType, AuditLogType, RequestLogListType, RequestLogType
+from app.graphql.types.audit import AuditLogListType, AuditLogType, LoginLogListType, LoginLogType, RequestLogListType, RequestLogType
 from app.graphql.types.auth import AuthUserType, LoginPayload, LoginResult
 from app.graphql.types.common import ErrorType, MutationResult, PageInfo, PaginationInput
 from app.graphql.types.feature import CreateFeatureInput, FeatureListType, FeatureMutationResult, FeatureType, UpdateFeatureInput
@@ -60,6 +60,10 @@ def _audit_type(item: Any) -> AuditLogType:
 
 def _request_log_type(item: Any) -> RequestLogType:
     return RequestLogType(id=item.id, request_id=item.request_id, user_id=item.user_id, method=item.method, path=item.path, query_string=item.query_string, request_body=item.request_body, response_status=item.response_status, duration_ms=item.duration_ms, ip_address=item.ip_address, user_agent=item.user_agent, trace_id=item.trace_id, created_at=_dt(item.created_at) or "")
+
+
+def _login_log_type(item: Any) -> LoginLogType:
+    return LoginLogType(id=item.id, user_id=item.user_id, username=item.username, login_type=item.login_type, login_status=item.login_status, failure_reason=item.failure_reason, ip_address=item.ip_address, user_agent=item.user_agent, occurred_at=_dt(item.occurred_at) or "")
 
 
 async def _audit_log(info: Info, *, action: str, target_type: str, target: Any, summary: str, before_data: dict[str, Any] | None = None, after_data: dict[str, Any] | None = None) -> None:
@@ -151,6 +155,13 @@ class Query:
         total = await info.context.prisma.requestlog.count()
         items = await info.context.prisma.requestlog.find_many(skip=(pagination.page - 1) * pagination.page_size, take=pagination.page_size, order={"created_at": "desc"})
         return RequestLogListType(items=[_request_log_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=pagination.page, page_size=pagination.page_size)))
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def login_log_list(self, info: Info, pagination: PaginationInput = PaginationInput()) -> LoginLogListType:
+        await require_permission(info, "audit:login:view")
+        total = await info.context.prisma.loginlog.count()
+        items = await info.context.prisma.loginlog.find_many(skip=(pagination.page - 1) * pagination.page_size, take=pagination.page_size, order={"occurred_at": "desc"})
+        return LoginLogListType(items=[_login_log_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=pagination.page, page_size=pagination.page_size)))
 
 
 @strawberry.type

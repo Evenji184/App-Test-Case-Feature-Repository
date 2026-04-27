@@ -9,7 +9,7 @@
 
 容器角色：
 
-- `mysql`：实际为 PostgreSQL 数据库容器
+- `mysql`：MySQL 数据库容器
 - `backend`：FastAPI + GraphQL 服务
 - `frontend`：前端占位容器
 - `nginx`：统一入口与反向代理
@@ -22,10 +22,10 @@
 
 | 变量 | 说明 |
 | --- | --- |
-| `POSTGRES_USER` | 数据库用户名 |
-| `POSTGRES_PASSWORD` | 数据库密码 |
-| `POSTGRES_DB` | 数据库名 |
-| `POSTGRES_PORT` | 数据库端口 |
+| `MYSQL_USER` | 数据库用户名 |
+| `MYSQL_PASSWORD` | 数据库密码 |
+| `MYSQL_DB` | 数据库名 |
+| `MYSQL_PORT` | 数据库端口 |
 | `APP_NAME` | 后端服务名 |
 | `APP_VERSION` | 版本号 |
 | `ENVIRONMENT` | 环境标识 |
@@ -66,10 +66,10 @@ docker compose up --build
 
 特点：
 
-- 镜像：`postgres:16-alpine`
-- 端口映射：`${POSTGRES_PORT:-5432}:5432`
-- 数据卷：`postgres_data`
-- 健康检查：`pg_isready`
+- 镜像：`mysql:8.0`
+- 端口映射：`${MYSQL_PORT:-3306}:3306`
+- 数据卷：`mysql_data`
+- 健康检查：`mysqladmin ping`
 
 #### 后端容器
 
@@ -92,7 +92,7 @@ docker compose up --build
 特点：
 
 - 构建文件：[`docker/frontend.Dockerfile`](../docker/frontend.Dockerfile)
-- 当前仅提供占位静态页
+- 基于真实 [`frontend`](../frontend) 工程构建产物
 - 健康检查访问 `http://127.0.0.1:3000`
 
 #### Nginx 容器
@@ -146,12 +146,10 @@ docker compose -f docker-compose.yml -f docker-compose.prod.yml up --build -d
 
 当前实现：
 
-- 基于 `node:20-alpine`
-- 安装 `serve`
-- 直接生成一个占位 `index.html`
-- 通过 `serve -s /app/public -l 3000` 启动
-
-这意味着当前 Docker 前端并未打包 [`frontend`](../frontend) 目录中的真实 React 工程。
+- 基于 `node:20-alpine` 多阶段构建
+- 构建阶段执行 `npm ci && npm run build`
+- 运行阶段通过 `serve -s dist -l 3000` 启动
+- 实际提供 [`frontend`](../frontend) 目录的构建产物
 
 ## 6. 本地非 Docker 启动
 
@@ -219,16 +217,13 @@ Nginx 与后端容器健康检查均依赖该接口或本地 HTTP 探测。
 
 基于当前代码，生产前至少应完成：
 
-1. 修正 [`schema.prisma`](../backend/prisma/schema.prisma:6) 的 provider 与实际数据库一致
-2. 将 [`docker/frontend.Dockerfile`](../docker/frontend.Dockerfile:1) 替换为真实前端构建镜像
-3. 更换强随机 `SECRET_KEY`
-4. 收紧 `CORS_ORIGINS`
-5. 增加 HTTPS、证书与反向代理安全头
-6. 增加数据库备份与日志轮转
+1. 更换强随机 `SECRET_KEY`
+2. 收紧 `CORS_ORIGINS`
+3. 增加 HTTPS、证书与反向代理安全头
+4. 增加数据库备份与日志轮转
+5. 为生产环境补充正式迁移与回滚方案
 
 ## 11. 已知限制
 
-1. 前端容器是占位页，不是正式前端产物
-2. Compose 服务名 `mysql` 与实际 PostgreSQL 不一致
-3. `prisma db push` 适合开发/演示，不等同于正式迁移方案
-4. 未提供 CI/CD、镜像仓库、灰度发布等生产能力
+1. `prisma db push` 适合开发/演示，不等同于正式迁移方案
+2. 未提供 CI/CD、镜像仓库、灰度发布等生产能力

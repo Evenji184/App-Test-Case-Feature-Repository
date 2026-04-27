@@ -3,8 +3,8 @@ services:
     restart: always
     ports: []
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./logs/mysql:/var/log/postgresql
+      - mysql_data:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
 
   backend:
     restart: always

@@ -1,21 +1,23 @@
 services:
   mysql:
-    image: postgres:16-alpine
+    image: mysql:8.0
     container_name: app-feature-repository-mysql
     restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci --default-authentication-plugin=mysql_native_password
     env_file:
       - .env
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DB}
+      MYSQL_USER: ${MYSQL_USER}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${MYSQL_PORT:-3306}:3306"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./logs/mysql:/var/log/postgresql
+      - mysql_data:/var/lib/mysql
+      - ./logs/mysql:/var/log/mysql
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p${MYSQL_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -32,7 +34,7 @@ services:
     env_file:
       - .env
     environment:
-      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mysql:5432/${POSTGRES_DB}}
+      DATABASE_URL: ${DATABASE_URL:-mysql://${MYSQL_USER}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DB}}
     depends_on:
       mysql:
         condition: service_healthy
@@ -56,8 +58,8 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: docker/frontend.Dockerfile
+      context: ./frontend
+      dockerfile: ../docker/frontend.Dockerfile
     container_name: app-feature-repository-frontend
     restart: unless-stopped
     environment:
@@ -95,7 +97,7 @@ services:
       - app-network
 
 volumes:
-  postgres_data:
+  mysql_data:
 
 networks:
   app-network:

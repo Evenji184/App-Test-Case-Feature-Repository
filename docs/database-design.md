@@ -26,12 +26,12 @@
 
 ## 2. 数据库兼容性说明
 
-当前存在一个必须知晓的实现现状：
+当前数据库实现已统一为 MySQL：
 
 - [`schema.prisma`](../backend/prisma/schema.prisma:6) 中 `datasource db.provider = "mysql"`
-- 但 [`.env.example`](../.env.example:22) 与 [`docker-compose.yml`](../docker-compose.yml:3) 实际使用 PostgreSQL
+- [`.env.example`](../.env.example:22) 与 [`docker-compose.yml`](../docker-compose.yml:3) 也使用 MySQL 连接与容器配置
 
-因此，当前文档按“代码现状”记录：模型定义来自 Prisma Schema，运行部署来自 PostgreSQL 容器。上线前应先统一 provider 与实际数据库。
+当前文档按统一后的实现记录，模型定义与运行部署均基于 MySQL。
 
 ## 3. ER 关系概览
 
@@ -361,7 +361,6 @@ Feature ── source/copied_from/moved_from 追踪
 
 ## 9. 已知限制
 
-1. Prisma provider 与实际数据库不一致
-2. `RequestLog.response_body` 字段已建模，但当前中间件写入固定为 `None`，见 [`request_logging_middleware`](../backend/app/middleware/request_logging.py:92)
-3. `is_locked` 字段已建模，但当前服务层未实现锁定校验逻辑
-4. `is_archived` 字段已建模，但前端管理页未提供独立归档操作
+1. `RequestLog.response_body` 字段已建模，但当前中间件写入固定为 `None`，见 [`request_logging_middleware`](../backend/app/middleware/request_logging.py:92)
+2. `is_locked` 字段已建模，但当前服务层未实现锁定校验逻辑
+3. `is_archived` 字段已建模，但前端管理页未提供独立归档操作
