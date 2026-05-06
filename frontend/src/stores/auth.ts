@@ -28,23 +28,33 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   initialized: false,
   isAuthenticated: Boolean(storage.getToken()),
   async login(username, password) {
-    const { data } = await apolloClient.mutate<LoginMutationData, LoginMutationVariables>({
-      mutation: LOGIN_MUTATION,
-      variables: { username, password },
-    });
+    try {
+      const { data } = await apolloClient.mutate<LoginMutationData, LoginMutationVariables>({
+        mutation: LOGIN_MUTATION,
+        variables: { username, password },
+      });
 
-    const result = data?.login;
-    if (!result?.success || !result.data) {
-      return { success: false, message: result?.message ?? '登录失败' };
+      const result = data?.login;
+      if (!result?.success || !result.data) {
+        return { success: false, message: result?.message ?? '登录失败' };
+      }
+
+      get().setAuth({
+        user: result.data.user,
+        token: result.data.accessToken,
+        permissions: result.data.permissions,
+      });
+
+      return { success: true, message: result.message };
+    } catch (error) {
+      console.error('Login error:', error);
+
+      const message = error instanceof Error && error.message.toLowerCase().includes('fetch')
+        ? '无法连接到服务器，请检查网络或接口配置'
+        : '登录请求失败，请稍后重试';
+
+      return { success: false, message };
     }
-
-    get().setAuth({
-      user: result.data.user,
-      token: result.data.accessToken,
-      permissions: result.data.permissions,
-    });
-
-    return { success: true, message: result.message };
   },
   async logout() {
     try {

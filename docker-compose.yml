@@ -17,7 +17,7 @@ services:
       - mysql_data:/var/lib/mysql
       - ./logs/mysql:/var/log/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p${MYSQL_PASSWORD}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u${MYSQL_USER} -p${MYSQL_PASSWORD}"]
       interval: 10s
       timeout: 5s
       retries: 10
@@ -44,8 +44,9 @@ services:
       - ./backend:/app
       - ./logs/backend:/app/logs
     command: >
-      sh -c "prisma generate
-      && prisma db push
+      sh -c "python -m prisma generate
+      && python -m prisma db push
+      && python prisma/seed.py
       && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]

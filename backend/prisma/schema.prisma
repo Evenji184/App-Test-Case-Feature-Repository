@@ -188,7 +188,8 @@ model FeatureNode {
   created_by_user       User?          @relation("feature_node_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
   updated_by_user       User?          @relation("feature_node_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
   deleted_by_user       User?          @relation("feature_node_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
-  features              Feature[]
+  features              Feature[]      @relation("feature_node_features")
+  features_moved_from   Feature[]      @relation("feature_moved_from_node")
 
   @@unique([parent_id, code, deleted_at])
   @@index([path(255)])
@@ -227,7 +228,7 @@ model Feature {
   created_by            String?     @db.Char(36)
   updated_by            String?     @db.Char(36)
   deleted_by            String?     @db.Char(36)
-  node                  FeatureNode @relation(fields: [node_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  node                  FeatureNode  @relation("feature_node_features", fields: [node_id], references: [id], onDelete: Cascade, onUpdate: Cascade)
   source_feature        Feature?    @relation("feature_source", fields: [source_feature_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
   derived_features      Feature[]   @relation("feature_source")
   copied_from           Feature?    @relation("feature_copied_from", fields: [copied_from_id], references: [id], onDelete: SetNull, onUpdate: Cascade)

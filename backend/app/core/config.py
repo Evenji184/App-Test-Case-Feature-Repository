@@ -38,7 +38,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str = Field(
-        default="mysql://root:root@localhost:3306/app_feature_repository",
+        default="mysql://evenji:evenji@localhost:3306/app_feature_repository",
         alias="DATABASE_URL",
     )
 

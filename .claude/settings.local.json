@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mysql --version)",
+      "Bash(pip *)",
+      "Bash(mysql -h localhost -P 3306 -u root -e \"SELECT 1\")",
+      "Bash(mysql *)",
+      "Bash(python *)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(DATABASE_URL=\"mysql://evenji:evenji@localhost:3306/app_feature_repository\" timeout 10 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(python3 -m py_compile \"E:/App-Test-Case-Feature-Repository/backend/app/graphql/schema.py\")",
+      "Bash(python3 -c \"from pydantic_settings import BaseSettings; print\\('OK'\\)\")",
+      "Bash(DATABASE_URL=\"mysql://evenji:evenji@localhost:3306/app_feature_repository\" python -m prisma db push)",
+      "Bash(DATABASE_URL=\"mysql://evenji:evenji@localhost:3306/app_feature_repository\" python -m prisma db push --accept-data-loss)",
+      "Bash(DATABASE_URL=\"mysql://evenji:evenji@localhost:3306/app_feature_repository\" python prisma/seed.py)",
+      "Bash(DATABASE_URL=\"mysql://evenji:evenji@localhost:3306/app_feature_repository\" python -m uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(curl -s http://localhost:8000/health)",
+      "Bash(curl *)",
+      "Bash(DATABASE_URL=\"mysql://evenji:evenji@localhost:3306/app_feature_repository\" timeout 30 python -m uvicorn app.main:app --host 0.0.0.0 --port 8000)",
+      "Bash(taskkill /F /IM python.exe)",
+      "Bash(taskkill //F //IM python.exe)",
+      "Bash(npm run *)"
+    ]
+  }
+}

@@ -95,7 +95,7 @@ export function UserManagePage() {
                     text: '重置密码',
                     onClick: async () => {
                       const { data: result } = await resetPassword({ variables: { userId: user.id, newPassword: '12345678' } });
-                      Toast.show({ content: result?.resetPassword.message ?? '密码已重置为 12345678' });
+                      Toast.show({ content: result?.resetPassword?.message ?? '密码已重置为 12345678' });
                     },
                   },
                 ]}
@@ -162,7 +162,7 @@ export function UserManagePage() {
         onSubmit={async () => {
           if (!editingUser) return;
           const { data: result } = await assignRoles({ variables: { userId: editingUser.id, roleIds: selectedRoleIds } });
-          Toast.show({ content: result?.assignRolesToUser.message ?? '角色分配成功' });
+          Toast.show({ content: result?.assignRolesToUser?.message ?? '角色分配成功' });
           setRoleDrawerOpen(false);
         }}
       >

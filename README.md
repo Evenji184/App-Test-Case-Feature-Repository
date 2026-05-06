@@ -1,223 +1,463 @@
 # APP 特征库管理系统
 
-APP 特征库管理系统用于维护移动端 APP 的功能节点、特征条目、用户、角色、权限以及请求/审计日志。当前仓库已经包含前端、后端、Prisma、Docker Compose 与初始化种子数据，可作为完整项目交付的基础骨架。
+APP 特征库管理系统用于维护移动端 APP 的功能节点、特征条目、用户、角色、权限以及请求/审计日志。
 
-## 1. 项目概览
+## 1. 项目架构
 
-### 1.1 当前实现范围
+### 1.1 技术栈
 
-- 后端：基于 FastAPI + Strawberry GraphQL 提供统一接口，入口见 [`app.main`](backend/app/main.py:36)
-- 前端：基于 React + Vite + Apollo Client 的移动优先管理界面，路由入口见 [`AppRoutes`](frontend/src/routes/index.tsx:13)
-- 数据层：使用 Prisma Client Python 访问数据库，客户端管理见 [`PrismaManager`](backend/app/db/prisma.py:10)
-- 权限：基于 RBAC 的角色-权限-用户授权模型，核心逻辑见 [`RBACService`](backend/app/modules/rbac/service.py:7)
-- 日志：包含请求日志、操作审计日志、登录日志，分别落表到 [`RequestLog`](backend/prisma/schema.prisma:249)、[`AuditLog`](backend/prisma/schema.prisma:272)、[`LoginLog`](backend/prisma/schema.prisma:294)
-- 部署：提供开发/生产两套 Compose 配置，见 [`docker-compose.yml`](docker-compose.yml) 与 [`docker-compose.prod.yml`](docker-compose.prod.yml)
+| 层 | 技术 | 说明 |
+|---|------|------|
+| 前端 | React 18 + TypeScript + Vite 5 | 移动优先管理界面 |
+| UI 库 | antd-mobile 5 / antd 5 | 移动端 + 桌面端组件 |
+| 状态 | Zustand | 轻量状态管理 |
+| 数据层 | Apollo Client 3 + GraphQL | 与后端统一通信 |
+| 后端 | FastAPI + Strawberry GraphQL | 统一 GraphQL 接口 |
+| ORM | Prisma Client Python | 数据库访问与类型安全 |
+| 认证 | JWT (python-jose) + bcrypt | 登录鉴权与密码哈希 |
+| 数据库 | MySQL 8.0 (utf8mb4) | InnoDB, DYNAMIC row format |
+| 部署 | Docker Compose + Nginx | 开发/生产两套编排 |
 
-### 1.2 适用场景
-
-- APP 功能树与测试特征库管理
-- 账号、角色、权限维护
-- 登录行为与操作行为留痕
-- Docker 化本地联调与基础部署
-
-## 2. 技术选型
-
-### 2.1 后端
-
-- FastAPI：Web 框架，见 [`FastAPI(...)`](backend/app/main.py:36)
-- Strawberry GraphQL：GraphQL Schema 与 Resolver，见 [`schema = strawberry.Schema(...)`](backend/app/graphql/schema.py:409)
-- Prisma Client Python：数据库访问，见 [`Prisma(auto_register=True)`](backend/app/db/prisma.py:14)
-- Pydantic Settings：环境变量配置，见 [`Settings`](backend/app/core/config.py:10)
-- python-jose：JWT 编解码，见 [`create_access_token()`](backend/app/core/security.py:26)
-- passlib[bcrypt]：密码哈希，见 [`hash_password()`](backend/app/core/security.py:14)
-
-### 2.2 前端
-
-- React 18 + TypeScript
-- Vite 5
-- Apollo Client 3，见 [`apolloClient`](frontend/src/api/client.ts:31)
-- React Router 6，见 [`Routes`](frontend/src/routes/index.tsx:21)
-- Zustand，见 [`useAppStore`](frontend/src/stores/app.ts:12)、[`usePermissionStore`](frontend/src/stores/permission.ts:15)
-- Ant Design Mobile 5，页面组件广泛使用于 [`LoginPage`](frontend/src/pages/Login/index.tsx:6)、[`FeatureManagePage`](frontend/src/pages/FeatureManage/index.tsx:39) 等
-
-### 2.3 数据与部署
-
-- Docker Compose 编排
-- Nginx 反向代理，见 [`docker/nginx.conf`](docker/nginx.conf)
-- 数据库容器使用 `mysql:8.0`，见 [`docker-compose.yml`](docker-compose.yml:3)
-
-## 3. 目录结构
+### 1.2 目录结构
 
 ```text
 .
 ├─ backend/                 # FastAPI + GraphQL + Prisma 后端
 │  ├─ app/
-│  │  ├─ core/              # 配置、安全、日志、上下文
-│  │  ├─ db/                # Prisma 客户端管理
-│  │  ├─ graphql/           # Schema、类型、指令
+│  │  ├─ core/              # config, security, context, logging
+│  │  ├─ db/                # Prisma 客户端管理 (PrismaManager)
+│  │  ├─ graphql/           # schema, types, directives (IsAuthenticated)
 │  │  ├─ middleware/        # 请求日志中间件
-│  │  ├─ modules/           # auth/rbac/user/audit/feature_library
-│  │  └─ utils/             # 异常、分页、树工具
-│  ├─ prisma/               # schema 与 seed
-│  └─ scripts/              # 初始化脚本
+│  │  ├─ modules/           # auth / rbac / user / audit / feature_library
+│  │  └─ utils/             # exceptions, pagination, tree
+│  ├─ prisma/               # schema.prisma + seed.py
+│  ├─ scripts/              # init-db.sh / init-db.bat
+│  └─ tests/
 ├─ frontend/                # React + Vite 前端
 │  └─ src/
-│     ├─ api/               # GraphQL 查询与变更
-│     ├─ components/        # 通用组件
-│     ├─ hooks/             # useAuth/usePermission
+│     ├─ api/               # GraphQL queries / mutations / client
+│     ├─ components/        # FormDrawer, FeatureList, NodeList 等
+│     ├─ hooks/             # useAuth, usePermission
 │     ├─ layouts/           # 登录布局、主布局
-│     ├─ pages/             # 登录/特征库/权限/用户页面
-│     ├─ routes/            # 路由与守卫
-│     ├─ stores/            # Zustand 状态
-│     └─ utils/             # 权限、存储、树工具
-├─ docker/                  # Dockerfile 与 Nginx 配置
+│     ├─ pages/             # Login / FeatureManage / UserManage / PermissionManage / RoleManage
+│     ├─ routes/            # 路由定义 + 权限守卫
+│     ├─ stores/            # auth / app / permission (Zustand)
+│     ├─ types/             # graphql 类型, models 类型
+│     └─ utils/             # storage, permission, tree
+├─ docker/                  # backend.Dockerfile, frontend.Dockerfile, nginx.conf
 ├─ docs/                    # 项目文档
-├─ docker-compose.yml       # 开发编排
-├─ docker-compose.prod.yml  # 生产编排覆盖
+├─ docker-compose.yml       # 开发环境编排
+├─ docker-compose.prod.yml  # 生产环境编排覆盖
 └─ .env.example             # 环境变量示例
 ```
 
-## 4. 核心能力
+### 1.3 核心模块关系
 
-### 4.1 认证与登录
-
-- 登录 Mutation：[`login`](backend/app/graphql/schema.py:170)
-- 当前用户查询：[`current_user`](backend/app/graphql/schema.py:84)
-- JWT 生成：[`create_access_token()`](backend/app/core/security.py:26)
-- 登录成功后更新最近登录时间/IP：[`AuthService.authenticate()`](backend/app/modules/auth/service.py:14)
-- 登录日志写入：[`AuditService.log_login()`](backend/app/modules/audit/service.py:40)
-
-### 4.2 特征库管理
-
-- 节点树查询：[`node_tree`](backend/app/graphql/schema.py:102)
-- 节点增删改、显示/隐藏、复制、移动：见 [`Mutation`](backend/app/graphql/schema.py:214)
-- 特征列表/详情/搜索：见 [`feature_list`](backend/app/graphql/schema.py:120)、[`feature_detail`](backend/app/graphql/schema.py:129)、[`search_features`](backend/app/graphql/schema.py:138)
-- 特征增删改、显示/隐藏、复制、移动：见 [`Mutation`](backend/app/graphql/schema.py:320)
-
-### 4.3 用户与权限管理
-
-- 用户列表与详情：[`user_list`](backend/app/graphql/schema.py:57)、[`user_detail`](backend/app/graphql/schema.py:75)
-- 角色列表：[`role_list`](backend/app/graphql/schema.py:93)
-- 权限树：[`permission_tree`](backend/app/graphql/schema.py:111)
-- 用户分配角色：[`assign_roles_to_user`](backend/app/graphql/schema.py:264)
-- 角色分配权限：[`assign_permissions_to_role`](backend/app/graphql/schema.py:307)
-
-### 4.4 日志与审计
-
-- 请求日志中间件：[`request_logging_middleware`](backend/app/middleware/request_logging.py:26)
-- 审计日志查询：[`audit_log_list`](backend/app/graphql/schema.py:147)
-- 请求日志查询：[`request_log_list`](backend/app/graphql/schema.py:158)
-- 登录日志查询：[`login_log_list`](backend/app/graphql/schema.py:159)
-
-## 5. 快速开始
-
-### 5.1 环境准备
-
-- Docker / Docker Compose
-- Node.js 20+
-- Python 3.11+
-
-### 5.2 配置环境变量
-
-复制 [`.env.example`](.env.example) 为 [`.env`](.env)，至少确认以下配置：
-
-- `MYSQL_USER`
-- `MYSQL_PASSWORD`
-- `MYSQL_DB`
-- `DATABASE_URL`
-- `SECRET_KEY`
-- `CORS_ORIGINS`
-
-### 5.3 Docker 启动
-
-开发环境：
-
-```bash
-docker compose up --build
+```text
+                         ┌──────────────┐
+                         │   FastAPI    │
+                         │  (main.py)   │
+                         └──────┬───────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                   │
+     ┌────────▼──────┐  ┌──────▼───────┐  ┌───────▼──────┐
+     │  Middleware    │  │   GraphQL    │  │   REST API   │
+     │ request_logging│  │   Router     │  │   /health    │
+     └────────────────┘  └──────┬───────┘  └──────────────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                   │
+     ┌────────▼──────┐  ┌──────▼───────┐  ┌───────▼──────┐
+     │   Query       │  │   Mutation   │  │  Directives  │
+     │ (读操作)       │  │ (写操作)      │  │ IsAuthenticated│
+     └────────────────┘  └──────┬───────┘  └──────────────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                   │
+     ┌────────▼──────┐  ┌──────▼───────┐  ┌───────▼──────┐
+     │   AuthService │  │ NodeService  │  │ FeatureService│
+     │  (登录/密码)   │  │ (节点树 CRUD) │  │  (特征 CRUD) │
+     └────────────────┘  └──────┬───────┘  └──────────────┘
+                                │
+              ┌─────────────────┼─────────────────┐
+              │                 │                   │
+     ┌────────▼──────┐  ┌──────▼───────┐  ┌───────▼──────┐
+     │  UserService  │  │  RBACService │  │ AuditService │
+     │ (用户管理)     │  │ (角色/权限)   │  │  (审计日志)  │
+     └────────────────┘  └──────┬───────┘  └──────────────┘
+                                │
+                         ┌──────▼───────┐
+                         │    Prisma    │
+                         │   Client     │
+                         └──────┬───────┘
+                                │
+                         ┌──────▼───────┐
+                         │   MySQL 8.0  │
+                         └──────────────┘
 ```
 
-启动后默认端口：
+## 2. 依赖清单
 
-- Nginx：`80`
-- 后端：`8000`
-- 前端：`3000`
-- MySQL：`3306`
+### 2.1 后端 Python 依赖
 
-### 5.4 初始化数据库
+| 包 | 版本 | 用途 |
+|---|------|------|
+| fastapi | 0.115.12 | Web 框架 |
+| uvicorn[standard] | 0.34.2 | ASGI 服务器 |
+| strawberry-graphql[fastapi] | 0.275.5 | GraphQL Schema 与 Resolver |
+| prisma | 0.15.0 | 数据库 ORM |
+| pydantic | 2.11.3 | 数据验证 |
+| pydantic-settings | 2.9.1 | 环境变量配置 |
+| bcrypt | >=4.0.0 | 密码哈希 |
+| python-jose[cryptography] | 3.4.0 | JWT 编解码 |
+| python-dotenv | 1.1.0 | .env 文件加载 |
 
-如果未通过容器自动完成初始化，可在后端目录执行：
+> Python 版本要求：>=3.10（代码使用 `from __future__ import annotations` 兼容 3.10+）
 
-- Linux/macOS：[`backend/scripts/init-db.sh`](backend/scripts/init-db.sh)
-- Windows：[`backend/scripts/init-db.bat`](backend/scripts/init-db.bat)
+### 2.2 前端依赖
 
-脚本会依次执行：
+| 包 | 版本 | 用途 |
+|---|------|------|
+| react | ^18.3.1 | UI 框架 |
+| react-dom | ^18.3.1 | React DOM 渲染 |
+| react-router-dom | ^6.30.0 | 路由 |
+| @apollo/client | ^3.11.8 | GraphQL 客户端 |
+| graphql | ^16.9.0 | GraphQL 核心 |
+| zustand | ^4.5.5 | 状态管理 |
+| antd-mobile | ^5.38.1 | 移动端 UI 组件 |
+| antd | ^5.24.8 | 桌面端 UI 组件 |
+| @ant-design/icons | ^5.3.7 | 图标 |
 
-1. `prisma generate`
-2. `prisma db push`
-3. `python prisma/seed.py`
+开发依赖：typescript ^5.6.3 / vite ^5.4.10 / @vitejs/plugin-react ^4.3.4
 
-## 6. 默认账号与种子数据
+## 3. 数据库建表 SQL
 
-种子脚本见 [`backend/prisma/seed.py`](backend/prisma/seed.py)。
+> 由于 `prisma db push` 在 MySQL 8.0 + utf8mb4 环境下存在 index key 长度超限问题（`Specified key was too long; max key length is 3072 bytes`），当前需要手动执行以下 SQL 完成建表。
 
-### 6.1 默认管理员
+### 3.1 创建数据库
 
-- 用户名：`admin`
-- 密码：`admin123456`
-- 邮箱：`admin@app-feature.local`
-- 显示名：`系统管理员`
+```sql
+CREATE DATABASE IF NOT EXISTS app_feature_repository
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
 
-来源见 [`upsert_admin_user()`](backend/prisma/seed.py:169)。
+### 3.2 用户与权限相关表
 
-### 6.2 初始化角色
+```sql
+CREATE TABLE users (
+  id              CHAR(36)     NOT NULL,
+  username        VARCHAR(64)  NOT NULL,
+  email           VARCHAR(255) NOT NULL,
+  password_hash   VARCHAR(255) NOT NULL,
+  display_name    VARCHAR(128) DEFAULT NULL,
+  phone           VARCHAR(32)  DEFAULT NULL,
+  avatar_url      VARCHAR(500) DEFAULT NULL,
+  status          VARCHAR(32)  NOT NULL DEFAULT 'active',
+  is_super_admin  TINYINT(1)   NOT NULL DEFAULT 0,
+  last_login_at   DATETIME(3)  DEFAULT NULL,
+  last_login_ip   VARCHAR(45)  DEFAULT NULL,
+  remark          TEXT         DEFAULT NULL,
+  deleted_at      DATETIME(3)  DEFAULT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)  NOT NULL,
+  created_by      CHAR(36)     DEFAULT NULL,
+  updated_by      CHAR(36)     DEFAULT NULL,
+  deleted_by      CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY users_username_deleted_at_key (username, deleted_at),
+  UNIQUE KEY users_email_deleted_at_key (email, deleted_at),
+  KEY users_status_deleted_at_idx (status, deleted_at),
+  KEY users_created_at_idx (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-- 角色编码：`admin`
-- 角色名称：`系统管理员`
+CREATE TABLE roles (
+  id              CHAR(36)     NOT NULL,
+  name            VARCHAR(128) NOT NULL,
+  code            VARCHAR(64)  NOT NULL,
+  description     TEXT         DEFAULT NULL,
+  is_system       TINYINT(1)   NOT NULL DEFAULT 0,
+  status          VARCHAR(32)  NOT NULL DEFAULT 'active',
+  deleted_at      DATETIME(3)  DEFAULT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)  NOT NULL,
+  created_by      CHAR(36)     DEFAULT NULL,
+  updated_by      CHAR(36)     DEFAULT NULL,
+  deleted_by      CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY roles_code_deleted_at_key (code, deleted_at),
+  UNIQUE KEY roles_name_deleted_at_key (name, deleted_at),
+  KEY roles_status_deleted_at_idx (status, deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-来源见 [`upsert_role()`](backend/prisma/seed.py:126)。
+CREATE TABLE permissions (
+  id              CHAR(36)     NOT NULL,
+  name            VARCHAR(128) NOT NULL,
+  code            VARCHAR(128) NOT NULL,
+  module          VARCHAR(64)  NOT NULL,
+  resource        VARCHAR(64)  NOT NULL,
+  action          VARCHAR(64)  NOT NULL,
+  description     TEXT         DEFAULT NULL,
+  deleted_at      DATETIME(3)  DEFAULT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)  NOT NULL,
+  created_by      CHAR(36)     DEFAULT NULL,
+  updated_by      CHAR(36)     DEFAULT NULL,
+  deleted_by      CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY permissions_code_deleted_at_key (code, deleted_at),
+  UNIQUE KEY permissions_module_resource_action_deleted_at_key (module, resource, action, deleted_at),
+  KEY permissions_module_deleted_at_idx (module, deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-### 6.3 初始化权限
+CREATE TABLE user_roles (
+  id              CHAR(36)     NOT NULL,
+  user_id         CHAR(36)     NOT NULL,
+  role_id         CHAR(36)     NOT NULL,
+  deleted_at      DATETIME(3)  DEFAULT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)  NOT NULL,
+  created_by      CHAR(36)     DEFAULT NULL,
+  updated_by      CHAR(36)     DEFAULT NULL,
+  deleted_by      CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY user_roles_user_id_role_id_deleted_at_key (user_id, role_id, deleted_at),
+  KEY user_roles_role_id_deleted_at_idx (role_id, deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-种子脚本会创建页面级与操作级权限，覆盖：
+CREATE TABLE role_permissions (
+  id              CHAR(36)     NOT NULL,
+  role_id         CHAR(36)     NOT NULL,
+  permission_id   CHAR(36)     NOT NULL,
+  deleted_at      DATETIME(3)  DEFAULT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at      DATETIME(3)  NOT NULL,
+  created_by      CHAR(36)     DEFAULT NULL,
+  updated_by      CHAR(36)     DEFAULT NULL,
+  deleted_by      CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY role_permissions_role_id_permission_id_deleted_at_key (role_id, permission_id, deleted_at),
+  KEY role_permissions_permission_id_deleted_at_idx (permission_id, deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
-- 用户查看/管理
-- 角色管理
-- 权限查看
-- 节点查看/管理
-- 特征查看/管理
-- 审计/登录/请求日志查看
+### 3.3 特征库相关表
 
-来源见 [`build_permissions()`](backend/prisma/seed.py:19)。
+```sql
+CREATE TABLE feature_nodes (
+  id                    CHAR(36)     NOT NULL,
+  parent_id             CHAR(36)     DEFAULT NULL,
+  name                  VARCHAR(200) NOT NULL,
+  code                  VARCHAR(128) NOT NULL,
+  node_type             VARCHAR(32)  NOT NULL DEFAULT 'folder',
+  path                  VARCHAR(1024) NOT NULL,
+  level                 INT          NOT NULL DEFAULT 1,
+  sort_order            INT          NOT NULL DEFAULT 0,
+  is_visible            TINYINT(1)   NOT NULL DEFAULT 1,
+  is_locked             TINYINT(1)   NOT NULL DEFAULT 0,
+  source_node_id        CHAR(36)     DEFAULT NULL,
+  copied_from_node_id   CHAR(36)     DEFAULT NULL,
+  moved_from_node_id    CHAR(36)     DEFAULT NULL,
+  move_operation_id     CHAR(36)     DEFAULT NULL,
+  copy_operation_id     CHAR(36)     DEFAULT NULL,
+  remark                TEXT         DEFAULT NULL,
+  deleted_at            DATETIME(3)  DEFAULT NULL,
+  created_at            DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at            DATETIME(3)  NOT NULL,
+  created_by            CHAR(36)     DEFAULT NULL,
+  updated_by            CHAR(36)     DEFAULT NULL,
+  deleted_by            CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY feature_nodes_parent_id_code_deleted_at_key (parent_id, code, deleted_at),
+  KEY feature_nodes_path_idx (path(255)),
+  KEY feature_nodes_is_visible_deleted_at_idx (is_visible, deleted_at),
+  KEY feature_nodes_source_node_id_idx (source_node_id),
+  KEY feature_nodes_copied_from_node_id_idx (copied_from_node_id),
+  KEY feature_nodes_moved_from_node_id_idx (moved_from_node_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-### 6.4 初始化特征树
+CREATE TABLE features (
+  id                    CHAR(36)     NOT NULL,
+  node_id               CHAR(36)     NOT NULL,
+  title                 VARCHAR(200) NOT NULL,
+  code                  VARCHAR(128) NOT NULL,
+  summary               VARCHAR(500) DEFAULT NULL,
+  description           TEXT         DEFAULT NULL,
+  platform              VARCHAR(64)  DEFAULT NULL,
+  status                VARCHAR(32)  NOT NULL DEFAULT 'draft',
+  priority              VARCHAR(32)  NOT NULL DEFAULT 'medium',
+  version               VARCHAR(64)  DEFAULT NULL,
+  tags                  TEXT         DEFAULT NULL,
+  is_visible            TINYINT(1)   NOT NULL DEFAULT 1,
+  is_archived           TINYINT(1)   NOT NULL DEFAULT 0,
+  source_feature_id     CHAR(36)     DEFAULT NULL,
+  copied_from_id        CHAR(36)     DEFAULT NULL,
+  moved_from_node_id    CHAR(36)     DEFAULT NULL,
+  move_operation_id     CHAR(36)     DEFAULT NULL,
+  copy_operation_id     CHAR(36)     DEFAULT NULL,
+  last_copied_at        DATETIME(3)  DEFAULT NULL,
+  last_moved_at         DATETIME(3)  DEFAULT NULL,
+  remark                TEXT         DEFAULT NULL,
+  deleted_at            DATETIME(3)  DEFAULT NULL,
+  created_at            DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at            DATETIME(3)  NOT NULL,
+  created_by            CHAR(36)     DEFAULT NULL,
+  updated_by            CHAR(36)     DEFAULT NULL,
+  deleted_by            CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY features_node_id_code_deleted_at_key (node_id, code, deleted_at),
+  KEY features_status_deleted_at_idx (status, deleted_at),
+  KEY features_is_visible_deleted_at_idx (is_visible, deleted_at),
+  KEY features_source_feature_id_idx (source_feature_id),
+  KEY features_copied_from_id_idx (copied_from_id),
+  KEY features_moved_from_node_id_idx (moved_from_node_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
-示例节点：
+### 3.4 日志相关表
 
-- `mobile-app`
-- `auth-center`
-- `password-login`
-- `profile-center`
+```sql
+CREATE TABLE request_logs (
+  id              CHAR(36)     NOT NULL,
+  request_id      CHAR(36)     NOT NULL,
+  user_id         CHAR(36)     DEFAULT NULL,
+  method          VARCHAR(16)  NOT NULL,
+  path            VARCHAR(500) NOT NULL,
+  query_string    TEXT         DEFAULT NULL,
+  request_body    LONGTEXT     DEFAULT NULL,
+  response_status INT          NOT NULL,
+  response_body   LONGTEXT     DEFAULT NULL,
+  duration_ms     INT          NOT NULL,
+  ip_address      VARCHAR(45)  DEFAULT NULL,
+  user_agent      TEXT         DEFAULT NULL,
+  trace_id        VARCHAR(128) DEFAULT NULL,
+  created_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  UNIQUE KEY request_logs_request_id_key (request_id),
+  KEY request_logs_user_id_created_at_idx (user_id, created_at),
+  KEY request_logs_path_created_at_idx (path, created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-示例特征：
+CREATE TABLE audit_logs (
+  id               CHAR(36)     NOT NULL,
+  user_id          CHAR(36)     DEFAULT NULL,
+  request_id       CHAR(36)     DEFAULT NULL,
+  action           VARCHAR(64)  NOT NULL,
+  target_type      VARCHAR(64)  NOT NULL,
+  target_id        CHAR(36)     DEFAULT NULL,
+  target_name      VARCHAR(255) DEFAULT NULL,
+  change_summary   VARCHAR(500) DEFAULT NULL,
+  before_data      LONGTEXT     DEFAULT NULL,
+  after_data       LONGTEXT     DEFAULT NULL,
+  ip_address       VARCHAR(45)  DEFAULT NULL,
+  user_agent       TEXT         DEFAULT NULL,
+  created_at       DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY audit_logs_user_id_created_at_idx (user_id, created_at),
+  KEY audit_logs_target_type_target_id_idx (target_type, target_id),
+  KEY audit_logs_request_id_idx (request_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-- `login-basic-success`
-- `login-password-error`
-- `profile-avatar-edit`
+CREATE TABLE login_logs (
+  id               CHAR(36)     NOT NULL,
+  user_id          CHAR(36)     DEFAULT NULL,
+  username         VARCHAR(64)  NOT NULL,
+  login_type       VARCHAR(32)  NOT NULL DEFAULT 'password',
+  login_status     VARCHAR(32)  NOT NULL,
+  failure_reason   VARCHAR(255) DEFAULT NULL,
+  ip_address       VARCHAR(45)  DEFAULT NULL,
+  user_agent       TEXT         DEFAULT NULL,
+  occurred_at      DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (id),
+  KEY login_logs_user_id_occurred_at_idx (user_id, occurred_at),
+  KEY login_logs_username_occurred_at_idx (username, occurred_at),
+  KEY login_logs_login_status_occurred_at_idx (login_status, occurred_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+```
 
-来源见 [`seed_feature_tree()`](backend/prisma/seed.py:238)。
+## 4. 本地开发启动指南
 
-## 7. 开发说明
+### 4.1 环境要求
 
-### 7.1 后端本地运行
+- Python >= 3.10
+- Node.js >= 20
+- MySQL 8.0（utf8mb4, InnoDB）
+- 本机需安装 `mysql` 客户端命令行工具
+
+### 4.2 配置环境变量
+
+```bash
+# 项目根目录（docker-compose 使用）
+cp .env.example .env
+
+# 后端（Prisma Client 和 FastAPI 读此文件）
+cp backend/.env.example backend/.env
+
+# 前端（Vite 读此文件）
+cp frontend/.env.example frontend/.env.local
+```
+
+关键配置项：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `DATABASE_URL` | `mysql://evenji:evenji@localhost:3306/app_feature_repository` | 后端数据库连接（本地开发用 localhost，Docker 内用 mysql） |
+| `SECRET_KEY` | `change-this-secret-in-production` | JWT 签名密钥 |
+| `VITE_GRAPHQL_ENDPOINT` | `http://localhost:8000/graphql` | 前端 GraphQL 请求地址 |
+| `CORS_ORIGINS` | `["http://localhost:3000","http://localhost:5173"]` | 跨域白名单 |
+
+### 4.3 初始化数据库
+
+方式一：手动建表 + 种子数据（推荐，绕过 prisma db push 的 index 长度问题）
+
+```bash
+# 1. 创建数据库
+mysql -u evenji -pevenji -e "CREATE DATABASE IF NOT EXISTS app_feature_repository CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 2. 建表（复制第 3 节的 SQL 执行，或使用下方的脚本文件）
+mysql -u evenji -pevenji app_feature_repository < docs/init-tables.sql
+
+# 3. 生成 Prisma Client
+cd backend
+DATABASE_URL="mysql://evenji:evenji@localhost:3306/app_feature_repository" python -m prisma generate
+
+# 4. 写入种子数据
+DATABASE_URL="mysql://evenji:evenji@localhost:3306/app_feature_repository" python prisma/seed.py
+```
+
+方式二：Windows 初始化脚本
+
+```cmd
+cd backend\scripts
+init-db.bat
+```
+
+> 注意：`init-db.bat` 内部调用 `prisma db push`，在 MySQL 8.0 + utf8mb4 环境下可能因 index key 长度超限而失败。如遇此问题，请使用方式一手动建表。
+
+### 4.4 启动后端
 
 ```bash
 cd backend
-pip install -r requirements.txt
-python -m prisma generate
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+DATABASE_URL="mysql://evenji:evenji@localhost:3306/app_feature_repository" \
+  python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-### 7.2 前端本地运行
+如果已在 `backend/.env` 中配置了 `DATABASE_URL`，可直接：
+
+```bash
+cd backend
+python -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+```
+
+验证：
+
+```bash
+curl http://localhost:8000/health
+# 期望返回: {"status":"ok","database_connected":true}
+```
+
+### 4.5 启动前端
 
 ```bash
 cd frontend
@@ -225,28 +465,53 @@ npm install
 npm run dev
 ```
 
-前端 GraphQL 地址由 [`VITE_GRAPHQL_ENDPOINT`](frontend/src/api/client.ts:6) 指定。
+验证：浏览器打开 `http://localhost:5173`，应显示登录页面。
+
+### 4.6 Docker Compose 启动（可选）
+
+```bash
+docker compose up --build
+```
+
+启动后默认端口：Nginx 80 / 后端 8000 / 前端 3000 / MySQL 3306
+
+## 5. 默认账号与种子数据
+
+| 项目 | 值 |
+|------|----|
+| 用户名 | `admin` |
+| 密码 | `admin123456` |
+| 邮箱 | `admin@app-feature.local` |
+| 显示名 | `系统管理员` |
+| 角色 | `admin`（系统管理员，is_super_admin=true） |
+
+种子脚本创建 16 项权限，覆盖用户/角色/权限/节点/特征/审计/登录日志的查看与管理操作。
+
+特征树示例：`移动端 APP` → `认证中心` → `密码登录`；`个人中心`
+
+特征示例：`账号密码登录成功`、`账号密码错误提示`、`头像编辑与同步`
+
+## 6. 核心能力
+
+- 认证登录：JWT 签发 + bcrypt 哈希，登录成功更新最近登录时间/IP，写入登录日志
+- 特征库管理：节点树增删改/显示隐藏/复制移动，特征增删改/搜索/显示隐藏/复制移动
+- 用户管理：列表/创建/编辑/启用禁用/密码重置/角色分配
+- 角色权限：RBAC 模型，角色分配权限，用户分配角色
+- 日志审计：请求日志中间件自动记录，审计日志手动触发，登录日志自动写入
+
+## 7. 已知限制
+
+1. `prisma db push` 在 MySQL 8.0 + utf8mb4 环境下因 index key 长度超限（3072 bytes）无法直接建表，需手动执行 SQL（见第 3 节）
+2. 当前数据库结构初始化基于手动建表 + `prisma generate`，适合开发环境，不等同于正式迁移方案
+3. 生产部署仍需补充 HTTPS、备份、监控与 CI/CD
+4. `passlib` 与 `bcrypt >= 4.0` 不兼容，项目已切换为直接使用 `bcrypt` 库
 
 ## 8. 文档索引
 
-建议按以下顺序阅读：
-
-1. [`README.md`](README.md)
-2. [`docs/architecture.md`](docs/architecture.md)
-3. [`docs/database-design.md`](docs/database-design.md)
-4. [`docs/api-graphql.md`](docs/api-graphql.md)
-5. [`docs/rbac-design.md`](docs/rbac-design.md)
-6. [`docs/logging-audit.md`](docs/logging-audit.md)
-7. [`docs/frontend-pages.md`](docs/frontend-pages.md)
-8. [`docs/deployment.md`](docs/deployment.md)
-
-## 9. 已知限制
-
-以下内容是当前代码实现中的真实限制，文档已按现状记录，不做虚构补齐：
-
-1. 当前数据库结构初始化仍基于 [`prisma db push`](backend/scripts/init-db.sh:13)，适合开发/演示环境，不等同于正式迁移方案。
-2. 生产部署仍需补充 HTTPS、备份、监控与 CI/CD。
-
-## 10. 许可证与交付说明
-
-当前仓库更适合作为项目交付骨架与功能样例库，不应直接视为零改造即可上线的生产成品。上线前仍应完善安全配置、备份恢复、监控告警与正式迁移流程。
+1. [docs/architecture.md](docs/architecture.md)
+2. [docs/database-design.md](docs/database-design.md)
+3. [docs/api-graphql.md](docs/api-graphql.md)
+4. [docs/rbac-design.md](docs/rbac-design.md)
+5. [docs/logging-audit.md](docs/logging-audit.md)
+6. [docs/frontend-pages.md](docs/frontend-pages.md)
+7. [docs/deployment.md](docs/deployment.md)

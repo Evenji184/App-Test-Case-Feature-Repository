@@ -120,7 +120,7 @@ export function PermissionManagePage() {
         onSubmit={async () => {
           if (!editingRole) return;
           const { data } = await assignPermissions({ variables: { roleId: editingRole.id, permissionIds: selectedPermissionIds } });
-          Toast.show({ content: data?.assignPermissionsToRole.message ?? '权限分配成功' });
+          Toast.show({ content: data?.assignPermissionsToRole?.message ?? '权限分配成功' });
           setPermissionDrawerOpen(false);
         }}
       >

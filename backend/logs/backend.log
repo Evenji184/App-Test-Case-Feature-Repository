@@ -1,0 +1,39 @@
+2026-05-06 12:00:36 | INFO | app.main | Application startup
+2026-05-06 12:01:51 | INFO | app.main | Application startup
+2026-05-06 12:01:51 | INFO | httpx | HTTP Request: GET http://localhost:10058/status "HTTP/1.1 200 OK"
+2026-05-06 12:01:51 | INFO | app.db.prisma | Prisma client connected
+2026-05-06 13:21:27 | INFO | app.main | Application startup
+2026-05-06 13:21:28 | INFO | httpx | HTTP Request: GET http://localhost:13025/status "HTTP/1.1 200 OK"
+2026-05-06 13:21:28 | INFO | app.db.prisma | Prisma client connected
+2026-05-06 13:22:03 | INFO | app.middleware.request_logging | {"timestamp": 1778044923.2166708, "trace_id": "d7572709-30ea-4b69-9aa0-caa3955743fb", "request_id": "a7a8adcc-0699-419c-be5f-b2017f2905d2", "method": "GET", "path": "/health", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 20, "user_id": null, "username": null, "status_code": 200}
+2026-05-06 13:22:03 | INFO | httpx | HTTP Request: POST http://localhost:13025/ "HTTP/1.1 200 OK"
+2026-05-06 13:26:01 | INFO | app.main | Application startup
+2026-05-06 13:26:01 | INFO | httpx | HTTP Request: GET http://localhost:13172/status "HTTP/1.1 200 OK"
+2026-05-06 13:26:01 | INFO | app.db.prisma | Prisma client connected
+2026-05-06 13:26:01 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-06 13:26:01 | INFO | app.main | Application shutdown
+2026-05-06 13:26:17 | INFO | app.middleware.request_logging | {"timestamp": 1778045177.9247496, "trace_id": "0e1cd1b1-754d-4e42-a43b-23690f80c967", "request_id": "dd7984a0-5832-4164-bb34-44abeb163add", "method": "GET", "path": "/health", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-06 13:26:18 | INFO | httpx | HTTP Request: POST http://localhost:13025/ "HTTP/1.1 200 OK"
+2026-05-06 13:26:33 | INFO | app.main | Application startup
+2026-05-06 13:26:34 | INFO | httpx | HTTP Request: GET http://localhost:13205/status "HTTP/1.1 200 OK"
+2026-05-06 13:26:34 | INFO | app.db.prisma | Prisma client connected
+2026-05-06 13:26:34 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-06 13:26:34 | INFO | app.main | Application shutdown
+2026-05-06 13:26:59 | INFO | app.middleware.request_logging | {"timestamp": 1778045219.9181433, "trace_id": "94f1bc41-b02b-44f3-8c64-121053f5eeca", "request_id": "0efdb0cc-82db-445b-a5b9-b605474513aa", "method": "GET", "path": "/health", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-06 13:27:00 | INFO | httpx | HTTP Request: POST http://localhost:13025/ "HTTP/1.1 200 OK"
+2026-05-06 13:27:41 | INFO | app.main | Application startup
+2026-05-06 13:27:41 | INFO | httpx | HTTP Request: GET http://localhost:13257/status "HTTP/1.1 200 OK"
+2026-05-06 13:27:41 | INFO | app.db.prisma | Prisma client connected
+2026-05-06 13:27:41 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-06 13:27:41 | INFO | app.main | Application shutdown
+2026-05-06 13:29:37 | INFO | app.main | Application startup
+2026-05-06 13:29:37 | INFO | httpx | HTTP Request: GET http://localhost:13314/status "HTTP/1.1 200 OK"
+2026-05-06 13:29:37 | INFO | app.db.prisma | Prisma client connected
+2026-05-06 13:30:07 | INFO | app.middleware.request_logging | {"timestamp": 1778045407.2307844, "trace_id": "65c83f39-a104-47a8-a550-c47160597ff4", "request_id": "cedf10ed-c4fe-43a9-94bc-e09cee39acf9", "method": "GET", "path": "/health", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-06 13:30:07 | INFO | httpx | HTTP Request: POST http://localhost:13314/ "HTTP/1.1 200 OK"
+2026-05-06 13:30:07 | INFO | httpx | HTTP Request: POST http://localhost:13314/ "HTTP/1.1 200 OK"
+2026-05-06 13:30:08 | INFO | httpx | HTTP Request: POST http://localhost:13314/ "HTTP/1.1 200 OK"
+2026-05-06 13:30:08 | INFO | httpx | HTTP Request: POST http://localhost:13314/ "HTTP/1.1 200 OK"
+2026-05-06 13:30:08 | INFO | httpx | HTTP Request: POST http://localhost:13314/ "HTTP/1.1 200 OK"
+2026-05-06 13:30:08 | INFO | app.middleware.request_logging | {"timestamp": 1778045408.3591328, "trace_id": "a7513dc1-f17c-45b1-9560-951ad1bd2bf3", "request_id": "ca031bc3-513d-4d44-b594-83e767b1efed", "method": "POST", "path": "/graphql", "operation_name": null, "query_summary": "mutation { login(username: \"admin\", password: \"admin123456\") { success message data { accessToken permissions user { id username email displayName isSuperAdmin } } } }", "variables_summary": null, "duration_ms": 525, "user_id": null, "username": null, "status_code": 200}
+2026-05-06 13:30:08 | INFO | httpx | HTTP Request: POST http://localhost:13314/ "HTTP/1.1 200 OK"

@@ -183,7 +183,7 @@ export function FeatureManagePage() {
           onClick={async () => {
             if (!selectedNodeId) return;
             const { data } = await deleteNode({ variables: { nodeId: selectedNodeId } });
-            Toast.show({ content: data?.deleteNode.message ?? '节点已删除' });
+            Toast.show({ content: data?.deleteNode?.message ?? '节点已删除' });
             setSelectedNodeId(undefined);
           }}
         >
@@ -241,7 +241,7 @@ export function FeatureManagePage() {
                   danger: true,
                   onClick: async () => {
                     const { data } = await deleteFeature({ variables: { featureId: item.id } });
-                    Toast.show({ content: data?.deleteFeature.message ?? '删除成功' });
+                    Toast.show({ content: data?.deleteFeature?.message ?? '删除成功' });
                   },
                 },
               ]}
