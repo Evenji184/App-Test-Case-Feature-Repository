@@ -588,3 +588,1175 @@ GraphQL request:1:182
 2026-05-09 18:06:46.937 | INFO | httpx | HTTP Request: POST http://localhost:7284/ "HTTP/1.1 200 OK"
 2026-05-09 18:06:46.938 | INFO | app.middleware.request_logging | {"timestamp": 1778321206.9386933, "trace_id": "b2e51587-6b0c-48bc-bab0-d89f21a87822", "request_id": "5224f2ef-0a13-4b05-b6ae-1422ed0b7e9e", "method": "POST", "path": "/graphql", "operation_name": null, "query_summary": "mutation { deleteAiProvider(providerId: \"0878b4d7-31c0-4bb1-96d1-e5dfaaf22e34\") { success message } }", "variables_summary": null, "duration_ms": 223, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
 2026-05-09 18:06:47.271 | INFO | httpx | HTTP Request: POST http://localhost:7284/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:10.738 | INFO | app.main | Application startup
+2026-05-09 18:23:11.092 | INFO | httpx | HTTP Request: GET http://localhost:8440/status "HTTP/1.1 200 OK"
+2026-05-09 18:23:11.095 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:23:33 | INFO | app.middleware.request_logging | {"timestamp": 1778322213.6400073, "trace_id": "189dd55f-5092-4416-98cc-e0acab2be453", "request_id": "8cea3580-4c9b-4b9a-b8ac-f79969e588ed", "method": "OPTIONS", "path": "/graphql", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:23:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:34 | ERROR | strawberry.execution | 未认证或登录已失效
+
+GraphQL request:2:3
+1 | query CurrentUser {
+2 |   currentUser {
+  |   ^
+3 |     ...UserBase
+Traceback (most recent call last):
+  File "E:\App-Test-Case-Feature-Repository\backend\app\core\security.py", line 37, in decode_access_token
+    payload = jwt.decode(token, settings.secret_key, algorithms=[settings.jwt_algorithm])
+  File "G:\python310\lib\site-packages\jose\jwt.py", line 169, in decode
+    _validate_claims(
+  File "G:\python310\lib\site-packages\jose\jwt.py", line 492, in _validate_claims
+    _validate_exp(claims, leeway=leeway)
+  File "G:\python310\lib\site-packages\jose\jwt.py", line 326, in _validate_exp
+    raise ExpiredSignatureError("Signature has expired.")
+jose.exceptions.ExpiredSignatureError: Signature has expired.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 20, in get_current_user
+    payload = decode_access_token(token)
+  File "E:\App-Test-Case-Feature-Repository\backend\app\core\security.py", line 39, in decode_access_token
+    raise ValueError("Invalid access token") from exc
+ValueError: Invalid access token
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 206, in resolve_async
+    has_permission = await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\directives\auth.py", line 16, in has_permission
+    await get_current_user(info)
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 22, in get_current_user
+    raise AuthenticationError() from exc
+app.utils.exceptions.AuthenticationError: 未认证或登录已失效
+2026-05-09 18:23:34 | INFO | app.middleware.request_logging | {"timestamp": 1778322214.0073252, "trace_id": "068c2c2e-00fd-44b1-98f6-9f9c60754570", "request_id": "c6acb55a-4513-4921-9938-2ea3eac28e16", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 6, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:23:34 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | app.middleware.request_logging | {"timestamp": 1778322223.733652, "trace_id": "24e998ad-3285-4846-895d-6c59c7ec411a", "request_id": "0447854c-6b09-432d-8084-5182ba26331b", "method": "POST", "path": "/graphql", "operation_name": "Login", "query_summary": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      accessToken\n      tokenType\n      permissions\n      user {\n        ...AuthUserBase\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AuthUserBase on AuthUserType {\n  id\n  username\n  email\n  displayName\n  status\n  isSuperAdmin\n  __typename\n}", "variables_summary": "{\"username\": \"admin\", \"password\": \"admin123456\"}", "duration_ms": 640, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:43 | INFO | app.middleware.request_logging | {"timestamp": 1778322223.9868174, "trace_id": "819caa10-5dfa-4315-a5df-2c53ed8f7571", "request_id": "d33f4737-ff44-47af-b808-d11556e15133", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 32, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:23:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:23:44 | INFO | app.middleware.request_logging | {"timestamp": 1778322224.0620527, "trace_id": "e2dd0fbe-ebe6-4a06-8921-c5d5936725b5", "request_id": "cc82caef-a360-4498-9bd9-a6b799e35317", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 25, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:23:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | app.middleware.request_logging | {"timestamp": 1778322365.606269, "trace_id": "f9bcb8fe-7a3b-47c5-9c56-d9eb7ec6782f", "request_id": "5d6d081a-a06b-41ea-94c7-e09ac2904e4b", "method": "POST", "path": "/graphql", "operation_name": "PermissionTree", "query_summary": "query PermissionTree {\n  permissionTree {\n    module\n    resources {\n      resource\n      permissions {\n        ...PermissionBase\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment PermissionBase on PermissionType {\n  id\n  name\n  code\n  module\n  resource\n  action\n  description\n  __typename\n}", "variables_summary": "{}", "duration_ms": 300, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:05 | INFO | app.middleware.request_logging | {"timestamp": 1778322365.6072752, "trace_id": "3ca21925-e510-493f-ade1-c83d5e6b265e", "request_id": "f60d4779-87f6-4ac7-a857-0b8e27ea6d7c", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 286, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | app.middleware.request_logging | {"timestamp": 1778322367.7442324, "trace_id": "5192b8a0-7728-4a74-80f6-0d5e63034a67", "request_id": "961d97df-dd5a-49d1-b5fd-87f312851c45", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 48, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | app.middleware.request_logging | {"timestamp": 1778322367.747745, "trace_id": "4325b901-e8dc-497b-b57d-4ac555c6105e", "request_id": "7bf8844b-f38b-435b-be1b-f7c01b0c898f", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 37, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:07 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:09 | ERROR | strawberry.execution | Cannot query field 'aiProviderList' on type 'Query'.
+
+GraphQL request:2:3
+1 | query AiProviderList($pagination: PaginationInput!) {
+2 |   aiProviderList(pagination: $pagination) {
+  |   ^
+3 |     items {
+2026-05-09 18:26:09 | ERROR | strawberry.execution | Unknown type 'AiProviderType'.
+
+GraphQL request:20:28
+19 |
+20 | fragment AiProviderBase on AiProviderType {
+   |                            ^
+21 |   id
+2026-05-09 18:26:09 | INFO | app.middleware.request_logging | {"timestamp": 1778322369.413877, "trace_id": "9f7a16b3-4ebe-4a40-9cf1-f724dadfec71", "request_id": "925e4651-592e-42c8-82f8-d738e6d39199", "method": "POST", "path": "/graphql", "operation_name": "AiProviderList", "query_summary": "query AiProviderList($pagination: PaginationInput!) {\n  aiProviderList(pagination: $pagination) {\n    items {\n      ...AiProviderBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AiProviderBase on AiProviderType {\n  id\n  name\n  websiteUrl\n  apiKeyHint\n  requestUrl\n  modelName\n  providerFormat\n  isDefault\n  status\n  remark\n  createdAt\n  updatedAt\n  __typena", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 15, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:26:09 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | ERROR | strawberry.execution | Cannot query field 'aiProviderList' on type 'Query'.
+
+GraphQL request:2:3
+1 | query AiProviderList($pagination: PaginationInput!) {
+2 |   aiProviderList(pagination: $pagination) {
+  |   ^
+3 |     items {
+2026-05-09 18:26:49 | ERROR | strawberry.execution | Unknown type 'AiProviderType'.
+
+GraphQL request:20:28
+19 |
+20 | fragment AiProviderBase on AiProviderType {
+   |                            ^
+21 |   id
+2026-05-09 18:26:49 | INFO | app.middleware.request_logging | {"timestamp": 1778322409.422879, "trace_id": "76dabd62-2f73-47b4-bf65-6126220763f2", "request_id": "5c7fa697-f740-42e9-96de-de9163318609", "method": "POST", "path": "/graphql", "operation_name": "AiProviderList", "query_summary": "query AiProviderList($pagination: PaginationInput!) {\n  aiProviderList(pagination: $pagination) {\n    items {\n      ...AiProviderBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AiProviderBase on AiProviderType {\n  id\n  name\n  websiteUrl\n  apiKeyHint\n  requestUrl\n  modelName\n  providerFormat\n  isDefault\n  status\n  remark\n  createdAt\n  updatedAt\n  __typena", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 20, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | app.middleware.request_logging | {"timestamp": 1778322409.7095332, "trace_id": "035efb62-2a28-4d15-8c65-da6d457f7320", "request_id": "787a10c9-3c6c-415b-ae63-1ed51d6dcddf", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 309, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | app.middleware.request_logging | {"timestamp": 1778322409.7165232, "trace_id": "e5df787d-f748-4f72-8d7b-ceda39e5795e", "request_id": "444ece42-7470-4917-83a5-0d4773ec16da", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 315, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:49 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | app.middleware.request_logging | {"timestamp": 1778322410.9093697, "trace_id": "cea07df7-8803-4b5d-84cb-8d185f22b8d0", "request_id": "0abde9e5-eefd-4706-a2fa-e23fccd61a26", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 49, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:50 | INFO | app.middleware.request_logging | {"timestamp": 1778322410.921921, "trace_id": "689d82a5-48b6-4567-85ab-c257628f4966", "request_id": "c6eb819e-dc5b-453d-a4a5-79bb0ef079e7", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 49, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | app.middleware.request_logging | {"timestamp": 1778322413.6270425, "trace_id": "ac252b0c-6a8e-41b7-a3e8-b7036ea04462", "request_id": "c3f5d937-cc96-49e4-99cc-d3d6f1b52a24", "method": "POST", "path": "/graphql", "operation_name": "PermissionTree", "query_summary": "query PermissionTree {\n  permissionTree {\n    module\n    resources {\n      resource\n      permissions {\n        ...PermissionBase\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment PermissionBase on PermissionType {\n  id\n  name\n  code\n  module\n  resource\n  action\n  description\n  __typename\n}", "variables_summary": "{}", "duration_ms": 40, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | app.middleware.request_logging | {"timestamp": 1778322413.6400547, "trace_id": "af7b3ff6-46ea-418e-ba48-c2d796c0c949", "request_id": "318e90fa-d8a4-4ec5-98ba-2fef0d639333", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 42, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | app.middleware.request_logging | {"timestamp": 1778322416.839486, "trace_id": "b2323162-2257-433d-be26-9c0c0a82fa40", "request_id": "99abb042-d84a-4f96-a95b-059103e437a4", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 55, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | app.middleware.request_logging | {"timestamp": 1778322416.8425024, "trace_id": "39eaebc0-74ec-45b5-b49e-d2a01f4ee610", "request_id": "1717de9e-3e69-44db-8778-ca17a9bb16fa", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 44, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:26:56 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | app.middleware.request_logging | {"timestamp": 1778322453.615819, "trace_id": "6f35edfe-049a-43a8-879f-45b35c48b9b4", "request_id": "f61a0b85-dc99-4ab9-bdb1-d9ae19ee38a9", "method": "POST", "path": "/graphql", "operation_name": "CreateUser", "query_summary": "mutation CreateUser($input: CreateUserInput!) {\n  createUser(input: $input) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      ...UserBase\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"input\": {\"username\": \"test\", \"password\": \"test\", \"displayName\": \"test\", \"email\": \"test@evenji.com\", \"isSuperAdmin\": false}}", "duration_ms": 650, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:33 | INFO | app.middleware.request_logging | {"timestamp": 1778322453.7318609, "trace_id": "09a710c4-2e45-4ae7-ac71-70318d0c60bd", "request_id": "1059bbbc-d4d9-4248-8285-194f605987f9", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 25, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:27:33 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | app.middleware.request_logging | {"timestamp": 1778322471.6420817, "trace_id": "e91c4df1-b641-4f2e-97a5-a33f026f2015", "request_id": "a53e6c08-ccfd-4abf-9f13-ecc3d3c5ed16", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 299, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:51 | INFO | app.middleware.request_logging | {"timestamp": 1778322471.7830522, "trace_id": "b889a4a6-4085-4c2a-a8a0-8907bc3f21fe", "request_id": "1b48e5ea-58cb-4681-9264-90f8a84bccc4", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 35, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:27:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:52 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:52 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:52 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:52 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:27:52 | INFO | app.middleware.request_logging | {"timestamp": 1778322472.039079, "trace_id": "cd2be77c-bf4b-4454-84bc-af7ee02901e2", "request_id": "4a13abb1-1e72-43f7-9885-eb66d371c552", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 291, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:27:52 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:30:32 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:30:32 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:30:32 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:30:32 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:30:32 | INFO | app.middleware.request_logging | {"timestamp": 1778322632.4507427, "trace_id": "dc4fd9da-f5b4-4dd6-ad32-9d7304760261", "request_id": "6ebe25a9-f1a2-489b-989c-471ae93799f7", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 283, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:30:32 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:30:51.491 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-09 18:30:51.492 | INFO | app.main | Application shutdown
+2026-05-09 18:31:10.519 | INFO | app.main | Application startup
+2026-05-09 18:31:10.868 | INFO | httpx | HTTP Request: GET http://localhost:8993/status "HTTP/1.1 200 OK"
+2026-05-09 18:31:10.869 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:31:23.741 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-09 18:31:23.741 | INFO | app.main | Application shutdown
+2026-05-09 18:31:25.365 | INFO | app.main | Application startup
+2026-05-09 18:31:25.716 | INFO | httpx | HTTP Request: GET http://localhost:9022/status "HTTP/1.1 200 OK"
+2026-05-09 18:31:25.717 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:31:38.116 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-09 18:31:38.117 | INFO | app.main | Application shutdown
+2026-05-09 18:31:39.730 | INFO | app.main | Application startup
+2026-05-09 18:31:40.082 | INFO | httpx | HTTP Request: GET http://localhost:9042/status "HTTP/1.1 200 OK"
+2026-05-09 18:31:40.084 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:32:05.301 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-09 18:32:05.301 | INFO | app.main | Application shutdown
+2026-05-09 18:34:21.098 | INFO | app.main | Application startup
+2026-05-09 18:34:21.458 | INFO | httpx | HTTP Request: GET http://localhost:9148/status "HTTP/1.1 200 OK"
+2026-05-09 18:34:21.459 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:34:34 | INFO | app.middleware.request_logging | {"timestamp": 1778322874.5484025, "trace_id": "74f2196b-685e-4d30-8f8a-acb5fc48ebbf", "request_id": "a7e4123d-3a55-4a07-965c-c45c5d440231", "method": "OPTIONS", "path": "/graphql", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:34:34 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:34 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:34 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:34 | INFO | app.middleware.request_logging | {"timestamp": 1778322874.9542139, "trace_id": "7e349321-d6a2-4f73-8b52-a9a709a35b7d", "request_id": "d5c9ec07-1d52-4eb8-9dbf-9e4d8930759d", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 16, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:34 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | app.middleware.request_logging | {"timestamp": 1778322875.067713, "trace_id": "a9cb02a1-b1c2-4c22-ba68-13cc3bd221a9", "request_id": "d98abac5-2511-4b0a-ab6a-897f452a71c2", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 28, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:35 | INFO | app.middleware.request_logging | {"timestamp": 1778322875.3247697, "trace_id": "a705ee52-99cb-436d-afa4-68791f3364b0", "request_id": "69d0703b-1e57-43f9-82af-43116bd27bd5", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 285, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:35 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | app.middleware.request_logging | {"timestamp": 1778322883.0722136, "trace_id": "bf9a74d8-bd34-4b73-88c1-9da98b35a447", "request_id": "08b59c6c-e4d5-4ae3-a187-334da80cc94d", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 282, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | app.middleware.request_logging | {"timestamp": 1778322883.192691, "trace_id": "229c15ca-4475-4eec-9950-badfe1a5fd23", "request_id": "9b822b93-884a-4996-b584-5b806ff85b47", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 27, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:43 | INFO | app.middleware.request_logging | {"timestamp": 1778322883.4593966, "trace_id": "d54ca9f6-c7db-41ed-a20a-eaa56a3c7373", "request_id": "634e3bf0-1379-45aa-82eb-8b7d73839eb2", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 293, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:43 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | app.middleware.request_logging | {"timestamp": 1778322886.1171508, "trace_id": "c8fe240e-dff8-4c06-bc08-6acd317d04c9", "request_id": "efd20c99-3633-4d6c-8b8f-17d6ea7128b7", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 59, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | app.middleware.request_logging | {"timestamp": 1778322886.1240754, "trace_id": "9b0ccbc0-c561-4e82-bf3f-63e9dc7d0cb3", "request_id": "a1172445-9842-42c7-ada5-66f51020c5c0", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 62, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:46 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:59 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:59 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:34:59 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | app.middleware.request_logging | {"timestamp": 1778322900.0975406, "trace_id": "d3991c47-d962-45f2-ba98-3e3235fc89c2", "request_id": "3cbb92f0-bb2d-4b81-ba11-e966262e35af", "method": "POST", "path": "/graphql", "operation_name": "DisableUser", "query_summary": "mutation DisableUser($userId: String!) {\n  disableUser(userId: $userId) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    __typename\n  }\n}", "variables_summary": "{\"userId\": \"0398a9fe-3d16-464f-8c08-2ed6a14864c0\"}", "duration_ms": 417, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:00 | INFO | app.middleware.request_logging | {"timestamp": 1778322900.1825414, "trace_id": "05b7305d-5b34-4088-994f-f2548efcf7c1", "request_id": "cc528810-53f6-411e-9165-8e05dbd81d1d", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 29, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:35:00 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:04 | INFO | app.middleware.request_logging | {"timestamp": 1778322904.9336164, "trace_id": "d8d6e925-1797-4014-95de-0d903ebbae2f", "request_id": "e4a8105f-50d4-4f4b-8271-712defedfb15", "method": "POST", "path": "/graphql", "operation_name": "EnableUser", "query_summary": "mutation EnableUser($userId: String!) {\n  enableUser(userId: $userId) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    __typename\n  }\n}", "variables_summary": "{\"userId\": \"0398a9fe-3d16-464f-8c08-2ed6a14864c0\"}", "duration_ms": 170, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:35:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:05 | INFO | app.middleware.request_logging | {"timestamp": 1778322905.1643746, "trace_id": "1820a742-19de-493d-90b8-d45f84695a69", "request_id": "b8cdeeb9-4cfb-4f57-9e1c-5e939a0762ad", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 27, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:35:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:09 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:09 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:09 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:09 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:09 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:10 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:10 | INFO | app.middleware.request_logging | {"timestamp": 1778322910.0516686, "trace_id": "dab4d9e9-0f43-4527-b939-85a8ffd4aa42", "request_id": "25fd3f97-9dcc-484c-acf3-e8471c900fd5", "method": "POST", "path": "/graphql", "operation_name": "AssignRolesToUser", "query_summary": "mutation AssignRolesToUser($userId: String!, $roleIds: [String!]!) {\n  assignRolesToUser(userId: $userId, roleIds: $roleIds) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    __typename\n  }\n}", "variables_summary": "{\"userId\": \"0398a9fe-3d16-464f-8c08-2ed6a14864c0\", \"roleIds\": [\"1186397c-27e6-4459-8f01-23c0c1ff6100\"]}", "duration_ms": 120, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:35:10 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | app.middleware.request_logging | {"timestamp": 1778322931.5013354, "trace_id": "336bc35f-d41b-4299-95dd-993ee3ca981a", "request_id": "aa80e00d-4e56-46ae-8a0c-5ff8b908c84b", "method": "POST", "path": "/graphql", "operation_name": "CreateUser", "query_summary": "mutation CreateUser($input: CreateUserInput!) {\n  createUser(input: $input) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      ...UserBase\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"input\": {\"username\": \"test1\", \"password\": \"test1\", \"displayName\": \"test1\", \"email\": \"test1@evenji.com\", \"phone\": null, \"avatarUrl\": null, \"remark\": null, \"isSuperAdmin\": false}}", "duration_ms": 598, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:35:31 | INFO | app.middleware.request_logging | {"timestamp": 1778322931.5733414, "trace_id": "954abe22-9199-4ffa-ad60-aacc675c5eac", "request_id": "e195d588-8b5e-448d-a6b9-91306e671671", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 27, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:35:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | app.middleware.request_logging | {"timestamp": 1778322962.0272515, "trace_id": "5218c463-e203-45ec-9c49-d5e12cb62156", "request_id": "8d2e2331-0b1e-41be-8ae7-0fc1ffe8beba", "method": "OPTIONS", "path": "/graphql", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | app.middleware.request_logging | {"timestamp": 1778322962.7564929, "trace_id": "afc4edcf-230e-4949-ab72-912e79fdc3e4", "request_id": "f2256c0f-87a4-40e3-816d-f42ad15314e8", "method": "POST", "path": "/graphql", "operation_name": "Login", "query_summary": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      accessToken\n      tokenType\n      permissions\n      user {\n        ...AuthUserBase\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AuthUserBase on AuthUserType {\n  id\n  username\n  email\n  displayName\n  status\n  isSuperAdmin\n  __typename\n}", "variables_summary": "{\"username\": \"test1\", \"password\": \"test1\"}", "duration_ms": 374, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:02 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:36:02 | INFO | app.middleware.request_logging | {"timestamp": 1778322962.9193008, "trace_id": "fd16db49-9847-485a-b7d6-fbcec1d5a521", "request_id": "d83d88f6-5fe6-44b1-97c6-dc35920cdb08", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 30, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:36:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:03 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:36:03 | INFO | app.middleware.request_logging | {"timestamp": 1778322963.1753793, "trace_id": "66592fc3-d95c-4154-90f1-566fd4d0b46f", "request_id": "02a5d8ee-c77f-413e-898c-65080f928ed2", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 285, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:36:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:36:22 | INFO | app.middleware.request_logging | {"timestamp": 1778322982.7611477, "trace_id": "03ba0a0b-4841-4d3b-92f4-1a539cd96016", "request_id": "2517d395-27f8-4b1c-a8fb-f0ed704dfec5", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 297, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:36:22 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:36:22 | INFO | app.middleware.request_logging | {"timestamp": 1778322982.7631743, "trace_id": "8a359a73-8d8b-4ba9-8c9e-0de887e76423", "request_id": "e7e8f5ba-0dd7-4d25-9034-ac23e5bbe338", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 299, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:58 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:36:58 | INFO | app.middleware.request_logging | {"timestamp": 1778323018.9144676, "trace_id": "643e90fd-4298-47cf-8bce-be8b4e0dc852", "request_id": "de7cb02a-c407-4f61-a441-876273e15cf7", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 277, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:36:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:59 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:59 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:59 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:36:59 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:36:59 | INFO | app.middleware.request_logging | {"timestamp": 1778323019.320978, "trace_id": "9f8f1f83-42a9-4ec4-93ff-165030a4d61f", "request_id": "19412dbe-f95e-45f4-a5a7-92679806d66a", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 375, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:36:59 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:37:01 | INFO | app.middleware.request_logging | {"timestamp": 1778323021.1782682, "trace_id": "87f89c91-2a44-43cb-a1c7-32597f18d054", "request_id": "f36b8eb4-0387-4d6e-bbbf-2d4f5c1c5cb5", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 42, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:01 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:37:01 | INFO | app.middleware.request_logging | {"timestamp": 1778323021.1802692, "trace_id": "4e47116e-d31e-4a65-8e19-cfb2c1273fe0", "request_id": "593a732e-40e4-49a3-a474-a42fe4f73d72", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 43, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:01 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:37:02 | INFO | app.middleware.request_logging | {"timestamp": 1778323022.8172445, "trace_id": "bd131a00-462d-40f4-a73f-bd02bf8bcdf4", "request_id": "399c8aa1-eaf3-4081-9c75-db1ca43ffc09", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 33, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:02 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:37:02 | INFO | app.middleware.request_logging | {"timestamp": 1778323022.8192441, "trace_id": "34e8d6d9-48a2-40d7-9832-f45b490e8e27", "request_id": "0397f64b-f1fe-4588-b319-47d2b8c7a8ac", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 35, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:02 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:37:03 | INFO | app.middleware.request_logging | {"timestamp": 1778323023.8117933, "trace_id": "752e2a49-2af3-4f6f-b8bc-0ada190aeaa9", "request_id": "adc468e0-f205-43c7-a4e1-483d432f0fdf", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 35, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:37:03 | INFO | app.middleware.request_logging | {"timestamp": 1778323023.815783, "trace_id": "166b9c39-16b9-48e7-8753-18053a437301", "request_id": "dc65f3dd-d59c-4bc9-ba6f-14ba9351fc57", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 38, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:17.707 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-09 18:37:17.708 | INFO | app.main | Application shutdown
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | app.middleware.request_logging | {"timestamp": 1778323038.0104694, "trace_id": "93c3c8d8-5208-47e4-861b-4f33b9a16a49", "request_id": "1be31541-a8fa-4122-8018-a2bb10970741", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 273, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:37:18 | INFO | app.middleware.request_logging | {"timestamp": 1778323038.1264772, "trace_id": "2b7b253f-35b5-40d5-b843-9b31fa132e61", "request_id": "7c0f2c00-f456-4209-8353-f529f595b89c", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 31, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:18 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:37:18 | INFO | app.middleware.request_logging | {"timestamp": 1778323038.3920748, "trace_id": "306426aa-0109-4ab5-a9d0-27f5d2ba55bb", "request_id": "9e58c397-0868-461f-8568-11159e9feff9", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 295, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:37:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:19.448 | INFO | app.main | Application startup
+2026-05-09 18:37:19.803 | INFO | httpx | HTTP Request: GET http://localhost:9413/status "HTTP/1.1 200 OK"
+2026-05-09 18:37:19.805 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:37:39.445 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-09 18:37:39.446 | INFO | app.main | Application shutdown
+2026-05-09 18:37:42.278 | INFO | app.main | Application startup
+2026-05-09 18:37:42.625 | INFO | httpx | HTTP Request: GET http://localhost:9438/status "HTTP/1.1 200 OK"
+2026-05-09 18:37:42.626 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | app.middleware.request_logging | {"timestamp": 1778323073.1420908, "trace_id": "c10906b3-b64a-486b-bca4-db796f666902", "request_id": "60efedcc-6f7e-423c-bf92-3bc5dcebd3b2", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 291, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | app.middleware.request_logging | {"timestamp": 1778323073.251581, "trace_id": "05abd29e-2846-4bfe-b461-bf190a0eba32", "request_id": "9e1cb735-70f7-478b-9197-ca2602689ee5", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 32, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:37:53 | INFO | app.middleware.request_logging | {"timestamp": 1778323073.5118055, "trace_id": "28a744c6-99db-4fa8-8912-ae9e1fe86957", "request_id": "58144792-09da-45c3-b4ff-5fe197d84d20", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 290, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:37:53 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | app.middleware.request_logging | {"timestamp": 1778323091.131051, "trace_id": "5f843e7e-d152-46b5-a9dc-9fcd99167c92", "request_id": "2223d177-d5fa-44e1-a7c0-c0edd698b641", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 278, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:38:11 | INFO | app.middleware.request_logging | {"timestamp": 1778323091.2475111, "trace_id": "5ff8d5e5-542e-4aa2-a5d3-ab5f78162bd1", "request_id": "623d5c47-3b41-426f-85a2-554743af4966", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 27, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:11 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:38:11 | INFO | app.middleware.request_logging | {"timestamp": 1778323091.4985192, "trace_id": "140b1eef-d0ee-4ca2-b92e-f7f360facc87", "request_id": "dfeccfb6-efed-4339-98b1-a7107b08d4dd", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 277, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:38:11 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | ERROR | strawberry.execution | 缺少权限: node:list
+
+GraphQL request:2:3
+1 | query NodeTree {
+2 |   nodeTree {
+  |   ^
+3 |     id
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 102, in node_tree
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: node:list
+2026-05-09 18:38:14 | INFO | app.middleware.request_logging | {"timestamp": 1778323094.2208219, "trace_id": "55a6395f-021a-46e8-bb83-b678b85a78f9", "request_id": "dd57d5fd-f5a7-4d78-8254-18cb0c9af778", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 32, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:38:14 | ERROR | strawberry.execution | 缺少权限: feature:list
+
+GraphQL request:2:3
+1 | query FeatureList($pagination: PaginationInput!, $nodeId: String) {
+2 |   featureList(pagination: $pagination, nodeId: $nodeId) {
+  |   ^
+3 |     items {
+Traceback (most recent call last):
+  File "G:\python310\lib\site-packages\graphql\execution\execute.py", line 530, in await_result
+    return_type, field_nodes, info, path, await result
+  File "G:\python310\lib\site-packages\strawberry\schema\schema_converter.py", line 788, in _async_resolver
+    return await await_maybe(
+  File "G:\python310\lib\site-packages\strawberry\utils\await_maybe.py", line 13, in await_maybe
+    return await value
+  File "G:\python310\lib\site-packages\strawberry\permission.py", line 215, in resolve_async
+    return await next
+  File "E:\App-Test-Case-Feature-Repository\backend\app\graphql\schema.py", line 130, in feature_list
+  File "E:\App-Test-Case-Feature-Repository\backend\app\modules\auth\dependencies.py", line 41, in require_permission
+    raise AuthorizationError(f"缺少权限: {permission_code}")
+app.utils.exceptions.AuthorizationError: 缺少权限: feature:list
+2026-05-09 18:38:14 | INFO | app.middleware.request_logging | {"timestamp": 1778323094.2238204, "trace_id": "4aa73f0a-63ab-4328-8ee1-4a019d2b675a", "request_id": "05932f62-011a-4b72-a48d-f6d6060d86d5", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 33, "user_id": "45d94d0f-dcb1-4d4a-ba4d-baac60340da0", "username": "test1", "status_code": 200}
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:14 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | app.middleware.request_logging | {"timestamp": 1778323101.6763363, "trace_id": "168ea88c-13d6-494b-a89d-d27c99bb732b", "request_id": "2de9e920-5594-42ca-87ee-7d5387194558", "method": "POST", "path": "/graphql", "operation_name": "DisableUser", "query_summary": "mutation DisableUser($userId: String!) {\n  disableUser(userId: $userId) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    __typename\n  }\n}", "variables_summary": "{\"userId\": \"45d94d0f-dcb1-4d4a-ba4d-baac60340da0\"}", "duration_ms": 381, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:21 | INFO | app.middleware.request_logging | {"timestamp": 1778323101.7593372, "trace_id": "02c69626-ea8d-4f9b-8a3f-d5178ed20d20", "request_id": "7caf2662-54da-4ca3-90f7-ee625da0fdc3", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 29, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:38:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | app.middleware.request_logging | {"timestamp": 1778323111.5057306, "trace_id": "a015e572-81b1-4e4d-981b-d65dba8fe885", "request_id": "097694a5-d62a-491a-b590-6f4f0e7e2406", "method": "POST", "path": "/graphql", "operation_name": "DisableUser", "query_summary": "mutation DisableUser($userId: String!) {\n  disableUser(userId: $userId) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    __typename\n  }\n}", "variables_summary": "{\"userId\": \"0398a9fe-3d16-464f-8c08-2ed6a14864c0\"}", "duration_ms": 369, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:31 | INFO | app.middleware.request_logging | {"timestamp": 1778323111.5924122, "trace_id": "4abb310c-2f06-4076-8a93-0f94a36b1f49", "request_id": "0d6be5ca-8ef8-4fc7-ab1e-97211b32d58c", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 24, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:38:31 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:38:36 | INFO | app.middleware.request_logging | {"timestamp": 1778323116.4406004, "trace_id": "c8e9ed26-fa5f-48ff-8a53-1ac8ad4d5e77", "request_id": "e4452a78-b0b7-4f79-9f5b-19cb33db138e", "method": "POST", "path": "/graphql", "operation_name": "AssignRolesToUser", "query_summary": "mutation AssignRolesToUser($userId: String!, $roleIds: [String!]!) {\n  assignRolesToUser(userId: $userId, roleIds: $roleIds) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    __typename\n  }\n}", "variables_summary": "{\"userId\": \"0398a9fe-3d16-464f-8c08-2ed6a14864c0\", \"roleIds\": [\"1186397c-27e6-4459-8f01-23c0c1ff6100\"]}", "duration_ms": 216, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:38:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:13 | INFO | app.middleware.request_logging | {"timestamp": 1778323153.0832522, "trace_id": "6a53934a-a0f8-49e3-8939-fb770ee9ec0b", "request_id": "497fb213-a50e-4470-8c47-58c1e9ae9e24", "method": "OPTIONS", "path": "/graphql", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:39:13 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:13 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:13 | INFO | app.middleware.request_logging | {"timestamp": 1778323153.6302164, "trace_id": "4b63ee19-8c99-413f-aee2-d6b5ad1684dd", "request_id": "dc30318a-a893-4ebf-b9a7-16f0a309871f", "method": "POST", "path": "/graphql", "operation_name": "Login", "query_summary": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      accessToken\n      tokenType\n      permissions\n      user {\n        ...AuthUserBase\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AuthUserBase on AuthUserType {\n  id\n  username\n  email\n  displayName\n  status\n  isSuperAdmin\n  __typename\n}", "variables_summary": "{\"username\": \"test1\", \"password\": \"test1\"}", "duration_ms": 248, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:39:13 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:18 | INFO | app.middleware.request_logging | {"timestamp": 1778323158.5912628, "trace_id": "7391d6b2-cd98-410c-af15-dd1980b5c739", "request_id": "287125d5-53c7-49c7-a28a-2a47f42151b7", "method": "POST", "path": "/graphql", "operation_name": "Login", "query_summary": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      accessToken\n      tokenType\n      permissions\n      user {\n        ...AuthUserBase\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AuthUserBase on AuthUserType {\n  id\n  username\n  email\n  displayName\n  status\n  isSuperAdmin\n  __typename\n}", "variables_summary": "{\"username\": \"test\", \"password\": \"test\"}", "duration_ms": 244, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:39:18 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:50 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | app.middleware.request_logging | {"timestamp": 1778323191.1454747, "trace_id": "b49bbe58-6372-4464-a9f1-fa05bf805dd8", "request_id": "7afd8b4d-3e6d-4e0c-aa4e-463f63092567", "method": "POST", "path": "/graphql", "operation_name": "CreateUser", "query_summary": "mutation CreateUser($input: CreateUserInput!) {\n  createUser(input: $input) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      ...UserBase\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"input\": {\"username\": \"test2\", \"password\": \"12345678\", \"email\": \"test2@evenji.com\", \"isSuperAdmin\": false}}", "duration_ms": 894, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:39:51 | INFO | app.middleware.request_logging | {"timestamp": 1778323191.2173223, "trace_id": "85f50314-725e-4f5d-b06c-2c0e26df4e0a", "request_id": "7d31e66c-efbb-4df6-94a7-1edf4cdad6a6", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 25, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:39:51 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:40:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:40:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:40:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:40:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:40:04 | INFO | app.middleware.request_logging | {"timestamp": 1778323204.6194627, "trace_id": "d511c309-af55-4e56-8681-bbc95114d433", "request_id": "e8c8a655-2431-4c37-b899-bed068ce03ab", "method": "POST", "path": "/graphql", "operation_name": "ResetPassword", "query_summary": "mutation ResetPassword($userId: String!, $newPassword: String!) {\n  resetPassword(userId: $userId, newPassword: $newPassword) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    __typename\n  }\n}", "variables_summary": "{\"userId\": \"2bc01da5-8bc1-4e99-b937-fce0e4ad8d18\", \"newPassword\": \"12345678\"}", "duration_ms": 690, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:40:04 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:41:15 | INFO | app.middleware.request_logging | {"timestamp": 1778323275.0645597, "trace_id": "c81e3135-e5e4-45fa-952a-21841c09553f", "request_id": "1884f949-a358-4d2e-b0e9-3446c7ba2c6b", "method": "OPTIONS", "path": "/graphql", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:41:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:41:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:41:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:41:15 | INFO | app.middleware.request_logging | {"timestamp": 1778323275.6957848, "trace_id": "01d361e2-fbff-4b79-9593-754b13b8122f", "request_id": "1f2dedf3-4587-4cce-a355-379b725ef8c5", "method": "POST", "path": "/graphql", "operation_name": "Login", "query_summary": "mutation Login($username: String!, $password: String!) {\n  login(username: $username, password: $password) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      accessToken\n      tokenType\n      permissions\n      user {\n        ...AuthUserBase\n        __typename\n      }\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AuthUserBase on AuthUserType {\n  id\n  username\n  email\n  displayName\n  status\n  isSuperAdmin\n  __typename\n}", "variables_summary": "{\"username\": \"test2\", \"password\": \"admin123456\"}", "duration_ms": 332, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:41:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:42:47.056 | INFO | app.db.prisma | Prisma client disconnected
+2026-05-09 18:42:47.057 | INFO | app.main | Application shutdown
+2026-05-09 18:43:03 | ERROR | strawberry.execution | Cannot query field 'aiProviderList' on type 'Query'.
+
+GraphQL request:2:3
+1 | query AiProviderList($pagination: PaginationInput!) {
+2 |   aiProviderList(pagination: $pagination) {
+  |   ^
+3 |     items {
+2026-05-09 18:43:03 | ERROR | strawberry.execution | Unknown type 'AiProviderType'.
+
+GraphQL request:20:28
+19 |
+20 | fragment AiProviderBase on AiProviderType {
+   |                            ^
+21 |   id
+2026-05-09 18:43:03 | INFO | app.middleware.request_logging | {"timestamp": 1778323383.5146832, "trace_id": "ba15203a-11eb-4b83-b38d-15546ff96b53", "request_id": "5504b5e8-e452-4dd7-8335-35fe383dd1ff", "method": "POST", "path": "/graphql", "operation_name": "AiProviderList", "query_summary": "query AiProviderList($pagination: PaginationInput!) {\n  aiProviderList(pagination: $pagination) {\n    items {\n      ...AiProviderBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AiProviderBase on AiProviderType {\n  id\n  name\n  websiteUrl\n  apiKeyHint\n  requestUrl\n  modelName\n  providerFormat\n  isDefault\n  status\n  remark\n  createdAt\n  updatedAt\n  __typena", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 37, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | app.middleware.request_logging | {"timestamp": 1778323383.8007085, "trace_id": "8fff7a0f-926b-49a3-be73-62aae1b86179", "request_id": "b6d98c3a-8f43-4edc-a9dd-ab244b0d4b0b", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 324, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | app.middleware.request_logging | {"timestamp": 1778323383.808698, "trace_id": "eef6b455-79d4-47ca-abfb-9c424fce54d7", "request_id": "f9325928-37e2-44b9-8e01-47b6cfde1b26", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 331, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:03 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | app.middleware.request_logging | {"timestamp": 1778323385.5812984, "trace_id": "51a9556a-f128-4e91-a7c6-a52db0302d96", "request_id": "24916ded-50e7-4146-918f-d35f58825ca4", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 40, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | app.middleware.request_logging | {"timestamp": 1778323385.590322, "trace_id": "5cc9df3e-2a2f-4ce6-8e1d-9b4664e595e3", "request_id": "28d20cce-cc6f-4d21-8333-28e34253d3d5", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 46, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:05 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:12 | ERROR | strawberry.execution | Cannot query field 'aiProviderList' on type 'Query'.
+
+GraphQL request:2:3
+1 | query AiProviderList($pagination: PaginationInput!) {
+2 |   aiProviderList(pagination: $pagination) {
+  |   ^
+3 |     items {
+2026-05-09 18:43:12 | ERROR | strawberry.execution | Unknown type 'AiProviderType'.
+
+GraphQL request:20:28
+19 |
+20 | fragment AiProviderBase on AiProviderType {
+   |                            ^
+21 |   id
+2026-05-09 18:43:12 | INFO | app.middleware.request_logging | {"timestamp": 1778323392.1817427, "trace_id": "9cc390a4-cb0c-49ae-afc8-87b546ddbe36", "request_id": "dd77a4fe-ef3a-4b78-b088-68015bbc21ce", "method": "POST", "path": "/graphql", "operation_name": "AiProviderList", "query_summary": "query AiProviderList($pagination: PaginationInput!) {\n  aiProviderList(pagination: $pagination) {\n    items {\n      ...AiProviderBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AiProviderBase on AiProviderType {\n  id\n  name\n  websiteUrl\n  apiKeyHint\n  requestUrl\n  modelName\n  providerFormat\n  isDefault\n  status\n  remark\n  createdAt\n  updatedAt\n  __typena", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 14, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:43:12 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | app.middleware.request_logging | {"timestamp": 1778323395.8811624, "trace_id": "cc114842-0268-4da1-9ed6-849d082d468b", "request_id": "8f7ddc1d-4a04-4394-8b0b-e988f881a514", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 36, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:15 | INFO | app.middleware.request_logging | {"timestamp": 1778323395.9586508, "trace_id": "c8bda82a-e2e7-481a-95f0-531c4945de82", "request_id": "80cf4009-389d-4b22-826d-64d71bca5b18", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 29, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:16 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | app.middleware.request_logging | {"timestamp": 1778323400.0348845, "trace_id": "b6575611-b6c2-4c77-b4ec-485309dad35c", "request_id": "90a02a9d-3e33-43a0-b0c8-3046cc6b266c", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"z\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 28, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | app.middleware.request_logging | {"timestamp": 1778323400.3441606, "trace_id": "538030f0-0962-430e-bcd3-05334d498674", "request_id": "a37cd1ff-69e4-4153-ba9b-0f7705b1ad17", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zh\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 280, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | app.middleware.request_logging | {"timestamp": 1778323400.4651647, "trace_id": "f4813268-9e87-482a-a167-ab74b916194b", "request_id": "952952af-ee7b-4ceb-ad11-163598b0b7a0", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zhan\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 26, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:20 | INFO | app.middleware.request_logging | {"timestamp": 1778323400.6493504, "trace_id": "d5905ff4-981f-4da0-ac86-0916050aa891", "request_id": "d02e3cfa-6a09-43c8-b486-686c89c2cee2", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zhang\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 23, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:20 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | app.middleware.request_logging | {"timestamp": 1778323401.0323954, "trace_id": "0c9c379b-7b3d-406f-996f-b24c1d6ffcf8", "request_id": "4fb75bc0-03b0-4bc7-9afb-7e65b966b3fe", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zhan\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 25, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | app.middleware.request_logging | {"timestamp": 1778323401.549046, "trace_id": "770510d3-afad-4379-9498-b367320599f1", "request_id": "66251251-93ae-4d2e-b645-ece229ee0c57", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zha\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 26, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | app.middleware.request_logging | {"timestamp": 1778323401.587569, "trace_id": "64a2e6db-3b7a-48e5-a423-438b4d383f03", "request_id": "660b46aa-08c7-4d17-8e0d-2168f5a4dfa3", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zh\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 31, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | app.middleware.request_logging | {"timestamp": 1778323401.9165637, "trace_id": "2dc9f815-aaab-4010-8852-2a0ae3519be6", "request_id": "95dfca58-05cc-4931-9a3a-071b4c6a9237", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"z\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 22, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:21 | INFO | app.middleware.request_logging | {"timestamp": 1778323401.952565, "trace_id": "801fb764-a42b-4cd8-88f3-c30dbb5ddae5", "request_id": "cee62b9d-d207-4476-becf-bc2d9d6dc98e", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 27, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:21 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | app.middleware.request_logging | {"timestamp": 1778323402.4797218, "trace_id": "63c6c821-7b43-4604-8890-095d677ed998", "request_id": "9284b6e2-8833-4c60-a8a3-6ff167d08d77", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"z\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 24, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | app.middleware.request_logging | {"timestamp": 1778323402.6397505, "trace_id": "2247693d-a59d-4514-9171-dd0fe3556ec2", "request_id": "8519b930-9881-4f1b-a8f8-7568a1902be4", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zh\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 30, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | app.middleware.request_logging | {"timestamp": 1778323402.66975, "trace_id": "3ff1f705-f79d-40a0-8e39-f1e802120bc6", "request_id": "e0c3ca80-b6d3-42be-bae7-5f4006f871b8", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zha\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 27, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | app.middleware.request_logging | {"timestamp": 1778323402.8497543, "trace_id": "7fb24195-8bff-4dae-8bd4-931d3df07e53", "request_id": "449d9543-102a-4dd4-9999-5093677dbcd4", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zhan\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 33, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:22 | INFO | app.middleware.request_logging | {"timestamp": 1778323402.9297516, "trace_id": "162f7be0-a787-4c43-9ea1-7b8e56f7cb38", "request_id": "c6df082b-e0ee-4c05-8d23-88244d44dc37", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zhang\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 27, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | app.middleware.request_logging | {"timestamp": 1778323403.1107543, "trace_id": "3494106b-888a-42a9-a93e-193964100646", "request_id": "e629976d-ed44-4b05-97f1-6bd9067993d5", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"zhangh\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 28, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:23 | INFO | app.middleware.request_logging | {"timestamp": 1778323403.6403196, "trace_id": "5075d919-ec06-4700-a15b-639843b9cb38", "request_id": "9136be36-5a84-4271-a3b3-048599c1893f", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"账号\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 26, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:23 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | app.middleware.request_logging | {"timestamp": 1778323407.4055262, "trace_id": "ca214251-8b6c-4762-98e4-32dfb223835a", "request_id": "c6632307-d6a8-4ce6-b7ac-3b848abb983a", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 40, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | app.middleware.request_logging | {"timestamp": 1778323407.4135208, "trace_id": "0d8a0247-2638-4c1f-8c4f-437d2021ce32", "request_id": "39f2d37a-9786-41c9-a499-1703d2ebec40", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 47, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | ERROR | strawberry.execution | Cannot query field 'aiProviderList' on type 'Query'.
+
+GraphQL request:2:3
+1 | query AiProviderList($pagination: PaginationInput!) {
+2 |   aiProviderList(pagination: $pagination) {
+  |   ^
+3 |     items {
+2026-05-09 18:43:27 | ERROR | strawberry.execution | Unknown type 'AiProviderType'.
+
+GraphQL request:20:28
+19 |
+20 | fragment AiProviderBase on AiProviderType {
+   |                            ^
+21 |   id
+2026-05-09 18:43:27 | INFO | app.middleware.request_logging | {"timestamp": 1778323407.4915023, "trace_id": "d0da5f50-b007-428f-964b-e92dd6b52883", "request_id": "70158195-0ede-4f8f-88d4-35b313fee928", "method": "POST", "path": "/graphql", "operation_name": "AiProviderList", "query_summary": "query AiProviderList($pagination: PaginationInput!) {\n  aiProviderList(pagination: $pagination) {\n    items {\n      ...AiProviderBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AiProviderBase on AiProviderType {\n  id\n  name\n  websiteUrl\n  apiKeyHint\n  requestUrl\n  modelName\n  providerFormat\n  isDefault\n  status\n  remark\n  createdAt\n  updatedAt\n  __typena", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 8, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:27 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | app.middleware.request_logging | {"timestamp": 1778323416.6589065, "trace_id": "9f938e2c-58bd-4935-980d-4d001eff3828", "request_id": "6a909934-0c9e-4f12-9523-f69644c36283", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 297, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:36 | INFO | app.middleware.request_logging | {"timestamp": 1778323416.9451754, "trace_id": "e8487bd4-d343-4763-b4c9-864b26df9d72", "request_id": "88f269a0-db25-41db-8a69-cc80010f82df", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"账号\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 269, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:36 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | app.middleware.request_logging | {"timestamp": 1778323419.1804304, "trace_id": "dc74dc5d-7c64-4bf2-95f8-b5b666eaab81", "request_id": "a6765233-cc23-4c81-afea-108fe80a02e8", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 42, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | app.middleware.request_logging | {"timestamp": 1778323419.191432, "trace_id": "fbf8019b-dbe5-49cc-9247-7ef008c578a7", "request_id": "b41fa7fe-df25-4d33-9e24-eb22e9e94dfc", "method": "POST", "path": "/graphql", "operation_name": "FeatureList", "query_summary": "query FeatureList($pagination: PaginationInput!, $nodeId: String) {\n  featureList(pagination: $pagination, nodeId: $nodeId) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  isArchived", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 43, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | ERROR | strawberry.execution | Cannot query field 'aiProviderList' on type 'Query'.
+
+GraphQL request:2:3
+1 | query AiProviderList($pagination: PaginationInput!) {
+2 |   aiProviderList(pagination: $pagination) {
+  |   ^
+3 |     items {
+2026-05-09 18:43:39 | ERROR | strawberry.execution | Unknown type 'AiProviderType'.
+
+GraphQL request:20:28
+19 |
+20 | fragment AiProviderBase on AiProviderType {
+   |                            ^
+21 |   id
+2026-05-09 18:43:39 | INFO | app.middleware.request_logging | {"timestamp": 1778323419.34653, "trace_id": "4845f8d1-7ade-4524-ad18-5f0dcffd0792", "request_id": "66077d54-9189-494e-b773-2e2124311c2a", "method": "POST", "path": "/graphql", "operation_name": "AiProviderList", "query_summary": "query AiProviderList($pagination: PaginationInput!) {\n  aiProviderList(pagination: $pagination) {\n    items {\n      ...AiProviderBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment AiProviderBase on AiProviderType {\n  id\n  name\n  websiteUrl\n  apiKeyHint\n  requestUrl\n  modelName\n  providerFormat\n  isDefault\n  status\n  remark\n  createdAt\n  updatedAt\n  __typena", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 12, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:43:39 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | app.middleware.request_logging | {"timestamp": 1778323538.166355, "trace_id": "eba1b732-0606-434c-8828-c65e10223601", "request_id": "c2d1ef3f-0f02-4819-8f2f-db3b28d24c38", "method": "OPTIONS", "path": "/graphql", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:45:38 | INFO | app.middleware.request_logging | {"timestamp": 1778323538.183353, "trace_id": "3fe3301f-0a5d-42c2-9dd9-ad292576b40b", "request_id": "55ebe474-bfbd-4c0c-bbf1-cfd1d2bc21d4", "method": "OPTIONS", "path": "/graphql", "operation_name": null, "query_summary": null, "variables_summary": null, "duration_ms": 0, "user_id": null, "username": null, "status_code": 200}
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | app.middleware.request_logging | {"timestamp": 1778323538.5879421, "trace_id": "465ed8a9-3d4e-4575-b595-268a294c7d06", "request_id": "cc35f272-9cac-45cf-9e97-78690d3cb264", "method": "POST", "path": "/graphql", "operation_name": "NodeTree", "query_summary": "query NodeTree {\n  nodeTree {\n    id\n    parentId\n    name\n    code\n    nodeType\n    path\n    level\n    sortOrder\n    isVisible\n    children {\n      id\n      parentId\n      name\n      code\n      nodeType\n      path\n      level\n      sortOrder\n      isVisible\n      children {\n        id\n        parentId\n        name\n        code\n        nodeType\n        path\n        level\n        sortOrder\n        isVisible\n        children {\n          id\n          parentId\n          name\n          code\n         ", "variables_summary": "{}", "duration_ms": 47, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | app.middleware.request_logging | {"timestamp": 1778323538.5939453, "trace_id": "3e962b36-844a-4fbf-aaaa-14402d2bce73", "request_id": "a6e728d2-d61f-4922-b13b-249cb85381fc", "method": "POST", "path": "/graphql", "operation_name": "SearchFeatures", "query_summary": "query SearchFeatures($keyword: String!, $pagination: PaginationInput!) {\n  searchFeatures(keyword: $keyword, pagination: $pagination) {\n    items {\n      ...FeatureBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment FeatureBase on FeatureType {\n  id\n  nodeId\n  title\n  code\n  summary\n  description\n  platform\n  status\n  priority\n  version\n  tags\n  isVisible\n  ", "variables_summary": "{\"keyword\": \"账号\", \"pagination\": {\"page\": 1, \"pageSize\": 20}}", "duration_ms": 52, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:38 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | app.middleware.request_logging | {"timestamp": 1778323555.599618, "trace_id": "50d61241-d36c-4689-bb86-1e716bf37990", "request_id": "4b29ba36-d85b-4d0f-8e93-9aba0ffc579d", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 284, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:45:55 | INFO | app.middleware.request_logging | {"timestamp": 1778323555.8998997, "trace_id": "c0f32a91-f035-4292-974b-37a7692007a4", "request_id": "ff7ee51a-6932-4dad-a1fd-b879d296c8ee", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 269, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:45:55 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:11.005 | INFO | app.main | Application startup
+2026-05-09 18:46:11.356 | INFO | httpx | HTTP Request: GET http://localhost:10044/status "HTTP/1.1 200 OK"
+2026-05-09 18:46:11.358 | INFO | app.db.prisma | Prisma client connected
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | app.middleware.request_logging | {"timestamp": 1778323575.3096707, "trace_id": "caf81f1c-4231-40e3-ba7d-62226eabaa6b", "request_id": "93df2dd9-cf05-4b6e-8823-f7d7416591d9", "method": "POST", "path": "/graphql", "operation_name": "CurrentUser", "query_summary": "query CurrentUser {\n  currentUser {\n    ...UserBase\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{}", "duration_ms": 287, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | app.middleware.request_logging | {"timestamp": 1778323575.416837, "trace_id": "4e96c5d4-0ff6-46e5-a7f7-eb4bfd554d48", "request_id": "78e0838e-7ea8-4304-b587-378445c1564a", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 39, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:15 | INFO | app.middleware.request_logging | {"timestamp": 1778323575.675544, "trace_id": "ccbb9793-c616-45f6-8c5f-509118b3c203", "request_id": "89e0eba2-bcaa-494e-aded-c08b0329f5a9", "method": "POST", "path": "/graphql", "operation_name": "RoleList", "query_summary": "query RoleList($pagination: PaginationInput!) {\n  roleList(pagination: $pagination) {\n    items {\n      ...RoleBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment RoleBase on RoleType {\n  id\n  name\n  code\n  description\n  isSystem\n  status\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 100}}", "duration_ms": 295, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:46:15 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | app.middleware.request_logging | {"timestamp": 1778323604.609921, "trace_id": "1cfd818a-8dd8-453a-b950-0612e5019b99", "request_id": "a1a25a99-2394-471b-b45e-01df917b102b", "method": "POST", "path": "/graphql", "operation_name": "CreateUser", "query_summary": "mutation CreateUser($input: CreateUserInput!) {\n  createUser(input: $input) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      ...UserBase\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"input\": {\"username\": \"test2\", \"password\": \"test2\", \"displayName\": \"test2\", \"email\": \"test2@evenji.com\", \"isSuperAdmin\": false}}", "duration_ms": 265, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:44 | INFO | app.middleware.request_logging | {"timestamp": 1778323604.700953, "trace_id": "27ec8187-22fb-414e-94eb-34dd6d4756f8", "request_id": "92fa2fe2-69ce-4bc6-8f90-9536f12639ee", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 28, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:46:44 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | app.middleware.request_logging | {"timestamp": 1778323618.4412634, "trace_id": "7ffe5b75-b02d-493a-8172-71b60244c0fd", "request_id": "106c7444-e178-4194-b302-eb55ef854d33", "method": "POST", "path": "/graphql", "operation_name": "CreateUser", "query_summary": "mutation CreateUser($input: CreateUserInput!) {\n  createUser(input: $input) {\n    success\n    message\n    error {\n      code\n      message\n      __typename\n    }\n    data {\n      ...UserBase\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  updatedAt\n  __typename\n}", "variables_summary": "{\"input\": {\"username\": \"test3\", \"password\": \"test3\", \"displayName\": \"test3\", \"email\": \"test3@evenji.com\", \"isSuperAdmin\": false}}", "duration_ms": 633, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | httpx | HTTP Request: POST http://localhost:12959/ "HTTP/1.1 200 OK"
+2026-05-09 18:46:58 | INFO | app.middleware.request_logging | {"timestamp": 1778323618.5182638, "trace_id": "43f171fe-5a38-408c-9e8a-269e283fcf0d", "request_id": "641d7b1f-639d-4b3d-bfb3-56632071a05e", "method": "POST", "path": "/graphql", "operation_name": "UserList", "query_summary": "query UserList($pagination: PaginationInput!, $keyword: String) {\n  userList(pagination: $pagination, keyword: $keyword) {\n    items {\n      ...UserBase\n      __typename\n    }\n    pageInfo {\n      total\n      page\n      pageSize\n      totalPages\n      hasNextPage\n      hasPreviousPage\n      __typename\n    }\n    __typename\n  }\n}\n\nfragment UserBase on UserType {\n  id\n  username\n  email\n  displayName\n  phone\n  avatarUrl\n  status\n  isSuperAdmin\n  lastLoginAt\n  lastLoginIp\n  remark\n  createdAt\n  upda", "variables_summary": "{\"pagination\": {\"page\": 1, \"pageSize\": 50}}", "duration_ms": 30, "user_id": "8b46fda2-e36a-40f5-afc1-74711b0a1f8f", "username": "admin", "status_code": 200}

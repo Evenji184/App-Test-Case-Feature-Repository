@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 from datetime import datetime, timezone
 from typing import Any
 
 from app.core.security import hash_password
 from app.utils.exceptions import NotFoundError, ValidationError
 from app.utils.pagination import normalize_pagination
+
+logger = logging.getLogger(__name__)
 
 
 class UserService:
@@ -42,15 +45,19 @@ class UserService:
         )
         if existing:
             raise ValidationError("用户名或邮箱已存在")
-        return await prisma.user.create(
-            data={
-                **{k: v for k, v in data.items() if k != "password"},
-                "password_hash": hash_password(data["password"]),
-                "status": data.get("status", "active"),
-                "created_by": operator_id,
-                "updated_by": operator_id,
-            }
-        )
+        try:
+            return await prisma.user.create(
+                data={
+                    **{k: v for k, v in data.items() if k != "password"},
+                    "password_hash": hash_password(data["password"]),
+                    "status": data.get("status", "disabled"),
+                    "created_by": operator_id,
+                    "updated_by": operator_id,
+                }
+            )
+        except Exception as exc:
+            logger.error("创建用户数据库异常: %s", exc)
+            raise ValidationError(f"创建用户失败: {exc}") from exc
 
     @staticmethod
     async def update_user(prisma: Any, *, user_id: str, data: dict[str, Any], operator_id: str | None) -> Any:
@@ -76,4 +83,9 @@ class UserService:
         for role_id in role_ids:
             await prisma.userrole.create(
                 data={"user_id": user_id, "role_id": role_id, "created_by": operator_id, "updated_by": operator_id}
+            )
+        if role_ids:
+            await prisma.user.update(
+                where={"id": user_id},
+                data={"status": "active", "updated_by": operator_id},
             )

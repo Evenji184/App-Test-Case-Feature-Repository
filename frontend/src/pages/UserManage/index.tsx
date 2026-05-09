@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { Button, Form, Input, List, Selector, Space, Switch, TextArea, Toast } from 'antd-mobile';
+import { Button, Form, Input, List, Selector, Space, Switch, Tag, TextArea, Toast } from 'antd-mobile';
 import {
   ASSIGN_ROLES_TO_USER_MUTATION,
   CREATE_USER_MUTATION,
@@ -94,8 +94,8 @@ export function UserManagePage() {
                     key: 'password',
                     text: '重置密码',
                     onClick: async () => {
-                      const { data: result } = await resetPassword({ variables: { userId: user.id, newPassword: '12345678' } });
-                      Toast.show({ content: result?.resetPassword?.message ?? '密码已重置为 12345678' });
+                      const { data: result } = await resetPassword({ variables: { userId: user.id, newPassword: '123456' } });
+                      Toast.show({ content: result?.resetPassword?.message ?? '密码已重置为 123456' });
                     },
                   },
                 ]}
@@ -105,6 +105,7 @@ export function UserManagePage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
               <span>{user.displayName || user.username}</span>
               <span style={{ color: '#6b7280', fontSize: 12 }}>@{user.username}</span>
+              <Tag color={user.status === 'active' ? 'success' : 'default'}>{user.status === 'active' ? '启用' : '禁用'}</Tag>
             </div>
           </List.Item>
         ))}
@@ -115,22 +116,30 @@ export function UserManagePage() {
           form={form}
           layout="vertical"
           onFinish={async (values) => {
-            const payload = { ...values, isSuperAdmin: Boolean(values.isSuperAdmin) };
-            const { data: result } = editingUser
-              ? await updateUser({ variables: { userId: editingUser.id, input: payload } })
-              : await createUser({ variables: { input: { ...payload, password: values.password || '12345678' } } });
-            Toast.show({ content: result?.updateUser?.message ?? result?.createUser?.message ?? '保存成功' });
-            setDrawerOpen(false);
-            void refetch();
+            try {
+              const payload = { ...values, isSuperAdmin: Boolean(values.isSuperAdmin) };
+              if (editingUser) {
+                const { data: result } = await updateUser({ variables: { userId: editingUser.id, input: payload } });
+                Toast.show({ content: result?.updateUser?.message ?? '用户更新成功' });
+              } else {
+                const { data: result } = await createUser({ variables: { input: { ...payload, password: values.password } } });
+                Toast.show({ content: result?.createUser?.message ?? '用户创建成功' });
+              }
+              setDrawerOpen(false);
+              void refetch();
+            } catch {
+              Toast.show({ content: '操作失败，请稍后重试' });
+            }
           }}
+          onFinishFailed={() => Toast.show({ content: '请检查表单填写是否完整' })}
         >
           {!editingUser ? (
             <>
               <Form.Item name="username" label="用户名" rules={[{ required: true, message: '请输入用户名' }]}>
                 <Input placeholder="请输入用户名" />
               </Form.Item>
-              <Form.Item name="password" label="初始密码">
-                <Input placeholder="默认 12345678" type="password" />
+              <Form.Item name="password" label="初始密码" rules={[{ required: true, message: '请输入初始密码' }]}>
+                <Input placeholder="请输入初始密码" type="password" />
               </Form.Item>
             </>
           ) : null}
@@ -164,6 +173,7 @@ export function UserManagePage() {
           const { data: result } = await assignRoles({ variables: { userId: editingUser.id, roleIds: selectedRoleIds } });
           Toast.show({ content: result?.assignRolesToUser?.message ?? '角色分配成功' });
           setRoleDrawerOpen(false);
+          void refetch();
         }}
       >
         <Selector

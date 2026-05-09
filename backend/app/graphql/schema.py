@@ -220,6 +220,9 @@ class Mutation:
         except AppError as exc:
             logger.warning("创建用户失败: operator=%s, reason=%s", getattr(info.context.user, 'id', '?'), exc.message)
             return UserMutationResult(success=False, message=exc.message, error=_error_result(exc), data=None)
+        except Exception as exc:
+            logger.error("创建用户异常: operator=%s, error=%s", getattr(info.context.user, 'id', '?'), exc)
+            return UserMutationResult(success=False, message="创建用户失败，请稍后重试", error=ErrorType(code="INTERNAL_ERROR", message=str(exc)), data=None)
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_user(self, info: Info, user_id: str, input: UpdateUserInput) -> UserMutationResult:
