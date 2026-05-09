@@ -241,3 +241,31 @@ CREATE TABLE login_logs (
   KEY login_logs_username_occurred_at_idx (username, occurred_at),
   KEY login_logs_login_status_occurred_at_idx (login_status, occurred_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ========================================
+-- AI 供应商相关表
+-- ========================================
+
+CREATE TABLE ai_providers (
+  id                CHAR(36)     NOT NULL,
+  name              VARCHAR(128) NOT NULL,
+  website_url       VARCHAR(500) DEFAULT NULL,
+  api_key_encrypted TEXT         NOT NULL,
+  api_key_hint      VARCHAR(32)  NOT NULL,
+  request_url       VARCHAR(500) NOT NULL,
+  model_name        VARCHAR(128) NOT NULL,
+  provider_format   VARCHAR(32)  NOT NULL DEFAULT 'openai_compatible',
+  is_default        TINYINT(1)   NOT NULL DEFAULT 0,
+  status            VARCHAR(32)  NOT NULL DEFAULT 'active',
+  remark            TEXT         DEFAULT NULL,
+  deleted_at        DATETIME(3)  DEFAULT NULL,
+  created_at        DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at        DATETIME(3)  NOT NULL,
+  created_by        CHAR(36)     DEFAULT NULL,
+  updated_by        CHAR(36)     DEFAULT NULL,
+  deleted_by        CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  UNIQUE KEY ai_providers_name_deleted_at_key (name, deleted_at),
+  KEY ai_providers_status_deleted_at_idx (status, deleted_at),
+  KEY ai_providers_provider_format_idx (provider_format, deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

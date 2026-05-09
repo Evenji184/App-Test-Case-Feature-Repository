@@ -92,3 +92,20 @@ export const FEATURE_BASE_FRAGMENT = gql`
     updatedAt
   }
 `;
+
+export const AI_PROVIDER_BASE_FRAGMENT = gql`
+  fragment AiProviderBase on AiProviderType {
+    id
+    name
+    websiteUrl
+    apiKeyHint
+    requestUrl
+    modelName
+    providerFormat
+    isDefault
+    status
+    remark
+    createdAt
+    updatedAt
+  }
+`;

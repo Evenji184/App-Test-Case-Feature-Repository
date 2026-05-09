@@ -44,16 +44,13 @@ def setup_logging(settings: Settings) -> None:
     root_logger = logging.getLogger()
     root_logger.setLevel(settings.log_level.upper())
 
+    text_formatter = logging.Formatter(
+        fmt="%(asctime)s.%(msecs)03d | %(levelname)s | %(name)s | %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
+
     handler = logging.StreamHandler()
-    if settings.log_json:
-        handler.setFormatter(JsonFormatter())
-    else:
-        handler.setFormatter(
-            logging.Formatter(
-                fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-                datefmt="%Y-%m-%d %H:%M:%S",
-            )
-        )
+    handler.setFormatter(JsonFormatter() if settings.log_json else text_formatter)
 
     root_logger.handlers.clear()
     root_logger.addHandler(handler)
@@ -61,15 +58,7 @@ def setup_logging(settings: Settings) -> None:
     log_dir = Path("logs")
     log_dir.mkdir(parents=True, exist_ok=True)
     file_handler = RotatingFileHandler(log_dir / "backend.log", maxBytes=5 * 1024 * 1024, backupCount=3, encoding="utf-8")
-    if settings.log_json:
-        file_handler.setFormatter(JsonFormatter())
-    else:
-        file_handler.setFormatter(
-            logging.Formatter(
-                fmt="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-                datefmt="%Y-%m-%d %H:%M:%S",
-            )
-        )
+    file_handler.setFormatter(JsonFormatter() if settings.log_json else text_formatter)
     root_logger.addHandler(file_handler)
 
 

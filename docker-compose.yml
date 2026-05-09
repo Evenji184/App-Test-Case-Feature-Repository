@@ -39,7 +39,7 @@ services:
       mysql:
         condition: service_healthy
     ports:
-      - "${PORT:-8000}:8000"
+      - "${PORT:-8001}:8001"
     volumes:
       - ./backend:/app
       - ./logs/backend:/app/logs
@@ -47,9 +47,9 @@ services:
       sh -c "python -m prisma generate
       && python -m prisma db push
       && python prisma/seed.py
-      && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+      && uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload"
     healthcheck:
-      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')\""]
+      test: ["CMD-SHELL", "python -c \"import urllib.request; urllib.request.urlopen('http://127.0.0.1:8001/health')\""]
       interval: 15s
       timeout: 5s
       retries: 10

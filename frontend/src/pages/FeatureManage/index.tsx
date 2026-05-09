@@ -11,8 +11,10 @@ import {
   UPDATE_FEATURE_MUTATION,
 } from '@/api/mutations/feature';
 import { COPY_NODE_MUTATION, CREATE_NODE_MUTATION, DELETE_NODE_MUTATION, MOVE_NODE_MUTATION, UPDATE_NODE_MUTATION } from '@/api/mutations/node';
+import { GENERATE_TEST_CASES_MUTATION } from '@/api/mutations/aiProvider';
 import { FEATURE_LIST_QUERY } from '@/api/queries/feature';
 import { NODE_TREE_QUERY } from '@/api/queries/node';
+import { AI_PROVIDER_LIST_QUERY } from '@/api/queries/aiProvider';
 import { BottomActions } from '@/components/BottomActions';
 import { FeatureList } from '@/components/FeatureList';
 import { FormDrawer } from '@/components/FormDrawer';
@@ -20,8 +22,9 @@ import { FormModal } from '@/components/FormModal';
 import { SearchBar } from '@/components/SearchBar';
 import { TreeView } from '@/components/TreeView';
 import { useAppStore } from '@/stores/app';
-import type { FeatureItem, NodeItem } from '@/types/models';
-import type { FeatureListQueryData, FeatureListQueryVariables, FeatureMutationData, NodeMutationData, NodeTreeQueryData } from '@/types/graphql';
+import { useAiProviderStore } from '@/stores/aiProvider';
+import type { AiProvider, FeatureItem, NodeItem } from '@/types/models';
+import type { AiProviderListResult, FeatureListQueryData, FeatureListQueryVariables, FeatureMutationData, NodeMutationData, NodeTreeQueryData } from '@/types/graphql';
 
 function findNodeById(nodes: NodeItem[], nodeId?: string): NodeItem | undefined {
   return nodes.find((item) => item.id === nodeId);
@@ -54,6 +57,11 @@ export function FeatureManagePage() {
   const [copyNodeName, setCopyNodeName] = useState('');
   const [featureForm] = Form.useForm();
   const [nodeForm] = Form.useForm();
+  const [selectedFeatureIds, setSelectedFeatureIds] = useState<Set<string>>(new Set());
+  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
+  const [aiProviderId, setAiProviderId] = useState('');
+  const [aiCustomInstruction, setAiCustomInstruction] = useState('');
+  const { isGenerating, setGeneratedContent, setIsGenerating, generatedContent } = useAiProviderStore();
 
   const nodeTreeQuery = useQuery<NodeTreeQueryData>(NODE_TREE_QUERY);
   const featureQuery = useQuery<FeatureListQueryData, FeatureListQueryVariables>(FEATURE_LIST_QUERY, {
@@ -72,6 +80,14 @@ export function FeatureManagePage() {
   const [deleteNode] = useMutation(DELETE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
   const [copyNode] = useMutation<NodeMutationData>(COPY_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
   const [moveNode] = useMutation<NodeMutationData>(MOVE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
+
+  const providerQuery = useQuery<{ aiProviderList: AiProviderListResult }>(AI_PROVIDER_LIST_QUERY, {
+    variables: { pagination: { page: 1, pageSize: 50 } },
+  });
+  const [generateTestCases] = useMutation(GENERATE_TEST_CASES_MUTATION);
+
+  const aiProviders: AiProvider[] = providerQuery.data?.aiProviderList.items ?? [];
+  const defaultProvider = aiProviders.find((p) => p.isDefault && p.status === 'active');
 
   const features = useMemo(() => {
     const items = featureQuery.data?.featureList.items ?? [];
@@ -197,13 +213,54 @@ export function FeatureManagePage() {
             <h2 className="page-title">特征库管理</h2>
             <p className="page-subtitle">支持新增、编辑、隐藏与删除特征</p>
           </div>
-          <Button color="primary" onClick={() => openFeatureDrawer()}>
-            新建特征
-          </Button>
+          <Space>
+            {selectedFeatureIds.size > 0 && (
+              <Button
+                color="primary"
+                fill="outline"
+                onClick={() => {
+                  setAiProviderId(defaultProvider?.id ?? aiProviders[0]?.id ?? '');
+                  setAiCustomInstruction('');
+                  setGeneratedContent('');
+                  setAiDrawerOpen(true);
+                }}
+              >
+                AI 生成 ({selectedFeatureIds.size})
+              </Button>
+            )}
+            <Button
+              size="small"
+              onClick={() => {
+                if (selectedFeatureIds.size > 0) {
+                  setSelectedFeatureIds(new Set());
+                } else {
+                  setSelectedFeatureIds(new Set(features.map((f) => f.id)));
+                }
+              }}
+            >
+              {selectedFeatureIds.size > 0 ? '取消选择' : '全选'}
+            </Button>
+            <Button color="primary" onClick={() => openFeatureDrawer()}>
+              新建特征
+            </Button>
+          </Space>
         </Space>
         <SearchBar value={keyword} onChange={setKeyword} placeholder="筛选当前节点下特征" />
         <FeatureList
           items={features}
+          selectable
+          selectedIds={selectedFeatureIds}
+          onSelect={(id) => {
+            setSelectedFeatureIds((prev) => {
+              const next = new Set(prev);
+              if (next.has(id)) {
+                next.delete(id);
+              } else {
+                next.add(id);
+              }
+              return next;
+            });
+          }}
           onClick={(item) => openFeatureDrawer(item)}
           extra={(item) => (
             <BottomActions
@@ -419,6 +476,82 @@ export function FeatureManagePage() {
           </div>
         }
       />
+
+      <FormDrawer
+        open={aiDrawerOpen}
+        title="AI 生成测试用例"
+        onClose={() => setAiDrawerOpen(false)}
+        onSubmit={async () => {
+          if (!aiProviderId) {
+            Toast.show({ content: '请选择 AI 供应商' });
+            return;
+          }
+          setIsGenerating(true);
+          setGeneratedContent('');
+          try {
+            const { data } = await generateTestCases({
+              variables: {
+                input: {
+                  providerId: aiProviderId,
+                  featureIds: Array.from(selectedFeatureIds),
+                  nodeIds: selectedNodeId ? [selectedNodeId] : [],
+                  customInstruction: aiCustomInstruction || undefined,
+                },
+              },
+            });
+            if (data?.generateTestCases?.success) {
+              setGeneratedContent(data.generateTestCases.content ?? '');
+              Toast.show({ content: '测试用例生成成功', icon: 'success' });
+            } else {
+              Toast.show({ content: data?.generateTestCases?.message ?? '生成失败', icon: 'fail' });
+            }
+          } catch {
+            Toast.show({ content: '生成失败，请稍后重试', icon: 'fail' });
+          } finally {
+            setIsGenerating(false);
+          }
+        }}
+        submitText={isGenerating ? '生成中...' : '生成'}
+      >
+        <div style={{ display: 'grid', gap: 12 }}>
+          <div style={{ color: '#6b7280', fontSize: 13 }}>
+            已选 {selectedFeatureIds.size} 个特征
+          </div>
+          <div style={{ fontWeight: 600 }}>选择 AI 供应商</div>
+          {aiProviders.length === 0 ? (
+            <div style={{ color: '#999' }}>暂无可用供应商，请先在 AI 管理页配置</div>
+          ) : (
+            <Selector
+              options={aiProviders.map((p) => ({ label: `${p.name} (${p.modelName})`, value: p.id }))}
+              value={[aiProviderId]}
+              onChange={(v) => setAiProviderId(v[0])}
+            />
+          )}
+          <div style={{ fontWeight: 600 }}>补充要求（可选）</div>
+          <TextArea
+            value={aiCustomInstruction}
+            onChange={setAiCustomInstruction}
+            placeholder="如：重点覆盖边界值和异常场景"
+            rows={3}
+          />
+          {generatedContent && (
+            <div style={{ marginTop: 12 }}>
+              <div style={{ fontWeight: 600, marginBottom: 8 }}>生成结果</div>
+              <div style={{
+                background: '#f5f5f5',
+                padding: 12,
+                borderRadius: 8,
+                whiteSpace: 'pre-wrap',
+                fontSize: 13,
+                maxHeight: 400,
+                overflowY: 'auto',
+              }}>
+                {generatedContent}
+              </div>
+            </div>
+          )}
+        </div>
+      </FormDrawer>
     </div>
   );
 }

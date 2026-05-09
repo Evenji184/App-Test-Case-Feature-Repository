@@ -146,6 +146,30 @@ def build_permissions() -> list[dict[str, str]]:
             "action": "view",
             "description": "查看请求日志",
         },
+        {
+            "name": "AI供应商列表页访问",
+            "code": "ai:provider:list",
+            "module": "ai",
+            "resource": "ai_provider_page",
+            "action": "list",
+            "description": "访问AI供应商管理页面",
+        },
+        {
+            "name": "AI供应商管理",
+            "code": "ai:provider:manage",
+            "module": "ai",
+            "resource": "ai_provider",
+            "action": "manage",
+            "description": "创建、编辑、删除AI供应商及测试连接",
+        },
+        {
+            "name": "AI生成测试用例",
+            "code": "ai:generate",
+            "module": "ai",
+            "resource": "ai_generate",
+            "action": "generate",
+            "description": "使用AI生成测试用例",
+        },
     ]
 
 

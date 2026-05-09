@@ -120,3 +120,30 @@ export interface NodeMutationResult extends MutationResult {
 export interface FeatureMutationResult extends MutationResult {
   data?: FeatureItem | null;
 }
+
+export interface AiProvider {
+  id: string;
+  name: string;
+  websiteUrl?: string | null;
+  apiKeyHint: string;
+  requestUrl: string;
+  modelName: string;
+  providerFormat: string;
+  isDefault: boolean;
+  status: string;
+  remark?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type AiProviderListResult = ListResult<AiProvider>;
+
+export interface AiProviderMutationResult extends MutationResult {
+  data?: AiProvider | null;
+}
+
+export interface AiGenerateResult extends MutationResult {
+  content?: string | null;
+  model?: string | null;
+  usage?: string | null;
+}

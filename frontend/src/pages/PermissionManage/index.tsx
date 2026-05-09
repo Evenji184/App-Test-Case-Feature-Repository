@@ -93,19 +93,27 @@ export function PermissionManagePage() {
           form={form}
           layout="vertical"
           onFinish={async (values) => {
-            const { data } = editingRole
-              ? await updateRole({ variables: { roleId: editingRole.id, input: values } })
-              : await createRole({ variables: { input: values } });
-            Toast.show({ content: data?.updateRole?.message ?? data?.createRole?.message ?? '保存成功' });
-            setDrawerOpen(false);
-            void fetchRoles();
+            try {
+              if (editingRole) {
+                const { data } = await updateRole({ variables: { roleId: editingRole.id, input: { name: values.name, description: values.description } } });
+                Toast.show({ content: data?.updateRole?.message ?? '角色更新成功' });
+              } else {
+                const { data } = await createRole({ variables: { input: values } });
+                Toast.show({ content: data?.createRole?.message ?? '角色创建成功' });
+              }
+              setDrawerOpen(false);
+              void fetchRoles();
+            } catch (error) {
+              Toast.show({ content: '操作失败，请稍后重试' });
+            }
           }}
+          onFinishFailed={() => Toast.show({ content: '请检查表单填写是否完整' })}
         >
           <Form.Item name="name" label="角色名称" rules={[{ required: true, message: '请输入角色名称' }]}>
             <Input placeholder="请输入角色名称" />
           </Form.Item>
-          <Form.Item name="code" label="角色编码" rules={[{ required: true, message: '请输入角色编码' }]}>
-            <Input placeholder="请输入角色编码" />
+          <Form.Item name="code" label="角色编码" rules={editingRole ? [] : [{ required: true, message: '请输入角色编码' }]}>
+            <Input placeholder="请输入角色编码" readOnly={!!editingRole} />
           </Form.Item>
           <Form.Item name="description" label="角色描述">
             <TextArea placeholder="请输入角色描述" rows={3} />

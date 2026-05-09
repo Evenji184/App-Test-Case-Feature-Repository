@@ -1,4 +1,8 @@
 import type {
+  AiGenerateResult,
+  AiProvider,
+  AiProviderListResult,
+  AiProviderMutationResult,
   FeatureItem,
   FeatureListResult,
   FeatureMutationResult,
@@ -198,4 +202,54 @@ export interface SimpleMutationData {
   deleteFeature?: MutationResult;
   hideFeature?: MutationResult;
   showFeature?: MutationResult;
+  deleteAiProvider?: MutationResult;
+  testAiConnection?: MutationResult;
+}
+
+export interface AiProviderListQueryData {
+  aiProviderList: AiProviderListResult;
+}
+
+export interface AiProviderListQueryVariables {
+  pagination?: PaginationInput;
+}
+
+export interface CreateAiProviderInput {
+  name: string;
+  websiteUrl?: string;
+  apiKey: string;
+  requestUrl: string;
+  modelName: string;
+  providerFormat?: string;
+  isDefault?: boolean;
+  status?: string;
+  remark?: string;
+}
+
+export interface UpdateAiProviderInput {
+  name?: string;
+  websiteUrl?: string;
+  apiKey?: string;
+  requestUrl?: string;
+  modelName?: string;
+  providerFormat?: string;
+  isDefault?: boolean;
+  status?: string;
+  remark?: string;
+}
+
+export interface GenerateTestCasesInput {
+  providerId: string;
+  nodeIds?: string[];
+  featureIds?: string[];
+  customInstruction?: string;
+}
+
+export interface AiProviderMutationData {
+  createAiProvider?: AiProviderMutationResult;
+  updateAiProvider?: AiProviderMutationResult;
+}
+
+export interface AiGenerateMutationData {
+  generateTestCases?: AiGenerateResult;
 }

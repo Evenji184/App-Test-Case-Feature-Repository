@@ -50,6 +50,9 @@ model User {
   created_features        Feature[]        @relation("feature_created_by")
   updated_features        Feature[]        @relation("feature_updated_by")
   deleted_features        Feature[]        @relation("feature_deleted_by")
+  created_ai_providers  AiProvider[]  @relation("ai_provider_created_by")
+  updated_ai_providers  AiProvider[]  @relation("ai_provider_updated_by")
+  deleted_ai_providers  AiProvider[]  @relation("ai_provider_deleted_by")
   user_roles       UserRole[]
   request_logs     RequestLog[]
   audit_logs       AuditLog[]
@@ -308,4 +311,32 @@ model LoginLog {
   @@index([username, occurred_at])
   @@index([login_status, occurred_at])
   @@map("login_logs")
+}
+
+model AiProvider {
+  id                String    @id @default(uuid()) @db.Char(36)
+  name              String    @db.VarChar(128)
+  website_url       String?   @db.VarChar(500)
+  api_key_encrypted String    @db.Text
+  api_key_hint      String    @db.VarChar(32)
+  request_url       String    @db.VarChar(500)
+  model_name        String    @db.VarChar(128)
+  provider_format   String    @default("openai_compatible") @db.VarChar(32)
+  is_default        Boolean   @default(false)
+  status            String    @default("active") @db.VarChar(32)
+  remark            String?   @db.Text
+  deleted_at        DateTime? @db.DateTime(3)
+  created_at        DateTime  @default(now()) @db.DateTime(3)
+  updated_at        DateTime  @updatedAt @db.DateTime(3)
+  created_by        String?   @db.Char(36)
+  updated_by        String?   @db.Char(36)
+  deleted_by        String?   @db.Char(36)
+  created_by_user   User?     @relation("ai_provider_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user   User?     @relation("ai_provider_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user   User?     @relation("ai_provider_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@unique([name, deleted_at])
+  @@index([status, deleted_at])
+  @@index([provider_format, deleted_at])
+  @@map("ai_providers")
 }
