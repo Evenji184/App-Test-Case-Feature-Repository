@@ -76,7 +76,9 @@
       "PowerShell(Get-WmiObject *)",
       "PowerShell(Get-CimInstance *)",
       "Bash(G:\\\\python310\\\\python.exe -c \"import sys; sys.path.insert\\(0,'.'\\); from app.core.config import Settings; s = Settings\\(\\); print\\('cors_origins:', repr\\(s.cors_origins\\)\\); print\\('get_cors_origins\\(\\):', s.get_cors_origins\\(\\)\\); print\\('frontend_host:', s.frontend_host\\); print\\('frontend_port:', s.frontend_port\\)\")",
-      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")"
+      "Bash(grep -E \"\\\\.\\(tsx|ts\\)$\")",
+      "Bash(findstr \"5173 5175\")",
+      "PowerShell(Stop-Process *)"
     ]
   }
 }

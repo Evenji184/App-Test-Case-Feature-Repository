@@ -85,7 +85,7 @@ export interface FeatureListQueryData {
 
 export interface FeatureListQueryVariables {
   pagination?: PaginationInput;
-  nodeId?: string;
+  nodeIds?: string[] | null;
 }
 
 export interface FeatureDetailQueryData {

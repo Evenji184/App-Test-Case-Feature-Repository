@@ -2,8 +2,8 @@ import { gql } from '@apollo/client';
 import { FEATURE_BASE_FRAGMENT } from '../fragments';
 
 export const FEATURE_LIST_QUERY = gql`
-  query FeatureList($pagination: PaginationInput!, $nodeId: String) {
-    featureList(pagination: $pagination, nodeId: $nodeId) {
+  query FeatureList($pagination: PaginationInput!, $nodeIds: [String!]) {
+    featureList(pagination: $pagination, nodeIds: $nodeIds) {
       items {
         ...FeatureBase
       }

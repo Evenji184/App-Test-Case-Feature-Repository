@@ -43,7 +43,7 @@ const priorityOptions = [
 ];
 
 export function FeatureManagePage() {
-  const { selectedNodeId, setSelectedNodeId } = useAppStore();
+  const { selectedNodeIds, toggleNodeSelection, clearNodeSelection } = useAppStore();
   const [keyword, setKeyword] = useState('');
   const [featureDrawerOpen, setFeatureDrawerOpen] = useState(false);
   const [nodeDrawerOpen, setNodeDrawerOpen] = useState(false);
@@ -64,8 +64,11 @@ export function FeatureManagePage() {
   const { isGenerating, setGeneratedContent, setIsGenerating, generatedContent } = useAiProviderStore();
 
   const nodeTreeQuery = useQuery<NodeTreeQueryData>(NODE_TREE_QUERY);
+
+  const nodeIdsForQuery = selectedNodeIds.size > 0 ? Array.from(selectedNodeIds) : undefined;
+
   const featureQuery = useQuery<FeatureListQueryData, FeatureListQueryVariables>(FEATURE_LIST_QUERY, {
-    variables: { pagination: { page: 1, pageSize: 50 }, nodeId: selectedNodeId },
+    variables: { pagination: { page: 1, pageSize: 50 }, nodeIds: nodeIdsForQuery },
   });
 
   const [createFeature] = useMutation(CREATE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY, NODE_TREE_QUERY] });
@@ -97,6 +100,16 @@ export function FeatureManagePage() {
     return items.filter((item) => item.title.includes(keyword) || item.code.includes(keyword));
   }, [featureQuery.data, keyword]);
 
+  const flatNodes = useMemo(() => {
+    const walk = (items: NodeItem[]): NodeItem[] =>
+      items.flatMap((item) => [item, ...walk((item as NodeItem & { children?: NodeItem[] }).children ?? [])]);
+    return walk((nodeTreeQuery.data?.nodeTree ?? []) as NodeItem[]);
+  }, [nodeTreeQuery.data]);
+
+  // 从 checkbox 选中集合派生当前可编辑节点
+  const singleSelectedNodeId = selectedNodeIds.size === 1 ? Array.from(selectedNodeIds)[0] : undefined;
+  const currentNode = findNodeById(flatNodes, singleSelectedNodeId);
+
   const openFeatureDrawer = (feature?: FeatureItem) => {
     setEditingFeature(feature ?? null);
     featureForm.setFieldsValue(
@@ -107,22 +120,16 @@ export function FeatureManagePage() {
             status: [feature.status],
             priority: [feature.priority],
           }
-        : { nodeId: selectedNodeId, status: ['draft'], priority: ['medium'] },
+        : { nodeId: singleSelectedNodeId ?? '', status: ['draft'], priority: ['medium'] },
     );
     setFeatureDrawerOpen(true);
   };
 
   const openNodeDrawer = (node?: NodeItem) => {
     setEditingNode(node ?? null);
-    nodeForm.setFieldsValue(node ? node : { parentId: selectedNodeId, nodeType: 'folder', sortOrder: 0 });
+    nodeForm.setFieldsValue(node ? node : { parentId: singleSelectedNodeId, nodeType: 'folder', sortOrder: 0 });
     setNodeDrawerOpen(true);
   };
-
-  const flatNodes = useMemo(() => {
-    const walk = (items: NodeItem[]): NodeItem[] =>
-      items.flatMap((item) => [item, ...walk((item as NodeItem & { children?: NodeItem[] }).children ?? [])]);
-    return walk((nodeTreeQuery.data?.nodeTree ?? []) as NodeItem[]);
-  }, [nodeTreeQuery.data]);
 
   const resetNodeActionState = () => {
     setCopyingNode(null);
@@ -137,32 +144,37 @@ export function FeatureManagePage() {
     setTargetNodeId(undefined);
   };
 
-  const currentNode = findNodeById(flatNodes, selectedNodeId);
-
   return (
     <div className="split-layout">
       <div className="card-section" style={{ display: 'grid', gap: 12 }}>
         <Space justify="between" block>
           <div>
             <div style={{ fontSize: 18, fontWeight: 700 }}>节点管理</div>
-            <div className="page-subtitle">维护特征树结构</div>
+            <div className="page-subtitle">勾选节点筛选特征，单选可编辑</div>
           </div>
           <Button size="small" color="primary" onClick={() => openNodeDrawer()}>
             新建节点
           </Button>
         </Space>
+        {selectedNodeIds.size > 0 && (
+          <Button block fill="outline" onClick={clearNodeSelection}>
+            清除筛选 ({selectedNodeIds.size} 个节点)
+          </Button>
+        )}
         <TreeView
           tree={nodeTreeQuery.data?.nodeTree ?? []}
-          selectedId={selectedNodeId}
-          onSelect={(node) => setSelectedNodeId(node.id)}
+          selectable
+          selectedIds={selectedNodeIds}
+          onCheck={toggleNodeSelection}
+          selectedId={singleSelectedNodeId}
+          onSelect={() => {}}
         />
         <Button
           block
-          disabled={!selectedNodeId}
+          disabled={!singleSelectedNodeId}
           onClick={() => {
-            const current = findNodeById(flatNodes, selectedNodeId);
-            if (current) {
-              openNodeDrawer(current);
+            if (currentNode) {
+              openNodeDrawer(currentNode);
             }
           }}
         >
@@ -174,6 +186,7 @@ export function FeatureManagePage() {
             {
               key: 'copy-node',
               text: '复制当前节点',
+              disabled: !singleSelectedNodeId,
               onClick: () => {
                 if (!currentNode) return;
                 setCopyingNode(currentNode);
@@ -184,6 +197,7 @@ export function FeatureManagePage() {
             {
               key: 'move-node',
               text: '移动当前节点',
+              disabled: !singleSelectedNodeId,
               onClick: () => {
                 if (!currentNode) return;
                 setMovingNode(currentNode);
@@ -195,12 +209,12 @@ export function FeatureManagePage() {
         <Button
           block
           color="danger"
-          disabled={!selectedNodeId}
+          disabled={!singleSelectedNodeId}
           onClick={async () => {
-            if (!selectedNodeId) return;
-            const { data } = await deleteNode({ variables: { nodeId: selectedNodeId } });
+            if (!singleSelectedNodeId) return;
+            const { data } = await deleteNode({ variables: { nodeId: singleSelectedNodeId } });
             Toast.show({ content: data?.deleteNode?.message ?? '节点已删除' });
-            setSelectedNodeId(undefined);
+            toggleNodeSelection(singleSelectedNodeId);
           }}
         >
           删除当前节点
@@ -494,7 +508,7 @@ export function FeatureManagePage() {
                 input: {
                   providerId: aiProviderId,
                   featureIds: Array.from(selectedFeatureIds),
-                  nodeIds: selectedNodeId ? [selectedNodeId] : [],
+                  nodeIds: Array.from(selectedNodeIds),
                   customInstruction: aiCustomInstruction || undefined,
                 },
               },

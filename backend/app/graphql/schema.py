@@ -143,9 +143,9 @@ class Query:
         return NodeListType(items=[_node_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def feature_list(self, info: Info, pagination: PaginationInput = PaginationInput(), node_id: str | None = None) -> FeatureListType:
+    async def feature_list(self, info: Info, pagination: PaginationInput = PaginationInput(), node_ids: list[str] | None = None) -> FeatureListType:
         await require_permission(info, "feature:list")
-        items, total, page, page_size = await FeatureService.list_features(info.context.prisma, page=pagination.page, page_size=pagination.page_size, node_id=node_id)
+        items, total, page, page_size = await FeatureService.list_features(info.context.prisma, page=pagination.page, page_size=pagination.page_size, node_ids=node_ids)
         return FeatureListType(items=[_feature_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
 
     @strawberry.field(permission_classes=[IsAuthenticated])

@@ -18,13 +18,20 @@ class FeatureService:
         return feature
 
     @staticmethod
-    async def list_features(prisma: Any, *, page: int, page_size: int, keyword: str | None = None, node_id: str | None = None) -> tuple[list[Any], int, int, int]:
+    async def list_features(prisma: Any, *, page: int, page_size: int, keyword: str | None = None, node_ids: list[str] | None = None) -> tuple[list[Any], int, int, int]:
         current_page, current_page_size, skip = normalize_pagination(page, page_size)
         where: dict[str, Any] = {"deleted_at": None}
         if keyword:
             where["OR"] = [{"title": {"contains": keyword}}, {"code": {"contains": keyword}}, {"summary": {"contains": keyword}}]
-        if node_id:
-            where["node_id"] = node_id
+        if node_ids:
+            all_nodes = await prisma.featurenode.find_many(where={"deleted_at": None})
+            selected_paths = [n.path for n in all_nodes if n.id in node_ids]
+            expanded_ids: set[str] = set(node_ids)
+            for n in all_nodes:
+                for sp in selected_paths:
+                    if n.path == sp or n.path.startswith(sp + "/"):
+                        expanded_ids.add(n.id)
+            where["node_id"] = {"in": list(expanded_ids)}
         total = await prisma.feature.count(where=where)
         items = await prisma.feature.find_many(where=where, skip=skip, take=current_page_size, order={"updated_at": "desc"})
         return items, total, current_page, current_page_size

@@ -683,10 +683,18 @@ docker compose up --build
 | 更新 | `updateNode(nodeId, input)` | 修改 name/code/parent_id 等，变更 parent_id 或 code 时自动重算 path/level |
 | 删除 | `deleteNode(nodeId)` | 软删除（设置 deleted_at） |
 | 显示/隐藏 | `showNode` / `hideNode` | 切换 is_visible |
-| 复制 | `copyNode(nodeId, targetParentId?, newName?)` | 在目标父节点下创建副本，自动生成不冲突的 code，记录 copied_from_node_id / source_node_id / copy_operation_id |
-| 移动 | `moveNode(nodeId, targetParentId?)` | 变更 parent_id，重算 path/level，记录 moved_from_node_id / move_operation_id |
+| 复制 | `copyNode(nodeId, targetParentId?, newName?)` | 在目标父节点下创建副本（可选择有子节点的父节点作为目标），自动生成不冲突的 code |
+| 移动 | `moveNode(nodeId, targetParentId?)` | 变更 parent_id，重算 path/level，可选择有子节点的父节点作为目标 |
 | 树查询 | `nodeTree` | 返回完整节点树（含 children 嵌套） |
 | 搜索 | `searchNodes(keyword)` | 按 name/code/path 模糊匹配 |
+
+**节点多选筛选**
+
+- 节点树支持 checkbox 多选（跨层级），勾选后合并展示所选节点下的特征
+- 选择父节点时自动包含所有子节点（后代）的特征
+- 选择子节点时仅展示该子节点下的特征
+- 未勾选任何节点时展示全部特征
+- 仅勾选 1 个节点时可编辑/删除/复制/移动该节点
 
 **特征（Feature）**
 
@@ -698,7 +706,7 @@ docker compose up --build
 | 显示/隐藏 | `showFeature` / `hideFeature` | 切换 is_visible |
 | 复制 | `copyFeature(featureId, targetNodeId)` | 在目标节点下创建副本，继承全部业务字段，记录 copied_from_id / source_feature_id / copy_operation_id / last_copied_at |
 | 移动 | `moveFeature(featureId, targetNodeId)` | 变更 node_id，记录 moved_from_node_id / move_operation_id / last_moved_at |
-| 列表 | `featureList(nodeId?)` | 按节点筛选，分页 |
+| 列表 | `featureList(nodeIds?)` | 按多个节点筛选（含后代），不传则返回全部，分页 |
 | 搜索 | `searchFeatures(keyword)` | 按 title/code/summary 模糊匹配 |
 
 **关联追踪字段汇总**

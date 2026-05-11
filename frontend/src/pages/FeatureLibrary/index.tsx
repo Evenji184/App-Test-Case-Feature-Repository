@@ -19,12 +19,15 @@ import type {
 } from '@/types/graphql';
 
 export function FeatureLibraryPage() {
-  const { selectedNodeId, setSelectedNodeId, keyword, setKeyword } = useAppStore();
+  const { selectedNodeIds, setSelectedNodeIds, toggleNodeSelection, clearNodeSelection, keyword, setKeyword } = useAppStore();
   const [treeVisible, setTreeVisible] = useState(false);
 
   const nodeTreeQuery = useQuery<NodeTreeQueryData>(NODE_TREE_QUERY);
+
+  const nodeIdsForQuery = selectedNodeIds.size > 0 ? Array.from(selectedNodeIds) : undefined;
+
   const featureQuery = useQuery<FeatureListQueryData, FeatureListQueryVariables>(FEATURE_LIST_QUERY, {
-    variables: { pagination: { page: 1, pageSize: 20 }, nodeId: selectedNodeId },
+    variables: { pagination: { page: 1, pageSize: 20 }, nodeIds: nodeIdsForQuery },
     skip: Boolean(keyword),
   });
   const searchQuery = useQuery<SearchFeaturesQueryData, SearchFeaturesQueryVariables>(SEARCH_FEATURES_QUERY, {
@@ -48,8 +51,13 @@ export function FeatureLibraryPage() {
       <div className="card-section" style={{ display: 'grid', gap: 12 }}>
         <div>
           <h2 className="page-title">特征库展示</h2>
-          <p className="page-subtitle">按节点浏览特征，支持移动端搜索与筛选</p>
+          <p className="page-subtitle">勾选节点筛选特征，未选则显示全部</p>
         </div>
+        {selectedNodeIds.size > 0 && (
+          <Button block fill="outline" onClick={() => { clearNodeSelection(); }}>
+            清除筛选 ({selectedNodeIds.size} 个节点)
+          </Button>
+        )}
         <SearchBar value={keyword} onChange={setKeyword} onSearch={setKeyword} placeholder="搜索特征标题、编码" />
         {loading ? (
           <div style={{ display: 'grid', placeItems: 'center', minHeight: 240 }}>
@@ -79,16 +87,18 @@ export function FeatureLibraryPage() {
       <FormDrawer open={treeVisible} title="节点筛选" onClose={() => setTreeVisible(false)}>
         {nodeTreeQuery.data?.nodeTree?.length ? (
           <>
-            <Button block onClick={() => setSelectedNodeId(undefined)}>
-              查看全部节点
-            </Button>
+            {selectedNodeIds.size > 0 && (
+              <Button block fill="outline" style={{ marginBottom: 12 }} onClick={clearNodeSelection}>
+                清除筛选 ({selectedNodeIds.size} 个节点)
+              </Button>
+            )}
             <TreeView
               tree={nodeTreeQuery.data.nodeTree}
-              selectedId={selectedNodeId}
-              onSelect={(node) => {
-                setSelectedNodeId(node.id);
-                setTreeVisible(false);
-              }}
+              selectable
+              selectedIds={selectedNodeIds}
+              onCheck={toggleNodeSelection}
+              selectedId={undefined}
+              onSelect={() => {}}
             />
           </>
         ) : (

@@ -1,19 +1,32 @@
 import { create } from 'zustand';
 
 interface AppState {
-  selectedNodeId?: string;
+  selectedNodeIds: Set<string>;
   keyword: string;
   mobileMenuVisible: boolean;
-  setSelectedNodeId: (nodeId?: string) => void;
+  setSelectedNodeIds: (nodeIds: Set<string>) => void;
+  toggleNodeSelection: (nodeId: string) => void;
+  clearNodeSelection: () => void;
   setKeyword: (keyword: string) => void;
   setMobileMenuVisible: (visible: boolean) => void;
 }
 
 export const useAppStore = create<AppState>((set) => ({
-  selectedNodeId: undefined,
+  selectedNodeIds: new Set(),
   keyword: '',
   mobileMenuVisible: false,
-  setSelectedNodeId: (selectedNodeId) => set({ selectedNodeId }),
+  setSelectedNodeIds: (selectedNodeIds) => set({ selectedNodeIds }),
+  toggleNodeSelection: (nodeId) =>
+    set((state) => {
+      const next = new Set(state.selectedNodeIds);
+      if (next.has(nodeId)) {
+        next.delete(nodeId);
+      } else {
+        next.add(nodeId);
+      }
+      return { selectedNodeIds: next };
+    }),
+  clearNodeSelection: () => set({ selectedNodeIds: new Set() }),
   setKeyword: (keyword) => set({ keyword }),
   setMobileMenuVisible: (mobileMenuVisible) => set({ mobileMenuVisible }),
 }));
