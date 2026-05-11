@@ -12,6 +12,7 @@ export interface AuthUser {
 export interface User extends AuthUser {
   phone?: string | null;
   avatarUrl?: string | null;
+  roleIds: string[];
   lastLoginAt?: string | null;
   lastLoginIp?: string | null;
   remark?: string | null;
@@ -26,6 +27,7 @@ export interface Role {
   description?: string | null;
   isSystem: boolean;
   status: string;
+  permissionIds: string[];
   createdAt: string;
   updatedAt: string;
 }

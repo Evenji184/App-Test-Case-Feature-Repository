@@ -86,3 +86,16 @@ export const RESET_PASSWORD_MUTATION = gql`
     }
   }
 `;
+
+export const DELETE_USER_MUTATION = gql`
+  mutation DeleteUser($userId: String!) {
+    deleteUser(userId: $userId) {
+      success
+      message
+      error {
+        code
+        message
+      }
+    }
+  }
+`;

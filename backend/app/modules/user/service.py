@@ -69,6 +69,10 @@ class UserService:
     @staticmethod
     async def set_user_status(prisma: Any, *, user_id: str, status: str, operator_id: str | None) -> Any:
         await UserService.get_user_by_id(prisma, user_id)
+        if status == "active":
+            has_role = await prisma.userrole.find_first(where={"user_id": user_id, "deleted_at": None})
+            if not has_role:
+                raise ValidationError("未分配角色的用户无法启用")
         return await prisma.user.update(where={"id": user_id}, data={"status": status, "updated_by": operator_id})
 
     @staticmethod
@@ -89,3 +93,18 @@ class UserService:
                 where={"id": user_id},
                 data={"status": "active", "updated_by": operator_id},
             )
+
+    @staticmethod
+    async def delete_user(prisma: Any, *, user_id: str, operator_id: str | None) -> Any:
+        user = await UserService.get_user_by_id(prisma, user_id)
+        now = datetime.now(timezone.utc)
+        existing_roles = await prisma.userrole.find_many(where={"user_id": user_id, "deleted_at": None})
+        for item in existing_roles:
+            await prisma.userrole.update(
+                where={"id": item.id},
+                data={"deleted_at": now, "deleted_by": operator_id},
+            )
+        return await prisma.user.update(
+            where={"id": user_id},
+            data={"deleted_at": now, "deleted_by": operator_id},
+        )

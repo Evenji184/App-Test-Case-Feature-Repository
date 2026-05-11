@@ -2,8 +2,13 @@ import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, from } from '@apollo
 import { onError } from '@apollo/client/link/error';
 import { storage } from '@/utils/storage';
 
+const apiScheme = import.meta.env.VITE_API_SCHEME || 'http';
+const apiHost = import.meta.env.VITE_API_HOST || 'localhost';
+const apiPort = import.meta.env.VITE_API_PORT || '8001';
+const graphqlEndpoint = `${apiScheme}://${apiHost}:${apiPort}/graphql`;
+
 const httpLink = new HttpLink({
-  uri: import.meta.env.VITE_GRAPHQL_ENDPOINT,
+  uri: graphqlEndpoint,
 });
 
 const authLink = new ApolloLink((operation, forward) => {

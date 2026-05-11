@@ -15,6 +15,7 @@ class RoleType:
     description: str | None
     is_system: bool
     status: str
+    permission_ids: list[str]
     created_at: str
     updated_at: str
 

@@ -4,6 +4,7 @@ import { Button, Form, Input, List, Selector, Space, Switch, Tag, TextArea, Toas
 import {
   ASSIGN_ROLES_TO_USER_MUTATION,
   CREATE_USER_MUTATION,
+  DELETE_USER_MUTATION,
   DISABLE_USER_MUTATION,
   ENABLE_USER_MUTATION,
   RESET_PASSWORD_MUTATION,
@@ -34,6 +35,7 @@ export function UserManagePage() {
   const [updateUser] = useMutation(UPDATE_USER_MUTATION);
   const [enableUser] = useMutation(ENABLE_USER_MUTATION);
   const [disableUser] = useMutation(DISABLE_USER_MUTATION);
+  const [deleteUser] = useMutation(DELETE_USER_MUTATION, { refetchQueries: [USER_LIST_QUERY] });
   const [assignRoles] = useMutation(ASSIGN_ROLES_TO_USER_MUTATION);
   const [resetPassword] = useMutation(RESET_PASSWORD_MUTATION);
 
@@ -86,7 +88,7 @@ export function UserManagePage() {
                     text: '分配角色',
                     onClick: () => {
                       setEditingUser(user);
-                      setSelectedRoleIds([]);
+                      setSelectedRoleIds(user.roleIds ?? []);
                       setRoleDrawerOpen(true);
                     },
                   },
@@ -96,6 +98,15 @@ export function UserManagePage() {
                     onClick: async () => {
                       const { data: result } = await resetPassword({ variables: { userId: user.id, newPassword: '123456' } });
                       Toast.show({ content: result?.resetPassword?.message ?? '密码已重置为 123456' });
+                    },
+                  },
+                  {
+                    key: 'delete',
+                    text: '删除',
+                    danger: true,
+                    onClick: async () => {
+                      const { data: result } = await deleteUser({ variables: { userId: user.id } });
+                      Toast.show({ content: result?.deleteUser?.message ?? '用户已删除' });
                     },
                   },
                 ]}

@@ -43,6 +43,14 @@ def build_permissions() -> list[dict[str, str]]:
             "description": "创建、编辑、禁用用户",
         },
         {
+            "name": "用户删除",
+            "code": "user:delete",
+            "module": "system",
+            "resource": "user",
+            "action": "delete",
+            "description": "删除用户（软删除）",
+        },
+        {
             "name": "角色列表页访问",
             "code": "role:list",
             "module": "system",

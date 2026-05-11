@@ -17,6 +17,7 @@ class UserType:
     avatar_url: str | None
     status: str
     is_super_admin: bool
+    role_ids: list[str]
     last_login_at: str | None
     last_login_ip: str | None
     remark: str | None

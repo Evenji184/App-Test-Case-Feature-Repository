@@ -70,7 +70,7 @@ export function PermissionManagePage() {
                   color="primary"
                   onClick={() => {
                     setEditingRole(role);
-                    setSelectedPermissionIds([]);
+                    setSelectedPermissionIds(role.permissionIds ?? []);
                     setPermissionDrawerOpen(true);
                   }}
                 >

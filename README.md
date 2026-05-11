@@ -550,9 +550,16 @@ cp frontend/.env.example frontend/.env.local
 |------|--------|------|
 | `DATABASE_URL` | `mysql://evenji:evenji@localhost:3306/app_feature_repository` | 后端数据库连接（本地开发用 localhost，Docker 内用 mysql） |
 | `SECRET_KEY` | `change-this-secret-in-production` | JWT 签名密钥，同时用于 API Key 加密密钥派生 |
+| `HOST` | `0.0.0.0` | 后端监听地址 |
 | `PORT` | `8001` | 后端服务端口 |
-| `VITE_GRAPHQL_ENDPOINT` | `http://localhost:8001/graphql` | 前端 GraphQL 请求地址 |
-| `CORS_ORIGINS` | `["http://localhost:3000","http://localhost:5173"]` | 跨域白名单 |
+| `FRONTEND_HOST` | `localhost` | 前端服务地址（CORS 自动生成依据） |
+| `FRONTEND_PORT` | `5173` | 前端服务端口（CORS 自动生成依据） |
+| `FRONTEND_SCHEME` | `http` | 前端协议（http/https） |
+| `VITE_API_SCHEME` | `http` | 前端请求后端协议 |
+| `VITE_API_HOST` | `localhost` | 前端请求后端地址 |
+| `VITE_API_PORT` | `8001` | 前端请求后端端口 |
+| `CORS_ORIGINS` | （空，自动生成） | 跨域白名单，逗号分隔；留空则根据 FRONTEND_HOST/PORT 自动生成 |
+| `IP_WHITELIST` | （空，允许所有） | IP 访问白名单，逗号分隔；留空则允许所有 IP |
 
 > **重要**：更换 `SECRET_KEY` 后，已加密的 AI 供应商 API Key 将无法解密，需重新配置。
 
@@ -629,13 +636,14 @@ docker compose up --build
 | 显示名 | `系统管理员` |
 | 角色 | `admin`（系统管理员，is_super_admin=true） |
 
-种子脚本创建 19 项权限，覆盖用户/角色/权限/节点/特征/审计/登录日志/AI 的查看与管理操作：
+种子脚本创建 20 项权限，覆盖用户/角色/权限/节点/特征/审计/登录日志/AI 的查看与管理操作：
 
 | 权限 code | 模块 | 说明 |
 |-----------|------|------|
 | `user:list` | system | 用户列表页访问 |
 | `system:user:view` | system | 用户查看 |
 | `system:user:manage` | system | 用户管理 |
+| `user:delete` | system | 用户删除（软删除） |
 | `role:list` | system | 角色列表页访问 |
 | `system:role:manage` | system | 角色管理 |
 | `permission:list` | system | 权限列表页访问 |
@@ -707,15 +715,19 @@ docker compose up --build
 
 ### 6.3 用户管理
 
-- 列表/创建/编辑/启用禁用/密码重置/角色分配
+- 列表/创建/编辑/启用禁用/密码重置/角色分配/删除
+- 未分配角色的用户无法启用
+- 分配角色时默认勾选已有角色，分配权限时默认勾选已有权限
 - 软删除，用户名和邮箱在 deleted_at 维度下唯一
 
 ### 6.4 角色权限
 
 - RBAC 模型：用户 → 角色 → 权限 三层授权
 - 角色分配权限（`assignPermissionsToRole`），用户分配角色（`assignRolesToUser`）
+- 分配时默认勾选已有角色/权限，支持增量调整
 - 权限树按 module → resource → action 三级组织
 - is_super_admin 用户绕过权限检查
+- 前端导航 TabBar 根据权限动态过滤：无 `xxx:list` 权限的页面不展示对应 Tab
 
 ### 6.5 AI 供应商管理
 

@@ -14,6 +14,7 @@ from app.core.logging import get_logger, setup_logging
 from app.db.prisma import prisma_manager
 from app.graphql.schema import schema
 from app.middleware.request_logging import request_logging_middleware
+from app.middleware.ip_whitelist import ip_whitelist_middleware
 from app.utils.exceptions import AppError
 
 settings = get_settings()
@@ -24,6 +25,8 @@ logger = get_logger(__name__)
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     logger.info("Application startup")
+    logger.info("CORS origins: %s", settings.get_cors_origins())
+    logger.info("IP whitelist: %s", settings.get_ip_whitelist() or "(empty, allow all)")
     try:
         await prisma_manager.connect()
     except Exception as exc:  # pragma: no cover - 启动时记录错误，允许服务先启动
@@ -42,7 +45,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.cors_origins,
+    allow_origins=settings.get_cors_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -52,6 +55,11 @@ app.add_middleware(
 @app.middleware("http")
 async def access_log_middleware(request: Request, call_next):
     return await request_logging_middleware(request, call_next)
+
+
+@app.middleware("http")
+async def ip_filter_middleware(request: Request, call_next):
+    return await ip_whitelist_middleware(request, call_next)
 
 
 @app.middleware("http")

@@ -39,8 +39,16 @@ def _error_result(exc: AppError) -> ErrorType:
     return ErrorType(code=exc.code, message=exc.message)
 
 
-def _user_type(user: Any) -> UserType:
-    return UserType(id=user.id, username=user.username, email=user.email, display_name=user.display_name, phone=user.phone, avatar_url=user.avatar_url, status=user.status, is_super_admin=user.is_super_admin, last_login_at=_dt(user.last_login_at), last_login_ip=user.last_login_ip, remark=user.remark, created_at=_dt(user.created_at) or "", updated_at=_dt(user.updated_at) or "")
+async def _user_type_with_roles(prisma: Any, user: Any) -> UserType:
+    user_roles = await prisma.userrole.find_many(where={"user_id": user.id, "deleted_at": None})
+    role_ids = [ur.role_id for ur in user_roles]
+    return UserType(id=user.id, username=user.username, email=user.email, display_name=user.display_name, phone=user.phone, avatar_url=user.avatar_url, status=user.status, is_super_admin=user.is_super_admin, role_ids=role_ids, last_login_at=_dt(user.last_login_at), last_login_ip=user.last_login_ip, remark=user.remark, created_at=_dt(user.created_at) or "", updated_at=_dt(user.updated_at) or "")
+
+
+async def _role_type_with_permissions(prisma: Any, role: Any) -> RoleType:
+    role_permissions = await prisma.rolepermission.find_many(where={"role_id": role.id, "deleted_at": None})
+    permission_ids = [rp.permission_id for rp in role_permissions]
+    return RoleType(id=role.id, name=role.name, code=role.code, description=role.description, is_system=role.is_system, status=role.status, permission_ids=permission_ids, created_at=_dt(role.created_at) or "", updated_at=_dt(role.updated_at) or "")
 
 
 def _auth_user_type(user: Any) -> AuthUserType:
@@ -85,20 +93,20 @@ async def _audit_log(info: Info, *, action: str, target_type: str, target: Any, 
 class Query:
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def current_user(self, info: Info) -> UserType:
-        return _user_type(await get_current_user(info))
+        return await _user_type_with_roles(info.context.prisma, await get_current_user(info))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def user_list(self, info: Info, pagination: PaginationInput = PaginationInput(), keyword: str | None = None) -> UserListType:
         await require_permission(info, "user:list")
         items, total, page, page_size = await UserService.list_users(info.context.prisma, page=pagination.page, page_size=pagination.page_size, keyword=keyword)
-        return UserListType(items=[_user_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
+        return UserListType(items=[await _user_type_with_roles(info.context.prisma, item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def role_list(self, info: Info, pagination: PaginationInput = PaginationInput()) -> RoleListType:
         await require_permission(info, "role:list")
         total = await info.context.prisma.role.count(where={"deleted_at": None})
         items = await info.context.prisma.role.find_many(where={"deleted_at": None}, skip=(pagination.page - 1) * pagination.page_size, take=pagination.page_size, order={"created_at": "desc"})
-        return RoleListType(items=[_role_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=pagination.page, page_size=pagination.page_size)))
+        return RoleListType(items=[await _role_type_with_permissions(info.context.prisma, item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=pagination.page, page_size=pagination.page_size)))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def permission_tree(self, info: Info) -> list[PermissionModuleGroup]:
@@ -216,7 +224,7 @@ class Mutation:
             user = await UserService.create_user(info.context.prisma, data=vars(input), operator_id=operator.id)
             logger.info("创建用户: operator=%s, username=%s", operator.username, user.username)
             await _audit_log(info, action="create_user", target_type="User", target=user, summary=f"创建用户 {user.username}", after_data={"username": user.username, "email": user.email})
-            return UserMutationResult(success=True, message="用户创建成功", data=_user_type(user), error=None)
+            return UserMutationResult(success=True, message="用户创建成功", data=await _user_type_with_roles(info.context.prisma, user), error=None)
         except AppError as exc:
             logger.warning("创建用户失败: operator=%s, reason=%s", getattr(info.context.user, 'id', '?'), exc.message)
             return UserMutationResult(success=False, message=exc.message, error=_error_result(exc), data=None)
@@ -232,7 +240,7 @@ class Mutation:
             user = await UserService.update_user(info.context.prisma, user_id=user_id, data={k: v for k, v in vars(input).items() if v is not None}, operator_id=operator.id)
             logger.info("更新用户: operator=%s, target=%s", operator.username, user.username)
             await _audit_log(info, action="update_user", target_type="User", target=user, summary=f"更新用户 {user.username}", before_data={"email": before.email, "display_name": before.display_name}, after_data={"email": user.email, "display_name": user.display_name})
-            return UserMutationResult(success=True, message="用户更新成功", data=_user_type(user), error=None)
+            return UserMutationResult(success=True, message="用户更新成功", data=await _user_type_with_roles(info.context.prisma, user), error=None)
         except AppError as exc:
             logger.warning("更新用户失败: operator=%s, user_id=%s, reason=%s", getattr(info.context.user, 'id', '?'), user_id, exc.message)
             return UserMutationResult(success=False, message=exc.message, error=_error_result(exc), data=None)
@@ -274,13 +282,25 @@ class Mutation:
             return MutationResult(success=False, message=exc.message, error=_error_result(exc))
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def delete_user(self, info: Info, user_id: str) -> MutationResult:
+        try:
+            operator = await require_permission(info, "user:delete")
+            user = await UserService.delete_user(info.context.prisma, user_id=user_id, operator_id=operator.id)
+            logger.info("删除用户: operator=%s, target=%s", operator.username, user.username)
+            await _audit_log(info, action="delete_user", target_type="User", target=user, summary=f"删除用户 {user.username}")
+            return MutationResult(success=True, message="用户删除成功", error=None)
+        except AppError as exc:
+            logger.warning("删除用户失败: operator=%s, user_id=%s, reason=%s", getattr(info.context.user, 'id', '?'), user_id, exc.message)
+            return MutationResult(success=False, message=exc.message, error=_error_result(exc))
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_role(self, info: Info, input: CreateRoleInput) -> RoleMutationResult:
         try:
             operator = await require_permission(info, "role:create")
             role = await info.context.prisma.role.create(data={**vars(input), "status": "active", "created_by": operator.id, "updated_by": operator.id})
             logger.info("创建角色: operator=%s, role=%s(%s)", operator.username, role.name, role.code)
             await _audit_log(info, action="create_role", target_type="Role", target=role, summary=f"创建角色 {role.name}", after_data={"code": role.code})
-            return RoleMutationResult(success=True, message="角色创建成功", data=_role_type(role), error=None)
+            return RoleMutationResult(success=True, message="角色创建成功", data=await _role_type_with_permissions(info.context.prisma, role), error=None)
         except AppError as exc:
             logger.warning("创建角色失败: operator=%s, reason=%s", getattr(info.context.user, 'id', '?'), exc.message)
             return RoleMutationResult(success=False, message=exc.message, error=_error_result(exc), data=None)
@@ -292,7 +312,7 @@ class Mutation:
             role = await info.context.prisma.role.update(where={"id": role_id}, data={k: v for k, v in {**vars(input), "updated_by": operator.id}.items() if v is not None})
             logger.info("更新角色: operator=%s, role=%s", operator.username, role.name)
             await _audit_log(info, action="update_role", target_type="Role", target=role, summary=f"更新角色 {role.name}")
-            return RoleMutationResult(success=True, message="角色更新成功", data=_role_type(role), error=None)
+            return RoleMutationResult(success=True, message="角色更新成功", data=await _role_type_with_permissions(info.context.prisma, role), error=None)
         except AppError as exc:
             logger.warning("更新角色失败: operator=%s, role_id=%s, reason=%s", getattr(info.context.user, 'id', '?'), role_id, exc.message)
             return RoleMutationResult(success=False, message=exc.message, error=_error_result(exc), data=None)

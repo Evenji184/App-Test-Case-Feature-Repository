@@ -18,7 +18,7 @@ export function BottomActions({ actions, triggerText }: Props) {
 
   return (
     <>
-      <Button size="small" onClick={() => setVisible(true)}>
+      <Button size="small" onClick={(e) => { e.stopPropagation(); setVisible(true); }}>
         {triggerText ?? '更多操作'}
       </Button>
       <ActionSheet

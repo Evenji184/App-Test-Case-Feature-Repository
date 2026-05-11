@@ -10,6 +10,7 @@ export const USER_BASE_FRAGMENT = gql`
     avatarUrl
     status
     isSuperAdmin
+    roleIds
     lastLoginAt
     lastLoginIp
     remark
@@ -37,6 +38,7 @@ export const ROLE_BASE_FRAGMENT = gql`
     description
     isSystem
     status
+    permissionIds
     createdAt
     updatedAt
   }

@@ -1,20 +1,30 @@
 import { AppOutline, LockOutline, TeamOutline, UnorderedListOutline, SetOutline } from 'antd-mobile-icons';
 import { NavBar, SafeArea, TabBar } from 'antd-mobile';
-import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/auth';
 
-const tabs = [
-  { key: '/features', title: '特征库', icon: <AppOutline /> },
-  { key: '/manage/features', title: '管理', icon: <UnorderedListOutline /> },
-  { key: '/manage/ai-providers', title: 'AI', icon: <SetOutline /> },
-  { key: '/manage/permissions', title: '权限', icon: <LockOutline /> },
-  { key: '/manage/users', title: '人员', icon: <TeamOutline /> },
+const allTabs = [
+  { key: '/features', title: '特征库', icon: <AppOutline />, permission: null },
+  { key: '/manage/features', title: '管理', icon: <UnorderedListOutline />, permission: 'feature:list' },
+  { key: '/manage/ai-providers', title: 'AI', icon: <SetOutline />, permission: 'ai:provider:list' },
+  { key: '/manage/permissions', title: '权限', icon: <LockOutline />, permission: 'permission:list' },
+  { key: '/manage/users', title: '人员', icon: <TeamOutline />, permission: 'user:list' },
 ];
 
 export function MainLayout() {
   const navigate = useNavigate();
   const location = useLocation();
   const auth = useAuth();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+
+  const visibleTabs = allTabs.filter((tab) => tab.permission === null || hasPermission(tab.permission));
+
+  const currentTab = visibleTabs.find((item) => location.pathname.startsWith(item.key));
+
+  if (!currentTab && visibleTabs.length > 0) {
+    return <Navigate to={visibleTabs[0].key} replace />;
+  }
 
   return (
     <div className="app-shell" style={{ paddingBottom: 64 }}>
@@ -28,11 +38,11 @@ export function MainLayout() {
         <Outlet />
       </div>
       <TabBar
-        activeKey={tabs.find((item) => location.pathname.startsWith(item.key))?.key ?? '/features'}
+        activeKey={currentTab?.key ?? '/features'}
         onChange={(value) => navigate(value)}
         style={{ position: 'fixed', bottom: 0, left: 0, right: 0, borderTop: '1px solid #f0f0f0', background: '#fff' }}
       >
-        {tabs.map((item) => (
+        {visibleTabs.map((item) => (
           <TabBar.Item key={item.key} icon={item.icon} title={item.title} />
         ))}
       </TabBar>

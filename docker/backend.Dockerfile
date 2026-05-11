@@ -22,7 +22,7 @@ RUN useradd --create-home --shell /bin/bash appuser \
 
 USER appuser
 
-EXPOSE 8000
+EXPOSE 8001
 
 CMD ["sh", "-c", "prisma generate && uvicorn app.main:app --host 0.0.0.0 --port 8001"]
 
