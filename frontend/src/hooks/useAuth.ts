@@ -8,6 +8,7 @@ export function useAuth() {
     () => ({
       ...store,
       displayName: store.user?.displayName || store.user?.username || '未登录用户',
+      isSuperAdmin: store.user?.isSuperAdmin ?? false,
     }),
     [store],
   );

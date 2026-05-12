@@ -14,6 +14,7 @@ export function PromptManagePage() {
   const [selected, setSelected] = useState<Prompt | null>(null);
   const { isSuperAdmin } = useAuth();
   const hasPermission = useAuthStore((state) => state.hasPermission);
+  const canDeletePrompt = isSuperAdmin || hasPermission('ai:provider:manage');
 
   const { data, refetch } = useQuery<PromptListQueryData, PromptListQueryVariables>(
     PROMPT_LIST_QUERY,
@@ -62,7 +63,7 @@ export function PromptManagePage() {
                   <Button size="mini" onClick={() => handleView(prompt)}>
                     查看
                   </Button>
-                  {isSuperAdmin && (
+                  {canDeletePrompt && (
                     <Button
                       size="mini"
                       color="danger"

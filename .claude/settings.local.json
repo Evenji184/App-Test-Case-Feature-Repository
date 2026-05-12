@@ -93,7 +93,12 @@
       "Bash(npx prisma *)",
       "Bash(findstr \":5173 :5174\")",
       "Bash(node -e \"const icons = require\\('antd-mobile-icons'\\); console.log\\('TextOutline:', typeof icons.TextOutline\\)\")",
-      "Bash(findstr \":8001 LISTEN\")"
+      "Bash(findstr \":8001 LISTEN\")",
+      "Bash(xargs grep -l \"content.*=.*\\\\\"\\\\\"\")",
+      "Bash(xargs grep -l \"prompt\\\\|提示词\")",
+      "Bash(Get-ChildItem -Path \"E:\\\\App-Test-Case-Feature-Repository\\\\frontend\\\\src\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(dir *)"
     ]
   }
 }

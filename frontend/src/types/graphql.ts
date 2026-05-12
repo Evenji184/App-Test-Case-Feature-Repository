@@ -87,6 +87,7 @@ export interface FeatureListQueryData {
 export interface FeatureListQueryVariables {
   pagination?: PaginationInput;
   nodeIds?: string[] | null;
+  includeHidden?: boolean | null;
 }
 
 export interface FeatureDetailQueryData {
@@ -104,6 +105,7 @@ export interface SearchFeaturesQueryData {
 export interface SearchFeaturesQueryVariables {
   keyword: string;
   pagination?: PaginationInput;
+  includeHidden?: boolean | null;
 }
 
 export interface CreateUserInput {

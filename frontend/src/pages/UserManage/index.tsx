@@ -30,7 +30,7 @@ export function UserManagePage() {
   const { roles, fetchRoles } = usePermissionStore();
   const { isSuperAdmin } = useAuth();
   const hasPermission = useAuthStore((state) => state.hasPermission);
-  const canDisableUser = isSuperAdmin || hasPermission('system:user:manage');
+  const canManageUser = isSuperAdmin || hasPermission('system:user:manage');
 
   const { data, refetch } = useQuery<UserListQueryData, UserListQueryVariables>(USER_LIST_QUERY, {
     variables: { pagination: { page: 1, pageSize: 50 }, keyword: keyword || undefined },
@@ -60,7 +60,7 @@ export function UserManagePage() {
     const actions: Array<{ key: string; text: string; onClick?: () => void; danger?: boolean }> = [
       { key: 'edit', text: '编辑', onClick: () => openDrawer(user) },
     ];
-    if (canDisableUser) {
+    if (canManageUser) {
       actions.push({
         key: 'toggle',
         text: user.status === 'active' ? '禁用' : '启用',
@@ -111,7 +111,7 @@ export function UserManagePage() {
           <h2 className="page-title">人员管理</h2>
           <p className="page-subtitle">用户维护、启停用与角色分配</p>
         </div>
-        {canDisableUser && (
+        {canManageUser && (
           <Button color="primary" onClick={() => openDrawer()}>
             新建人员
           </Button>

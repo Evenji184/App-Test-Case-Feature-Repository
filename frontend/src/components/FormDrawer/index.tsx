@@ -16,6 +16,7 @@ export function FormDrawer({ open, title, onClose, onSubmit, submitText, childre
       position="right"
       visible={open}
       onClose={onClose}
+      closeOnMaskClick
       bodyStyle={{ width: 'min(100vw, 480px)', height: '100vh', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ padding: '16px 16px 0', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

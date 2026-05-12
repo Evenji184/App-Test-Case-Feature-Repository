@@ -24,6 +24,7 @@ class GenerateResult:
     content: str
     model: str
     usage: dict[str, int] | None
+    prompt_id: str | None = None
 
 
 class ProviderClient:
@@ -75,8 +76,16 @@ class ProviderClient:
             async with client.stream("POST", url, json=payload, headers=headers) as response:
                 response.decode_content = False
                 raw_bytes = await response.aread()
+                if not raw_bytes:
+                    raise RuntimeError(f"AI 供应商返回空响应 (HTTP {response.status_code})")
+                try:
+                    data = json_lib.loads(raw_bytes)
+                except (json_lib.JSONDecodeError, UnicodeDecodeError) as exc:
+                    raise RuntimeError(f"AI 供应商响应解析失败: {exc}") from exc
                 response.raise_for_status()
-                return json_lib.loads(raw_bytes)
+                if not isinstance(data, dict):
+                    raise RuntimeError(f"AI 供应商响应格式异常: 期望 dict，得到 {type(data).__name__}")
+                return data
 
     @staticmethod
     async def _call_openai_compatible(
@@ -106,7 +115,7 @@ class ProviderClient:
 
         data = await ProviderClient._send_request(url, payload, headers)
 
-        content = data["choices"][0]["message"]["content"]
+        content = (data.get("choices") or [{}])[0].get("message", {}).get("content") or ""
         usage = data.get("usage")
         return GenerateResult(
             content=content,
@@ -148,7 +157,9 @@ class ProviderClient:
 
         data = await ProviderClient._send_request(url, payload, headers)
 
-        content = data["content"][0].get("text") or data["content"][0].get("content") or ""
+        content_blocks = data.get("content") or []
+        text_parts = [block.get("text", "") for block in content_blocks if block.get("type") == "text" and block.get("text")]
+        content = "\n".join(text_parts) if text_parts else ""
         usage = data.get("usage")
         return GenerateResult(
             content=content,

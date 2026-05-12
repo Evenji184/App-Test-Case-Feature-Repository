@@ -18,9 +18,11 @@ class FeatureService:
         return feature
 
     @staticmethod
-    async def list_features(prisma: Any, *, page: int, page_size: int, keyword: str | None = None, node_ids: list[str] | None = None) -> tuple[list[Any], int, int, int]:
+    async def list_features(prisma: Any, *, page: int, page_size: int, keyword: str | None = None, node_ids: list[str] | None = None, include_hidden: bool = False) -> tuple[list[Any], int, int, int]:
         current_page, current_page_size, skip = normalize_pagination(page, page_size)
         where: dict[str, Any] = {"deleted_at": None}
+        if not include_hidden:
+            where["is_visible"] = True
         if keyword:
             where["OR"] = [{"title": {"contains": keyword}}, {"code": {"contains": keyword}}, {"summary": {"contains": keyword}}]
         if node_ids:

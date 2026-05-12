@@ -10,7 +10,6 @@ import { useAuthStore } from '@/stores/auth';
 
 const allTabs = [
   { key: '/features', title: '特征库', icon: <AppOutline />, permission: null },
-  { key: '/manage/features', title: '管理', icon: <UnorderedListOutline />, permission: 'feature:list' },
   { key: '/manage/ai-providers', title: 'AI', icon: <SetOutline />, permission: 'ai:provider:list' },
   { key: '/manage/prompts', title: '提示词', icon: <TextOutline />, permission: 'ai:prompt:list' },
   { key: '/manage/permissions', title: '权限', icon: <LockOutline />, permission: 'permission:list' },

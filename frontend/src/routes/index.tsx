@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AuthLayout } from '@/layouts/AuthLayout';
 import { MainLayout } from '@/layouts/MainLayout';
 import { LoginPage } from '@/pages/Login';
-import { FeatureLibraryPage } from '@/pages/FeatureLibrary';
 import { FeatureManagePage } from '@/pages/FeatureManage';
 import { PermissionManagePage } from '@/pages/PermissionManage';
 import { UserManagePage } from '@/pages/UserManage';
@@ -31,10 +30,7 @@ export function AppRoutes() {
       />
       <Route element={<RequireAuth />}>
         <Route element={<MainLayout />}>
-          <Route path="/features" element={<FeatureLibraryPage />} />
-          <Route element={<RequirePermission permission="feature:list" />}>
-            <Route path="/manage/features" element={<FeatureManagePage />} />
-          </Route>
+          <Route path="/features" element={<FeatureManagePage />} />
           <Route element={<RequirePermission permission="ai:provider:list" />}>
             <Route path="/manage/ai-providers" element={<AiProviderPage />} />
           </Route>

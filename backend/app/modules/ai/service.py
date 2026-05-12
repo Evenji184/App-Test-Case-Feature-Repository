@@ -209,8 +209,11 @@ class AiProviderService:
             user_prompt=user_prompt,
         )
 
+        if not result.content:
+            raise ValidationError("AI 供应商返回的内容为空，请检查供应商配置或更换模型")
+
         # Save prompt to database
-        await prisma.prompt.create(
+        prompt_record = await prisma.prompt.create(
             data={
                 "content": result.content,
                 "provider_id": provider_id,
@@ -224,6 +227,7 @@ class AiProviderService:
             }
         )
 
+        result.prompt_id = prompt_record.id
         return result
 
     @staticmethod

@@ -73,7 +73,7 @@ export function FeatureManagePage() {
   const nodeIdsForQuery = selectedNodeIds.size > 0 ? Array.from(selectedNodeIds) : undefined;
 
   const featureQuery = useQuery<FeatureListQueryData, FeatureListQueryVariables>(FEATURE_LIST_QUERY, {
-    variables: { pagination: { page: 1, pageSize: 50 }, nodeIds: nodeIdsForQuery },
+    variables: { pagination: { page: 1, pageSize: 50 }, nodeIds: nodeIdsForQuery, includeHidden: true },
   });
 
   const [createFeature] = useMutation(CREATE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY, NODE_TREE_QUERY] });
@@ -237,8 +237,8 @@ export function FeatureManagePage() {
       <div className="card-section" style={{ display: 'grid', gap: 12 }}>
         <Space justify="between" block>
           <div>
-            <h2 className="page-title">特征库管理</h2>
-            <p className="page-subtitle">支持新增、编辑、隐藏与删除特征</p>
+            <h2 className="page-title">特征库</h2>
+            <p className="page-subtitle">查看特征列表，管理操作按权限展示</p>
           </div>
           <Space>
             {canAiGenerate && selectedFeatureIds.size > 0 && (
@@ -268,7 +268,7 @@ export function FeatureManagePage() {
               {selectedFeatureIds.size > 0 ? '取消选择' : '全选'}
             </Button>
             {canManageFeature && (
-              <Button color="primary" onClick={() => openFeatureDrawer()}>
+              <Button color="primary" disabled={!singleSelectedNodeId} onClick={() => openFeatureDrawer()}>
                 新建特征
               </Button>
             )}
@@ -542,6 +542,10 @@ export function FeatureManagePage() {
             Toast.show({ content: '请选择 AI 供应商' });
             return;
           }
+          if (selectedNodeIds.size === 0 && selectedFeatureIds.size === 0) {
+            Toast.show({ content: '请至少选择一个节点或特征' });
+            return;
+          }
           setIsGenerating(true);
           setGeneratedContent('');
           try {
@@ -556,8 +560,13 @@ export function FeatureManagePage() {
               },
             });
             if (data?.generatePrompt?.success) {
-              setGeneratedContent(data.generatePrompt.content ?? '');
-              Toast.show({ content: '提示词生成成功', icon: 'success' });
+              const content = data.generatePrompt.content ?? '';
+              if (!content) {
+                Toast.show({ content: 'AI 供应商返回内容为空，请检查配置或更换模型', icon: 'fail' });
+              } else {
+                setGeneratedContent(content);
+                Toast.show({ content: '提示词生成成功', icon: 'success' });
+              }
             } else {
               Toast.show({ content: data?.generatePrompt?.message ?? '生成失败', icon: 'fail' });
             }

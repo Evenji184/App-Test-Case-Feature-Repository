@@ -200,11 +200,15 @@ FeatureNode                          Feature
 
 **提示词生成与管理**
 
-- 在特征管理页多选特征后，选择供应商和自定义指令，调用 AI 生成测试要点提示词
+- 在特征管理页多选特征后（需至少选择一个节点或特征），选择供应商和自定义指令，调用 AI 生成测试要点提示词
 - 提示词自动包含：节点层级结构 + 特征详情（标题/摘要/描述/平台/优先级/标签）+ 补充要求
 - 后端根据 `provider_format` 自动选择 OpenAI 或 Anthropic 请求格式
+- OpenAI 格式响应：安全链式取值提取 content 字段，content 为 None 时 fallback 到空字符串
+- Anthropic 格式响应：遍历所有 content block，只拼接 `type=text` 的 block，忽略 tool_use 等非文本 block
+- AI 返回内容为空时后端抛出 ValidationError，前端提示"AI 供应商返回内容为空"，不会显示"生成成功"
 - 生成的提示词自动保存到数据库，可在提示词管理页面查看和管理
 - httpx 请求使用 stream 模式 + `decode_content=False` 禁用自动解压，避免代理服务器错误 Content-Encoding 导致解压失败
+- `_send_request` 方法增加空响应体、JSON 解析失败、非 dict 响应格式的错误检查，避免静默失败
 
 **提示词管理页面**
 
@@ -223,11 +227,13 @@ FeatureNode                          Feature
 | `deleteAiProvider(providerId)` | Mutation | 软删除供应商 |
 | `testAiConnection(providerId)` | Mutation | 测试供应商连接是否可用 |
 | `generatePrompt(input)` | Mutation | 根据选中的节点/特征 ID 调用 AI 生成测试要点提示词，自动保存到数据库 |
-| `deletePrompt(promptId)` | Mutation | 软删除提示词记录（仅超级管理员） |
+| `deletePrompt(promptId)` | Mutation | 软删除提示词记录（超级管理员或拥有 ai:provider:manage 权限） |
 
 ## 2. 依赖清单
 
 ### 2.1 后端 Python 依赖
+
+> 来源：`backend/requirements.txt`
 
 | 包 | 版本 | 用途 |
 |---|------|------|
@@ -236,16 +242,18 @@ FeatureNode                          Feature
 | strawberry-graphql[fastapi] | 0.275.5 | GraphQL Schema 与 Resolver |
 | prisma | 0.15.0 | 数据库 ORM |
 | pydantic | 2.11.3 | 数据验证 |
-| pydantic-settings | 2.9.1 | 环境变量配置 |
+| pydantic-settings | 2.9.1 | 环境变量配置（读取 `.env`） |
 | bcrypt | >=4.0.0 | 密码哈希 |
 | python-jose[cryptography] | 3.4.0 | JWT 编解码 |
 | python-dotenv | 1.1.0 | .env 文件加载 |
 | httpx | >=0.27.0 | 异步 HTTP 客户端（AI 供应商调用） |
 | cryptography | >=43.0.0 | API Key Fernet 加密存储 |
 
-> Python 版本要求：>=3.10（代码使用 `from __future__ import annotations` 兼容 3.10+）
+> Python 版本要求：>=3.10（代码使用 `from __future__ import annotations`）
 
 ### 2.2 前端依赖
+
+> 来源：`frontend/package.json`
 
 | 包 | 版本 | 用途 |
 |---|------|------|
@@ -259,7 +267,9 @@ FeatureNode                          Feature
 | antd | ^5.24.8 | 桌面端 UI 组件 |
 | @ant-design/icons | ^5.3.7 | 图标 |
 
-开发依赖：typescript ^5.6.3 / vite ^5.4.10 / @vitejs/plugin-react ^4.3.4
+开发依赖：typescript ^5.6.3 / vite ^5.4.10 / @vitejs/plugin-react ^4.3.4 / @types/react ^18.3.12 / @types/react-dom ^18.3.1 / @types/node ^22.10.2
+
+> Node.js 版本要求：>=20
 
 ## 3. 数据库建表 SQL
 
@@ -571,39 +581,53 @@ CREATE TABLE prompts (
 
 ### 4.2 配置环境变量
 
+需要配置三份 `.env` 文件：
+
 ```bash
-# 项目根目录（docker-compose 使用）
+# 1. 项目根目录（Docker Compose 读取）
 cp .env.example .env
 
-# 后端（Prisma Client 和 FastAPI 读此文件）
+# 2. 后端目录（Prisma Client 和 FastAPI 读取）
 cp backend/.env.example backend/.env
 
-# 前端（Vite 读此文件）
+# 3. 前端目录（Vite 开发服务器读取）
 cp frontend/.env.example frontend/.env.local
 ```
 
-关键配置项：
+**后端环境变量**（`backend/.env`，来源：`backend/.env.example` + `app/core/config.py`）：
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `DATABASE_URL` | `mysql://evenji:evenji@localhost:3306/app_feature_repository` | 后端数据库连接（本地开发用 localhost，Docker 内用 mysql） |
-| `SECRET_KEY` | `change-this-secret-in-production` | JWT 签名密钥，同时用于 API Key 加密密钥派生 |
+| `DATABASE_URL` | `mysql://evenji:evenji@localhost:3306/app_feature_repository` | 数据库连接（本地用 localhost，Docker 内用 mysql 服务名） |
+| `SECRET_KEY` | `change-this-secret-in-production` | JWT 签名密钥 + API Key 加密密钥派生 |
+| `JWT_ALGORITHM` | `HS256` | JWT 签名算法 |
+| `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | JWT 有效期（分钟） |
 | `HOST` | `0.0.0.0` | 后端监听地址 |
 | `PORT` | `8001` | 后端服务端口 |
-| `FRONTEND_HOST` | `localhost` | 前端服务地址（CORS 自动生成依据） |
-| `FRONTEND_PORT` | `5173` | 前端服务端口（CORS 自动生成依据） |
+| `FRONTEND_HOST` | `localhost` | 前端地址（CORS 自动生成依据） |
+| `FRONTEND_PORT` | `5173` | 前端端口（CORS 自动生成依据） |
 | `FRONTEND_SCHEME` | `http` | 前端协议（http/https） |
-| `VITE_API_SCHEME` | `http` | 前端请求后端协议 |
-| `VITE_API_HOST` | `localhost` | 前端请求后端地址 |
-| `VITE_API_PORT` | `8001` | 前端请求后端端口 |
-| `CORS_ORIGINS` | （空，自动生成） | 跨域白名单，逗号分隔；留空则根据 FRONTEND_HOST/PORT 自动生成 |
+| `CORS_ORIGINS` | （空，自动生成） | 跨域白名单，逗号分隔；留空则根据 FRONTEND_* 自动生成 |
 | `IP_WHITELIST` | （空，允许所有） | IP 访问白名单，逗号分隔；留空则允许所有 IP |
+| `LOG_LEVEL` | `INFO` | 日志级别 |
+| `LOG_JSON` | `false` | 是否输出 JSON 格式日志 |
 
 > **重要**：更换 `SECRET_KEY` 后，已加密的 AI 供应商 API Key 将无法解密，需重新配置。
 
+**前端环境变量**（`frontend/.env.local`，来源：`frontend/.env.example`）：
+
+| 变量 | 默认值 | 说明 |
+|------|--------|------|
+| `VITE_API_SCHEME` | `http` | 前端请求后端协议 |
+| `VITE_API_HOST` | `localhost` | 前端请求后端地址 |
+| `VITE_API_PORT` | `8001` | 前端请求后端端口 |
+| `VITE_APP_TITLE` | `APP 特征库管理系统` | 应用标题 |
+
+> `.env` 文件路径使用绝对路径计算（`Path(__file__).resolve().parent.parent.parent / ".env"`），不依赖进程工作目录。
+
 ### 4.3 初始化数据库
 
-方式一：手动建表 + 种子数据（推荐，绕过 prisma db push 的 index 长度问题）
+方式一：手动建表 + 种子数据（推荐，绕过 `prisma db push` 的 index 长度超限问题）
 
 ```bash
 # 1. 创建数据库
@@ -619,23 +643,31 @@ pip install -r requirements.txt
 # 4. 生成 Prisma Client
 python -m prisma generate
 
-# 5. 写入种子数据（权限、管理员、示例特征树）
+# 5. 写入种子数据（23 项权限、admin 用户、示例特征树）
 python prisma/seed.py
 ```
 
-方式二：Windows 初始化脚本
+方式二：初始化脚本（Linux/macOS）
+
+```bash
+cd backend/scripts
+bash init-db.sh
+```
+
+方式三：初始化脚本（Windows）
 
 ```cmd
 cd backend\scripts
 init-db.bat
 ```
 
-> 注意：`init-db.bat` 内部调用 `prisma db push`，在 MySQL 8.0 + utf8mb4 环境下可能因 index key 长度超限而失败。如遇此问题，请使用方式一手动建表。
+> 注意：`init-db.sh` 和 `init-db.bat` 内部调用 `prisma db push`，在 MySQL 8.0 + utf8mb4 环境下可能因 index key 长度超限（3072 bytes）而失败。如遇此问题，请使用方式一手动建表。脚本会自动从 `DATABASE_URL` 环境变量解析数据库连接信息。
 
 ### 4.4 启动后端
 
 ```bash
 cd backend
+pip install -r requirements.txt   # 首次需安装依赖
 python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
 ```
 
@@ -650,7 +682,7 @@ curl http://localhost:8001/health
 
 ```bash
 cd frontend
-npm install
+npm install    # 首次需安装依赖
 npm run dev
 ```
 
@@ -659,10 +691,13 @@ npm run dev
 ### 4.6 Docker Compose 启动（可选）
 
 ```bash
+cp .env.example .env    # 首次需配置
 docker compose up --build
 ```
 
 启动后默认端口：Nginx 80 / 后端 8001 / 前端 3000 / MySQL 3306
+
+Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.py` → `uvicorn`。
 
 ## 5. 默认账号与种子数据
 
@@ -737,6 +772,7 @@ docker compose up --build
 - 选择子节点时仅展示该子节点下的特征
 - 未勾选任何节点时展示全部特征
 - 仅勾选 1 个节点时可编辑/删除/复制/移动该节点
+- 新建特征按钮在未选中节点时禁用，避免 nodeId 为空
 
 **按钮权限守卫**
 
@@ -744,11 +780,12 @@ docker compose up --build
 
 | 页面 | 按钮 | 所需权限 |
 |------|------|----------|
-| 特征管理 | 新建/编辑/删除/复制/移动节点 | `feature:node:manage` |
-| 特征管理 | 新建/编辑/隐藏/删除/复制/移动特征 | `feature:item:manage` |
-| 特征管理 | AI 生成提示词 | `ai:generate` |
+| 特征库 | 新建/编辑/删除/复制/移动节点 | `feature:node:manage` |
+| 特征库 | 新建特征 | `feature:item:manage`（未选中节点时禁用） |
+| 特征库 | 新建/编辑/隐藏/删除/复制/移动特征 | `feature:item:manage` |
+| 特征库 | AI 生成提示词 | `ai:generate` |
 | AI 供应商 | 新建/编辑/删除/测试连接 | `ai:provider:manage` |
-| 提示词管理 | 删除提示词 | `isSuperAdmin` |
+| 提示词管理 | 删除提示词 | `isSuperAdmin` 或 `ai:provider:manage` |
 | 权限管理 | 新建角色/编辑/分配权限 | `system:role:manage` |
 | 权限管理 | 删除角色 | `isSuperAdmin` |
 | 人员管理 | 新建人员 | `system:user:manage` |
@@ -763,7 +800,7 @@ docker compose up --build
 | 创建 | `createFeature(input)` | 指定 node_id、title、code、summary、description、platform、status、priority、version、tags |
 | 更新 | `updateFeature(featureId, input, expectedUpdatedAt?)` | 修改任意字段，支持乐观锁：传入 updatedAt 做冲突检测，不匹配返回 CONFLICT 错误 |
 | 删除 | `deleteFeature(featureId)` | 软删除 |
-| 显示/隐藏 | `showFeature` / `hideFeature` | 切换 is_visible |
+| 显示/隐藏 | `showFeature` / `hideFeature` | 切换 is_visible；隐藏特征默认不在列表中显示，管理页面传 `includeHidden=true` 可查看并恢复 |
 | 复制 | `copyFeature(featureId, targetNodeId)` | 在目标节点下创建副本，继承全部业务字段，记录 copied_from_id / source_feature_id / copy_operation_id / last_copied_at |
 | 移动 | `moveFeature(featureId, targetNodeId)` | 变更 node_id，记录 moved_from_node_id / move_operation_id / last_moved_at |
 | 列表 | `featureList(nodeIds?)` | 按多个节点筛选（含后代），不传则返回全部，分页 |
@@ -813,7 +850,7 @@ docker compose up --build
 - is_super_admin 用户绕过权限检查
 - 系统角色（is_system=true）：页面隐藏编辑、权限分配和删除按钮，后端禁止修改、权限变更和删除
 - 删除角色按钮：仅超级管理员可见，且系统角色不显示删除按钮
-- 前端导航 TabBar 根据权限动态过滤：无 `xxx:list` 权限的页面不展示对应 Tab
+- 前端导航 TabBar 根据权限动态过滤：特征库 Tab 对所有登录用户可见（管理按钮按权限隐藏），其他 Tab 需对应 `xxx:list` 权限
 
 ### 6.5 AI 供应商管理
 
@@ -827,12 +864,13 @@ docker compose up --build
 ### 6.6 AI 生成提示词
 
 - 在特征管理页多选特征（支持全选/取消），点击"AI 生成"
+- 生成前校验：至少需选择一个节点或特征，否则提示用户
 - 选择供应商，可选填补充要求（如"重点覆盖边界值和异常场景"）
 - 后端自动构建提示词：节点层级结构 + 特征详情 + 补充要求
 - 返回 Markdown 格式的测试要点提示词（仅描述"要测什么"，不展开为具体步骤和预期结果）
 - 生成的提示词自动保存到数据库，可在提示词管理页面查看详情
 - 提示词管理页面展示：提示词内容、发起人、AI 供应商、模型名称、创建时间
-- 删除提示词：仅超级管理员可见删除按钮，后端也仅允许超级管理员操作
+- 删除提示词：超级管理员或拥有 `ai:provider:manage` 权限的用户可见删除按钮，后端同样允许这两种身份操作
 
 ### 6.7 日志审计
 
@@ -849,6 +887,7 @@ docker compose up --build
 4. `passlib` 与 `bcrypt >= 4.0` 不兼容，项目已切换为直接使用 `bcrypt` 库
 5. 更换 `SECRET_KEY` 后，已加密的 AI 供应商 API Key 将无法解密，需重新配置所有供应商
 6. AI 生成提示词当前为同步等待模式（最长 120 秒），大批量特征建议分批生成
+7. GraphQL mutation 仅捕获 `AppError` 时，非 AppError 异常（如网络错误、解析失败）会变成 GraphQL 内部错误；关键 mutation（`create_user`、`generate_prompt`、`test_ai_connection`）已增加 `except Exception` 兜底
 
 ## 8. 文档索引
 
