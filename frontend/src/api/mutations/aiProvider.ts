@@ -46,14 +46,24 @@ export const TEST_AI_CONNECTION_MUTATION = gql`
 `;
 
 export const GENERATE_TEST_CASES_MUTATION = gql`
-  mutation GenerateTestCases($input: GenerateTestCasesInput!) {
-    generateTestCases(input: $input) {
+  mutation GeneratePrompt($input: GeneratePromptInput!) {
+    generatePrompt(input: $input) {
       success
       message
       error { code message }
       content
       model
       usage
+    }
+  }
+`;
+
+export const DELETE_PROMPT_MUTATION = gql`
+  mutation DeletePrompt($promptId: String!) {
+    deletePrompt(promptId: $promptId) {
+      success
+      message
+      error { code message }
     }
   }
 `;

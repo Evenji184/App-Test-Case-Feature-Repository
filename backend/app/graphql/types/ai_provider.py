@@ -41,6 +41,27 @@ class AiGenerateResult(MutationResult):
     usage: Optional[str] = None
 
 
+@strawberry.type
+class PromptType:
+    id: str
+    content: str
+    provider_id: str
+    provider_name: str
+    model: str | None
+    created_by_name: str | None
+    node_ids: str | None
+    feature_ids: str | None
+    custom_instruction: str | None
+    created_at: str
+    updated_at: str
+
+
+@strawberry.type
+class PromptListType:
+    items: list[PromptType]
+    page_info: PageInfo
+
+
 @strawberry.input
 class CreateAiProviderInput:
     name: str
@@ -68,7 +89,7 @@ class UpdateAiProviderInput:
 
 
 @strawberry.input
-class GenerateTestCasesInput:
+class GeneratePromptInput:
     provider_id: str
     node_ids: list[str] = strawberry.field(default_factory=list)
     feature_ids: list[str] = strawberry.field(default_factory=list)

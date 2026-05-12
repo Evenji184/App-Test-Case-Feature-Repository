@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json as json_lib
 from dataclasses import dataclass
 from typing import Any
 
@@ -68,6 +69,16 @@ class ProviderClient:
             return {"success": False, "message": f"连接测试失败: {exc}"}
 
     @staticmethod
+    async def _send_request(url: str, payload: dict[str, Any], headers: dict[str, str]) -> dict[str, Any]:
+        """发送请求并解析JSON响应，禁用自动解码避免代理服务器错误Content-Encoding导致解压失败"""
+        async with httpx.AsyncClient(timeout=120.0) as client:
+            async with client.stream("POST", url, json=payload, headers=headers) as response:
+                response.decode_content = False
+                raw_bytes = await response.aread()
+                response.raise_for_status()
+                return json_lib.loads(raw_bytes)
+
+    @staticmethod
     async def _call_openai_compatible(
         config: ProviderConfig,
         *,
@@ -90,12 +101,10 @@ class ProviderClient:
         headers = {
             "Authorization": f"Bearer {config.api_key}",
             "Content-Type": "application/json",
+            "Accept-Encoding": "identity",
         }
 
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(url, json=payload, headers=headers)
-            response.raise_for_status()
-            data = response.json()
+        data = await ProviderClient._send_request(url, payload, headers)
 
         content = data["choices"][0]["message"]["content"]
         usage = data.get("usage")
@@ -118,6 +127,8 @@ class ProviderClient:
         max_tokens: int,
     ) -> GenerateResult:
         url = config.request_url.rstrip("/")
+        if not url.endswith("/v1/messages"):
+            url += "/v1/messages"
 
         payload: dict[str, Any] = {
             "model": config.model_name,
@@ -132,14 +143,12 @@ class ProviderClient:
             "x-api-key": config.api_key,
             "anthropic-version": "2023-06-01",
             "Content-Type": "application/json",
+            "Accept-Encoding": "identity",
         }
 
-        async with httpx.AsyncClient(timeout=120.0) as client:
-            response = await client.post(url, json=payload, headers=headers)
-            response.raise_for_status()
-            data = response.json()
+        data = await ProviderClient._send_request(url, payload, headers)
 
-        content = data["content"][0]["text"]
+        content = data["content"][0].get("text") or data["content"][0].get("content") or ""
         usage = data.get("usage")
         return GenerateResult(
             content=content,

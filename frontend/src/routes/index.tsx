@@ -8,6 +8,7 @@ import { FeatureManagePage } from '@/pages/FeatureManage';
 import { PermissionManagePage } from '@/pages/PermissionManage';
 import { UserManagePage } from '@/pages/UserManage';
 import { AiProviderPage } from '@/pages/AiProvider';
+import { PromptManagePage } from '@/pages/PromptManage';
 import { RequireAuth, RequirePermission } from './guards';
 import { useAuthStore } from '@/stores/auth';
 
@@ -36,6 +37,9 @@ export function AppRoutes() {
           </Route>
           <Route element={<RequirePermission permission="ai:provider:list" />}>
             <Route path="/manage/ai-providers" element={<AiProviderPage />} />
+          </Route>
+          <Route element={<RequirePermission permission="ai:prompt:list" />}>
+            <Route path="/manage/prompts" element={<PromptManagePage />} />
           </Route>
           <Route element={<RequirePermission permission="permission:list" />}>
             <Route path="/manage/permissions" element={<PermissionManagePage />} />

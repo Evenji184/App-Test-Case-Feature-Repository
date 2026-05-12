@@ -179,12 +179,20 @@ def build_permissions() -> list[dict[str, str]]:
             "description": "创建、编辑、删除AI供应商及测试连接",
         },
         {
-            "name": "AI生成测试用例",
+            "name": "AI生成提示词",
             "code": "ai:generate",
             "module": "ai",
             "resource": "ai_generate",
             "action": "generate",
-            "description": "使用AI生成测试用例",
+            "description": "使用AI生成测试要点提示词",
+        },
+        {
+            "name": "提示词列表页访问",
+            "code": "ai:prompt:list",
+            "module": "ai",
+            "resource": "prompt",
+            "action": "list",
+            "description": "访问提示词管理页面",
         },
     ]
 

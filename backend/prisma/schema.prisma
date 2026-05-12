@@ -53,6 +53,9 @@ model User {
   created_ai_providers  AiProvider[]  @relation("ai_provider_created_by")
   updated_ai_providers  AiProvider[]  @relation("ai_provider_updated_by")
   deleted_ai_providers  AiProvider[]  @relation("ai_provider_deleted_by")
+  created_prompts       Prompt[]      @relation("prompt_created_by")
+  updated_prompts       Prompt[]      @relation("prompt_updated_by")
+  deleted_prompts       Prompt[]      @relation("prompt_deleted_by")
   user_roles       UserRole[]
   request_logs     RequestLog[]
   audit_logs       AuditLog[]
@@ -334,9 +337,35 @@ model AiProvider {
   created_by_user   User?     @relation("ai_provider_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
   updated_by_user   User?     @relation("ai_provider_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
   deleted_by_user   User?     @relation("ai_provider_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  prompts           Prompt[]  @relation("prompt_provider")
 
   @@unique([name, deleted_at])
   @@index([status, deleted_at])
   @@index([provider_format, deleted_at])
   @@map("ai_providers")
+}
+
+model Prompt {
+  id                String    @id @default(uuid()) @db.Char(36)
+  content           String    @db.LongText
+  provider_id       String?   @db.Char(36)
+  model             String?   @db.VarChar(128)
+  usage_info        String?   @db.Text
+  node_ids          String?   @db.Text
+  feature_ids       String?   @db.Text
+  custom_instruction String?  @db.Text
+  deleted_at        DateTime? @db.DateTime(3)
+  created_at        DateTime  @default(now()) @db.DateTime(3)
+  updated_at        DateTime  @updatedAt @db.DateTime(3)
+  created_by        String?   @db.Char(36)
+  updated_by        String?   @db.Char(36)
+  deleted_by        String?   @db.Char(36)
+  provider          AiProvider? @relation("prompt_provider", fields: [provider_id], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  created_by_user   User?     @relation("prompt_created_by", fields: [created_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  updated_by_user   User?     @relation("prompt_updated_by", fields: [updated_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+  deleted_by_user   User?     @relation("prompt_deleted_by", fields: [deleted_by], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  @@index([provider_id, deleted_at])
+  @@index([created_at])
+  @@map("prompts")
 }

@@ -83,7 +83,17 @@
       "Bash(./node_modules/.bin/tsc --noEmit)",
       "Bash(Get-ChildItem -Path \"E:\\\\App-Test-Case-Feature-Repository\\\\backend\" -Recurse -Directory)",
       "Bash(Select-Object -First 20)",
-      "PowerShell(Get-NetTCPConnection *)"
+      "PowerShell(Get-NetTCPConnection *)",
+      "Bash(Get-ChildItem -Path \"E:\\\\App-Test-Case-Feature-Repository\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(xargs grep -l \"httpx\\\\|requests\\\\|AsyncClient\")",
+      "WebFetch(domain:api-docs.deepseek.com)",
+      "Bash(Get-ChildItem -Path \"E:\\\\App-Test-Case-Feature-Repository\" -Directory -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object -ExpandProperty Name)",
+      "Bash(npx prisma *)",
+      "Bash(findstr \":5173 :5174\")",
+      "Bash(node -e \"const icons = require\\('antd-mobile-icons'\\); console.log\\('TextOutline:', typeof icons.TextOutline\\)\")",
+      "Bash(findstr \":8001 LISTEN\")"
     ]
   }
 }

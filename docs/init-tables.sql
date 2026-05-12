@@ -1,6 +1,9 @@
 -- APP 特征库管理系统 - 建表脚本
 -- 适用环境: MySQL 8.0, utf8mb4, InnoDB (DYNAMIC row format)
 -- 用途: 绕过 prisma db push 在 utf8mb4 下的 index key 长度超限问题
+-- 共 12 张表: users, roles, permissions, user_roles, role_permissions,
+--            feature_nodes, features, request_logs, audit_logs, login_logs,
+--            ai_providers, prompts
 
 -- 创建数据库
 CREATE DATABASE IF NOT EXISTS app_feature_repository
@@ -268,4 +271,28 @@ CREATE TABLE ai_providers (
   UNIQUE KEY ai_providers_name_deleted_at_key (name, deleted_at),
   KEY ai_providers_status_deleted_at_idx (status, deleted_at),
   KEY ai_providers_provider_format_idx (provider_format, deleted_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ========================================
+-- 提示词相关表
+-- ========================================
+
+CREATE TABLE prompts (
+  id                CHAR(36)     NOT NULL,
+  content           LONGTEXT     NOT NULL,
+  provider_id       CHAR(36)     DEFAULT NULL,
+  model             VARCHAR(128) DEFAULT NULL,
+  usage_info        TEXT         DEFAULT NULL,
+  node_ids          TEXT         DEFAULT NULL,
+  feature_ids       TEXT         DEFAULT NULL,
+  custom_instruction TEXT         DEFAULT NULL,
+  deleted_at        DATETIME(3)  DEFAULT NULL,
+  created_at        DATETIME(3)  NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+  updated_at        DATETIME(3)  NOT NULL,
+  created_by        CHAR(36)     DEFAULT NULL,
+  updated_by        CHAR(36)     DEFAULT NULL,
+  deleted_by        CHAR(36)     DEFAULT NULL,
+  PRIMARY KEY (id),
+  KEY prompts_provider_id_deleted_at_idx (provider_id, deleted_at),
+  KEY prompts_created_at_idx (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

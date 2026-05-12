@@ -149,3 +149,19 @@ export interface AiGenerateResult extends MutationResult {
   model?: string | null;
   usage?: string | null;
 }
+
+export interface Prompt {
+  id: string;
+  content: string;
+  providerId: string;
+  providerName: string;
+  model?: string | null;
+  createdByName?: string | null;
+  nodeIds?: string | null;
+  featureIds?: string | null;
+  customInstruction?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type PromptListResult = ListResult<Prompt>;

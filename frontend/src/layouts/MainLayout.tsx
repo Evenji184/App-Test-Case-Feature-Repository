@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client';
-import { AppOutline, LockOutline, TeamOutline, UnorderedListOutline, SetOutline } from 'antd-mobile-icons';
+import { AppOutline, LockOutline, TeamOutline, UnorderedListOutline, SetOutline, TextOutline } from 'antd-mobile-icons';
 import { Button, Form, Input, NavBar, SafeArea, TabBar, Toast } from 'antd-mobile';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { CHANGE_MY_PASSWORD_MUTATION } from '@/api/mutations/user';
@@ -12,6 +12,7 @@ const allTabs = [
   { key: '/features', title: '特征库', icon: <AppOutline />, permission: null },
   { key: '/manage/features', title: '管理', icon: <UnorderedListOutline />, permission: 'feature:list' },
   { key: '/manage/ai-providers', title: 'AI', icon: <SetOutline />, permission: 'ai:provider:list' },
+  { key: '/manage/prompts', title: '提示词', icon: <TextOutline />, permission: 'ai:prompt:list' },
   { key: '/manage/permissions', title: '权限', icon: <LockOutline />, permission: 'permission:list' },
   { key: '/manage/users', title: '人员', icon: <TeamOutline />, permission: 'user:list' },
 ];

@@ -12,6 +12,7 @@ import type {
   NodeMutationResult,
   NodeTreeItem,
   PermissionModuleGroup,
+  PromptListResult,
   RoleListResult,
   RoleMutationResult,
   User,
@@ -206,6 +207,7 @@ export interface SimpleMutationData {
   testAiConnection?: MutationResult;
   changeMyPassword?: MutationResult;
   deleteRole?: MutationResult;
+  deletePrompt?: MutationResult;
 }
 
 export interface AiProviderListQueryData {
@@ -240,7 +242,7 @@ export interface UpdateAiProviderInput {
   remark?: string;
 }
 
-export interface GenerateTestCasesInput {
+export interface GeneratePromptInput {
   providerId: string;
   nodeIds?: string[];
   featureIds?: string[];
@@ -253,5 +255,13 @@ export interface AiProviderMutationData {
 }
 
 export interface AiGenerateMutationData {
-  generateTestCases?: AiGenerateResult;
+  generatePrompt?: AiGenerateResult;
+}
+
+export interface PromptListQueryData {
+  promptList: PromptListResult;
+}
+
+export interface PromptListQueryVariables {
+  pagination?: PaginationInput;
 }

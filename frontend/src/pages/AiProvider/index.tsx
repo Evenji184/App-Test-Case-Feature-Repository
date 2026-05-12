@@ -25,7 +25,7 @@ const statusOptions = [
 
 const requestUrlPlaceholder: Record<string, string> = {
   openai_compatible: '完整端点，如 https://api.openai.com/v1/chat/completions',
-  anthropic: '完整端点，如 https://api.anthropic.com/v1/messages',
+  anthropic: '基础地址，如 https://api.anthropic.com 或 https://api.deepseek.com/anthropic',
 };
 
 export function AiProviderPage() {

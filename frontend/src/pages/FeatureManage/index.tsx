@@ -11,7 +11,7 @@ import {
   UPDATE_FEATURE_MUTATION,
 } from '@/api/mutations/feature';
 import { COPY_NODE_MUTATION, CREATE_NODE_MUTATION, DELETE_NODE_MUTATION, MOVE_NODE_MUTATION, UPDATE_NODE_MUTATION } from '@/api/mutations/node';
-import { GENERATE_TEST_CASES_MUTATION } from '@/api/mutations/aiProvider';
+import { GENERATE_TEST_CASES_MUTATION as GENERATE_PROMPT_MUTATION } from '@/api/mutations/aiProvider';
 import { FEATURE_LIST_QUERY } from '@/api/queries/feature';
 import { NODE_TREE_QUERY } from '@/api/queries/node';
 import { AI_PROVIDER_LIST_QUERY } from '@/api/queries/aiProvider';
@@ -92,7 +92,7 @@ export function FeatureManagePage() {
   const providerQuery = useQuery<{ aiProviderList: AiProviderListResult }>(AI_PROVIDER_LIST_QUERY, {
     variables: { pagination: { page: 1, pageSize: 50 } },
   });
-  const [generateTestCases] = useMutation(GENERATE_TEST_CASES_MUTATION);
+  const [generatePrompt] = useMutation(GENERATE_PROMPT_MUTATION);
 
   const aiProviders: AiProvider[] = providerQuery.data?.aiProviderList.items ?? [];
   const defaultProvider = aiProviders.find((p) => p.isDefault && p.status === 'active');
@@ -535,7 +535,7 @@ export function FeatureManagePage() {
 
       <FormDrawer
         open={aiDrawerOpen}
-        title="AI 生成测试用例"
+        title="AI 生成提示词"
         onClose={() => setAiDrawerOpen(false)}
         onSubmit={async () => {
           if (!aiProviderId) {
@@ -545,7 +545,7 @@ export function FeatureManagePage() {
           setIsGenerating(true);
           setGeneratedContent('');
           try {
-            const { data } = await generateTestCases({
+            const { data } = await generatePrompt({
               variables: {
                 input: {
                   providerId: aiProviderId,
@@ -555,11 +555,11 @@ export function FeatureManagePage() {
                 },
               },
             });
-            if (data?.generateTestCases?.success) {
-              setGeneratedContent(data.generateTestCases.content ?? '');
-              Toast.show({ content: '测试用例生成成功', icon: 'success' });
+            if (data?.generatePrompt?.success) {
+              setGeneratedContent(data.generatePrompt.content ?? '');
+              Toast.show({ content: '提示词生成成功', icon: 'success' });
             } else {
-              Toast.show({ content: data?.generateTestCases?.message ?? '生成失败', icon: 'fail' });
+              Toast.show({ content: data?.generatePrompt?.message ?? '生成失败', icon: 'fail' });
             }
           } catch {
             Toast.show({ content: '生成失败，请稍后重试', icon: 'fail' });

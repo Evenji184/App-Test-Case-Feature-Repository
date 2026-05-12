@@ -111,3 +111,19 @@ export const AI_PROVIDER_BASE_FRAGMENT = gql`
     updatedAt
   }
 `;
+
+export const PROMPT_BASE_FRAGMENT = gql`
+  fragment PromptBase on PromptType {
+    id
+    content
+    providerId
+    providerName
+    model
+    createdByName
+    nodeIds
+    featureIds
+    customInstruction
+    createdAt
+    updatedAt
+  }
+`;

@@ -15,7 +15,7 @@ from app.graphql.types.node import CreateNodeInput, NodeListType, NodeMutationRe
 from app.graphql.types.permission import PermissionModuleGroup, PermissionResourceGroup, PermissionType
 from app.graphql.types.role import CreateRoleInput, RoleListType, RoleMutationResult, RoleType, UpdateRoleInput
 from app.graphql.types.user import CreateUserInput, UpdateUserInput, UserListType, UserMutationResult, UserType
-from app.graphql.types.ai_provider import AiGenerateResult, AiProviderListType, AiProviderMutationResult, AiProviderType, CreateAiProviderInput, GenerateTestCasesInput, UpdateAiProviderInput
+from app.graphql.types.ai_provider import AiGenerateResult, AiProviderListType, AiProviderMutationResult, AiProviderType, CreateAiProviderInput, GeneratePromptInput, PromptListType, PromptType, UpdateAiProviderInput
 from app.modules.ai.service import AiProviderService
 from app.modules.audit.service import AuditService
 from app.modules.auth.dependencies import get_current_user, require_permission
@@ -24,7 +24,7 @@ from app.modules.feature_library.feature_service import FeatureService
 from app.modules.feature_library.node_service import NodeService
 from app.modules.rbac.service import RBACService
 from app.modules.user.service import UserService
-from app.utils.exceptions import AppError, NotFoundError, ValidationError
+from app.utils.exceptions import AppError, AuthorizationError, NotFoundError, ValidationError
 from app.utils.pagination import build_page_info
 from app.utils.tree import build_tree
 
@@ -81,6 +81,12 @@ def _login_log_type(item: Any) -> LoginLogType:
 
 def _ai_provider_type(provider: Any) -> AiProviderType:
     return AiProviderType(id=provider.id, name=provider.name, website_url=provider.website_url, api_key_hint=provider.api_key_hint, request_url=provider.request_url, model_name=provider.model_name, provider_format=provider.provider_format, is_default=provider.is_default, status=provider.status, remark=provider.remark, created_at=_dt(provider.created_at) or "", updated_at=_dt(provider.updated_at) or "")
+
+
+def _prompt_type(prompt: Any) -> PromptType:
+    provider_name = prompt.provider.name if prompt.provider else "未知"
+    created_by_name = prompt.created_by_user.display_name if prompt.created_by_user else (prompt.created_by_user.username if prompt.created_by_user else None)
+    return PromptType(id=prompt.id, content=prompt.content, provider_id=prompt.provider_id, provider_name=provider_name, model=prompt.model, created_by_name=created_by_name, node_ids=prompt.node_ids, feature_ids=prompt.feature_ids, custom_instruction=prompt.custom_instruction, created_at=_dt(prompt.created_at) or "", updated_at=_dt(prompt.updated_at) or "")
 
 
 async def _audit_log(info: Info, *, action: str, target_type: str, target: Any, summary: str, before_data: dict[str, Any] | None = None, after_data: dict[str, Any] | None = None) -> None:
@@ -185,6 +191,12 @@ class Query:
         await require_permission(info, "ai:provider:list")
         items, total, page, page_size = await AiProviderService.list_providers(info.context.prisma, page=pagination.page, page_size=pagination.page_size)
         return AiProviderListType(items=[_ai_provider_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
+
+    @strawberry.field(permission_classes=[IsAuthenticated])
+    async def prompt_list(self, info: Info, pagination: PaginationInput = PaginationInput()) -> PromptListType:
+        await require_permission(info, "ai:prompt:list")
+        items, total, page, page_size = await AiProviderService.list_prompts(info.context.prisma, page=pagination.page, page_size=pagination.page_size)
+        return PromptListType(items=[_prompt_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
 
 
 @strawberry.type
@@ -597,17 +609,31 @@ class Mutation:
             return MutationResult(success=False, message=exc.message, error=_error_result(exc))
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
-    async def generate_test_cases(self, info: Info, input: GenerateTestCasesInput) -> AiGenerateResult:
+    async def generate_prompt(self, info: Info, input: GeneratePromptInput) -> AiGenerateResult:
         try:
             import json
             operator = await require_permission(info, "ai:generate")
-            result = await AiProviderService.generate_test_cases(info.context.prisma, provider_id=input.provider_id, node_ids=input.node_ids, feature_ids=input.feature_ids, custom_instruction=input.custom_instruction)
-            logger.info("生成测试用例: operator=%s, provider_id=%s", operator.username, input.provider_id)
-            await _audit_log(info, action="generate_test_cases", target_type="AiProvider", target=type("T", (), {"id": input.provider_id, "name": input.provider_id})(), summary="AI生成测试用例")
-            return AiGenerateResult(success=True, message="测试用例生成成功", content=result.content, model=result.model, usage=json.dumps(result.usage) if result.usage else None, error=None)
+            result = await AiProviderService.generate_prompt(info.context.prisma, provider_id=input.provider_id, node_ids=input.node_ids, feature_ids=input.feature_ids, custom_instruction=input.custom_instruction, operator_id=operator.id)
+            logger.info("生成提示词: operator=%s, provider_id=%s", operator.username, input.provider_id)
+            await _audit_log(info, action="generate_prompt", target_type="Prompt", target=type("T", (), {"id": input.provider_id, "name": input.provider_id})(), summary="AI生成提示词")
+            return AiGenerateResult(success=True, message="提示词生成成功", content=result.content, model=result.model, usage=json.dumps(result.usage) if result.usage else None, error=None)
         except AppError as exc:
-            logger.warning("生成测试用例失败: operator=%s, reason=%s", getattr(info.context.user, 'id', '?'), exc.message)
+            logger.warning("生成提示词失败: operator=%s, reason=%s", getattr(info.context.user, 'id', '?'), exc.message)
             return AiGenerateResult(success=False, message=exc.message, error=_error_result(exc), content=None, model=None, usage=None)
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def delete_prompt(self, info: Info, prompt_id: str) -> MutationResult:
+        try:
+            user = await get_current_user(info)
+            if not getattr(user, "is_super_admin", False):
+                raise AuthorizationError("仅超级管理员可删除提示词记录")
+            await AiProviderService.delete_prompt(info.context.prisma, prompt_id=prompt_id, operator_id=user.id)
+            logger.info("删除提示词: operator=%s, prompt_id=%s", user.username, prompt_id)
+            await _audit_log(info, action="delete_prompt", target_type="Prompt", target=type("T", (), {"id": prompt_id, "name": prompt_id})(), summary="删除提示词记录")
+            return MutationResult(success=True, message="提示词删除成功", error=None)
+        except AppError as exc:
+            logger.warning("删除提示词失败: prompt_id=%s, reason=%s", prompt_id, exc.message)
+            return MutationResult(success=False, message=exc.message, error=_error_result(exc))
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)

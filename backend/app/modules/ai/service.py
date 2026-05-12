@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+
 from datetime import datetime, timezone
 from typing import Any
 
@@ -120,13 +122,14 @@ class AiProviderService:
         return await ProviderClient.test_connection(config)
 
     @staticmethod
-    async def generate_test_cases(
+    async def generate_prompt(
         prisma: Any,
         *,
         provider_id: str,
         node_ids: list[str],
         feature_ids: list[str],
         custom_instruction: str | None = None,
+        operator_id: str | None = None,
     ) -> GenerateResult:
         provider = await AiProviderService._get_provider(prisma, provider_id)
 
@@ -197,11 +200,64 @@ class AiProviderService:
         )
 
         logger.info(
-            "Generating test cases: provider=%s, nodes=%d, features=%d",
+            "Generating prompt: provider=%s, nodes=%d, features=%d",
             provider.name, len(nodes_dicts), len(features_dicts),
         )
-        return await ProviderClient.generate(
+        result = await ProviderClient.generate(
             config,
             system_prompt=system_prompt,
             user_prompt=user_prompt,
+        )
+
+        # Save prompt to database
+        await prisma.prompt.create(
+            data={
+                "content": result.content,
+                "provider_id": provider_id,
+                "model": result.model,
+                "usage_info": json.dumps(result.usage) if result.usage else None,
+                "node_ids": json.dumps(list(node_ids_set)),
+                "feature_ids": json.dumps(feature_ids),
+                "custom_instruction": custom_instruction,
+                "created_by": operator_id,
+                "updated_by": operator_id,
+            }
+        )
+
+        return result
+
+    @staticmethod
+    async def list_prompts(
+        prisma: Any, *, page: int, page_size: int
+    ) -> tuple[list[Any], int, int, int]:
+        current_page, current_page_size, skip = normalize_pagination(page, page_size)
+        where: dict[str, Any] = {"deleted_at": None}
+        total = await prisma.prompt.count(where=where)
+        items = await prisma.prompt.find_many(
+            where=where,
+            skip=skip,
+            take=current_page_size,
+            order={"created_at": "desc"},
+            include={
+                "provider": True,
+                "created_by_user": True,
+            },
+        )
+        return items, total, current_page, current_page_size
+
+    @staticmethod
+    async def delete_prompt(
+        prisma: Any, *, prompt_id: str, operator_id: str | None
+    ) -> Any:
+        prompt = await prisma.prompt.find_first(
+            where={"id": prompt_id, "deleted_at": None}
+        )
+        if not prompt:
+            raise NotFoundError("提示词记录不存在", code="PROMPT_NOT_FOUND")
+        return await prisma.prompt.update(
+            where={"id": prompt_id},
+            data={
+                "deleted_at": datetime.now(timezone.utc),
+                "deleted_by": operator_id,
+            },
         )

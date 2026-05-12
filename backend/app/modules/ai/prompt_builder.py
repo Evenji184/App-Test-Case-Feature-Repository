@@ -3,15 +3,14 @@ from __future__ import annotations
 from typing import Any
 
 
-SYSTEM_PROMPT = """你是一名资深的软件测试工程师，擅长根据产品特征描述设计全面的测试场景和测试用例。
+SYSTEM_PROMPT = """你是一名资深的软件测试工程师，擅长根据产品特征描述提炼测试要点。
 
 你的输出要求：
-1. 针对每个特征，生成覆盖正常流程和异常场景的测试用例
-2. 测试用例应包含：用例标题、前置条件、测试步骤、预期结果
-3. 考虑边界值、异常输入、权限控制、并发等测试维度
-4. 按优先级排列测试用例（高/中/低）
-5. 使用 Markdown 格式输出，结构清晰
-6. 如果特征描述中有平台信息，需要考虑平台差异"""
+1. 针对每个特征，列出关键测试维度和需要测试的方向（功能要点、边界条件、异常路径、权限控制、并发等）
+2. 仅描述"要测什么"，不展开为具体的测试步骤和预期结果
+3. 按优先级标注测试要点（高/中/低）
+4. 如果特征描述中有平台信息，标注平台差异点
+5. 使用 Markdown 格式输出，结构清晰，精炼简洁"""
 
 
 def build_generate_prompt(
@@ -65,9 +64,9 @@ def build_generate_prompt(
         sections.append(f"## 补充要求\n{custom_instruction}")
 
     user_prompt = (
-        f"请根据以下 {len(features)} 个特征的描述，生成场景化的测试用例。\n\n"
+        f"请根据以下 {len(features)} 个特征的描述，输出测试要点提示词。\n\n"
         + "\n\n".join(sections)
-        + "\n\n请输出完整的测试用例，覆盖所有特征。"
+        + "\n\n仅描述需要测试的维度和方向，不要展开为具体步骤和预期结果。"
     )
 
     return SYSTEM_PROMPT, user_prompt
