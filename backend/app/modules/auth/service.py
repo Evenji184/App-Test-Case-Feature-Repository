@@ -55,3 +55,17 @@ class AuthService:
             where={"id": user_id},
             data={"password_hash": hash_password(new_password), "updated_by": operator_id},
         )
+
+    @staticmethod
+    async def change_password(prisma: Any, *, user_id: str, old_password: str, new_password: str) -> None:
+        user = await prisma.user.find_first(where={"id": user_id, "deleted_at": None})
+        if not user:
+            raise AuthenticationError("用户不存在")
+        if not verify_password(old_password, user.password_hash):
+            raise ValidationError("旧密码不正确")
+        if len(new_password) < 6:
+            raise ValidationError("密码长度不能少于 6 位")
+        await prisma.user.update(
+            where={"id": user_id},
+            data={"password_hash": hash_password(new_password), "updated_by": user_id},
+        )

@@ -67,6 +67,14 @@ def build_permissions() -> list[dict[str, str]]:
             "description": "维护角色与角色授权",
         },
         {
+            "name": "角色删除",
+            "code": "role:delete",
+            "module": "system",
+            "resource": "role",
+            "action": "delete",
+            "description": "删除角色（系统角色不可删除）",
+        },
+        {
             "name": "权限列表页访问",
             "code": "permission:list",
             "module": "system",
@@ -236,6 +244,26 @@ async def ensure_role_permissions(
                 "updated_by": admin_id,
             }
         )
+
+
+async def revoke_role_permissions_by_codes(
+    db: Prisma, admin_id: str, role_id: str, codes: set[str]
+) -> None:
+    """软删除指定角色中匹配 codes 的权限关联。"""
+    from datetime import datetime, timezone
+    excluded = await db.permission.find_many(
+        where={"code": {"in": list(codes)}, "deleted_at": None}
+    )
+    now = datetime.now(tz=timezone.utc)
+    for perm in excluded:
+        existing = await db.rolepermission.find_first(
+            where={"role_id": role_id, "permission_id": perm.id, "deleted_at": None}
+        )
+        if existing:
+            await db.rolepermission.update(
+                where={"id": existing.id},
+                data={"deleted_at": now, "deleted_by": admin_id},
+            )
 
 
 async def upsert_admin_user(db: Prisma) -> Any:
@@ -453,7 +481,14 @@ async def main() -> None:
         for permission in build_permissions():
             permissions.append(await upsert_permission(db, admin_id, permission))
 
-        await ensure_role_permissions(db, admin_id, role.id, [item.id for item in permissions])
+        # 系统管理员角色排除超级管理员专属权限（删除用户、删除角色）
+        # 超级管理员用户通过 is_super_admin 标志绕过权限检查，不受此限制
+        super_admin_exclusive_codes = {"user:delete", "role:delete"}
+        role_permission_ids = [
+            item.id for item in permissions if item.code not in super_admin_exclusive_codes
+        ]
+        await ensure_role_permissions(db, admin_id, role.id, role_permission_ids)
+        await revoke_role_permissions_by_codes(db, admin_id, role.id, super_admin_exclusive_codes)
         await ensure_user_role(db, admin_id, admin.id, role.id)
         await seed_feature_tree(db, admin_id)
         print("数据库种子数据初始化完成。")

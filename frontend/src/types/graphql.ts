@@ -204,6 +204,8 @@ export interface SimpleMutationData {
   showFeature?: MutationResult;
   deleteAiProvider?: MutationResult;
   testAiConnection?: MutationResult;
+  changeMyPassword?: MutationResult;
+  deleteRole?: MutationResult;
 }
 
 export interface AiProviderListQueryData {

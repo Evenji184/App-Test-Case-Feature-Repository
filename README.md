@@ -189,6 +189,7 @@ FeatureNode                          Feature
 **供应商管理**
 
 - 支持两种接口格式：OpenAI 兼容格式（DeepSeek、Qwen、Moonshot 等）和 Anthropic 格式
+- 请求地址（request_url）为完整端点 URL，不含自动拼接：OpenAI 格式填 `https://api.openai.com/v1/chat/completions`，Anthropic 格式填 `https://api.anthropic.com/v1/messages`，代理服务填代理的完整路径
 - API Key 使用 Fernet 对称加密存储（密钥从 `SECRET_KEY` 派生），前端仅展示脱敏提示（如 `sk-****cdef`）
 - 支持"设为默认供应商"、测试连接、启用/禁用
 
@@ -636,30 +637,31 @@ docker compose up --build
 | 显示名 | `系统管理员` |
 | 角色 | `admin`（系统管理员，is_super_admin=true） |
 
-种子脚本创建 20 项权限，覆盖用户/角色/权限/节点/特征/审计/登录日志/AI 的查看与管理操作：
+种子脚本创建 22 项权限，覆盖用户/角色/权限/节点/特征/审计/登录日志/AI 的查看与管理操作。其中 `user:delete` 和 `role:delete` 为超级管理员专属权限，不分配给系统管理员角色（super_admin 用户通过标志位绕过权限检查，不受此限制）：
 
-| 权限 code | 模块 | 说明 |
-|-----------|------|------|
-| `user:list` | system | 用户列表页访问 |
-| `system:user:view` | system | 用户查看 |
-| `system:user:manage` | system | 用户管理 |
-| `user:delete` | system | 用户删除（软删除） |
-| `role:list` | system | 角色列表页访问 |
-| `system:role:manage` | system | 角色管理 |
-| `permission:list` | system | 权限列表页访问 |
-| `system:permission:view` | system | 权限查看 |
-| `node:list` | feature | 节点列表页访问 |
-| `feature:node:view` | feature | 节点查看 |
-| `feature:node:manage` | feature | 节点管理 |
-| `feature:list` | feature | 特征列表页访问 |
-| `feature:item:view` | feature | 特征查看 |
-| `feature:item:manage` | feature | 特征管理 |
-| `audit:log:view` | audit | 审计日志查看 |
-| `audit:login:view` | audit | 登录日志查看 |
-| `audit:request:view` | audit | 请求日志查看 |
-| `ai:provider:list` | ai | AI 供应商列表页访问 |
-| `ai:provider:manage` | ai | AI 供应商管理（增删改 + 测试连接） |
-| `ai:generate` | ai | AI 生成测试用例 |
+| 权限 code | 模块 | 说明 | admin 角色 |
+|-----------|------|------|:----------:|
+| `user:list` | system | 用户列表页访问 | Y |
+| `system:user:view` | system | 用户查看 | Y |
+| `system:user:manage` | system | 用户管理 | Y |
+| `user:delete` | system | 用户删除（软删除） | — |
+| `role:list` | system | 角色列表页访问 | Y |
+| `system:role:manage` | system | 角色管理 | Y |
+| `role:delete` | system | 角色删除 | — |
+| `permission:list` | system | 权限列表页访问 | Y |
+| `system:permission:view` | system | 权限查看 | Y |
+| `node:list` | feature | 节点列表页访问 | Y |
+| `feature:node:view` | feature | 节点查看 | Y |
+| `feature:node:manage` | feature | 节点管理 | Y |
+| `feature:list` | feature | 特征列表页访问 | Y |
+| `feature:item:view` | feature | 特征查看 | Y |
+| `feature:item:manage` | feature | 特征管理 | Y |
+| `audit:log:view` | audit | 审计日志查看 | Y |
+| `audit:login:view` | audit | 登录日志查看 | Y |
+| `audit:request:view` | audit | 请求日志查看 | Y |
+| `ai:provider:list` | ai | AI 供应商列表页访问 | Y |
+| `ai:provider:manage` | ai | AI 供应商管理（增删改 + 测试连接） | Y |
+| `ai:generate` | ai | AI 生成测试用例 | Y |
 
 特征树示例：`移动端 APP` → `认证中心` → `密码登录`；`个人中心`
 
@@ -672,6 +674,8 @@ docker compose up --build
 - JWT 签发 + bcrypt 密码哈希
 - 登录成功更新最近登录时间/IP，写入登录日志
 - 登录失败记录原因与 IP
+- 退出登录：主布局提供"退出登录"按钮，清除前端 token/用户数据并调用后端 logout mutation
+- 修改密码：登录用户可在主布局点击"修改密码"，输入旧密码和新密码（至少 6 位）
 
 ### 6.2 特征库管理
 
@@ -696,17 +700,41 @@ docker compose up --build
 - 未勾选任何节点时展示全部特征
 - 仅勾选 1 个节点时可编辑/删除/复制/移动该节点
 
+**按钮权限守卫**
+
+各页面操作按钮根据用户权限动态显示/隐藏，无权限的按钮不渲染：
+
+| 页面 | 按钮 | 所需权限 |
+|------|------|----------|
+| 特征管理 | 新建/编辑/删除/复制/移动节点 | `feature:node:manage` |
+| 特征管理 | 新建/编辑/隐藏/删除/复制/移动特征 | `feature:item:manage` |
+| 特征管理 | AI 生成测试用例 | `ai:generate` |
+| AI 供应商 | 新建/编辑/删除/测试连接 | `ai:provider:manage` |
+| 权限管理 | 新建角色/编辑/分配权限 | `system:role:manage` |
+| 权限管理 | 删除角色 | `isSuperAdmin` |
+| 人员管理 | 新建人员 | `system:user:manage` |
+| 人员管理 | 禁用/启用用户 | `system:user:manage` |
+| 人员管理 | 删除用户 | `isSuperAdmin` |
+| 人员管理 | 超级管理员开关 | `isSuperAdmin` |
+
 **特征（Feature）**
 
 | 操作 | GraphQL Mutation | 说明 |
 |------|------------------|------|
 | 创建 | `createFeature(input)` | 指定 node_id、title、code、summary、description、platform、status、priority、version、tags |
-| 更新 | `updateFeature(featureId, input)` | 修改任意字段 |
+| 更新 | `updateFeature(featureId, input, expectedUpdatedAt?)` | 修改任意字段，支持乐观锁：传入 updatedAt 做冲突检测，不匹配返回 CONFLICT 错误 |
 | 删除 | `deleteFeature(featureId)` | 软删除 |
 | 显示/隐藏 | `showFeature` / `hideFeature` | 切换 is_visible |
 | 复制 | `copyFeature(featureId, targetNodeId)` | 在目标节点下创建副本，继承全部业务字段，记录 copied_from_id / source_feature_id / copy_operation_id / last_copied_at |
 | 移动 | `moveFeature(featureId, targetNodeId)` | 变更 node_id，记录 moved_from_node_id / move_operation_id / last_moved_at |
 | 列表 | `featureList(nodeIds?)` | 按多个节点筛选（含后代），不传则返回全部，分页 |
+
+**并发编辑冲突检测**
+
+- 特征更新支持乐观锁：前端保存时带 `expectedUpdatedAt`（打开编辑时的 updatedAt 值）
+- 后端比对数据库当前 `updated_at`，不匹配则返回 `CONFLICT` 错误（code: "CONFLICT"）
+- 前端冲突时弹出 Dialog：选择"强制保存"（不带 expectedUpdatedAt 重发）或"刷新重编"（重新拉取最新数据）
+- 不传 `expectedUpdatedAt` 时跳过检查，兼容强制覆盖场景
 | 搜索 | `searchFeatures(keyword)` | 按 title/code/summary 模糊匹配 |
 
 **关联追踪字段汇总**
@@ -724,17 +752,28 @@ docker compose up --build
 ### 6.3 用户管理
 
 - 列表/创建/编辑/启用禁用/密码重置/角色分配/删除
+- 修改密码：登录用户可在主布局点击"修改密码"按钮，输入旧密码和新密码修改自身密码（新密码至少 6 位，需确认密码一致）
 - 未分配角色的用户无法启用
 - 分配角色时默认勾选已有角色，分配权限时默认勾选已有权限
 - 软删除，用户名和邮箱在 deleted_at 维度下唯一
+- 权限可见性控制：
+  - 超级管理员（is_super_admin）用户：页面隐藏编辑/禁用/删除等操作按钮，后端禁用时自动回写为启用，禁止删除
+  - 删除用户按钮：仅超级管理员可见
+  - 禁用/启用用户按钮：仅拥有 `system:user:manage` 权限或超级管理员可见
+  - 超级管理员开关（编辑表单中的 Switch）：仅超级管理员可见和操作
+- 并发编辑冲突检测：更新特征时带 updatedAt 乐观锁，后端比对不匹配返回 CONFLICT 错误，前端弹 Dialog 选择"强制保存"或"刷新重编"
 
 ### 6.4 角色权限
 
 - RBAC 模型：用户 → 角色 → 权限 三层授权
+- 系统管理员角色（admin）拥有除超级管理员专属权限外的全部 20 个权限（`user:delete` 和 `role:delete` 不分配给角色，仅 super_admin 用户通过标志位绕过）
 - 角色分配权限（`assignPermissionsToRole`），用户分配角色（`assignRolesToUser`）
+- 删除角色（`deleteRole`）：软删除，同时软删除关联的 role_permissions 和 user_roles
 - 分配时默认勾选已有角色/权限，支持增量调整
 - 权限树按 module → resource → action 三级组织
 - is_super_admin 用户绕过权限检查
+- 系统角色（is_system=true）：页面隐藏编辑、权限分配和删除按钮，后端禁止修改、权限变更和删除
+- 删除角色按钮：仅超级管理员可见，且系统角色不显示删除按钮
 - 前端导航 TabBar 根据权限动态过滤：无 `xxx:list` 权限的页面不展示对应 Tab
 
 ### 6.5 AI 供应商管理
@@ -757,7 +796,7 @@ docker compose up --build
 - 请求日志：中间件自动记录每个 HTTP 请求的 method/path/body/status/duration/ip/user_agent
 - 审计日志：业务操作手动触发，记录 action/target_type/target_id/change_summary/before_data/after_data
 - 登录日志：登录成功/失败自动写入，记录 login_status/failure_reason/ip/user_agent
-- 服务端操作日志：所有 21 个 Mutation 均有 logger.info/warning 记录，时间戳精度到毫秒
+- 服务端操作日志：所有 22 个 Mutation 均有 logger.info/warning 记录，时间戳精度到毫秒
 
 ## 7. 已知限制
 

@@ -33,3 +33,8 @@ class NotFoundError(AppError):
 class ValidationError(AppError):
     def __init__(self, message: str, details: dict[str, Any] | None = None) -> None:
         super().__init__(message=message, code="VALIDATION_ERROR", status_code=422, details=details)
+
+
+class ConflictError(AppError):
+    def __init__(self, message: str = "数据已被其他用户修改，请刷新后重试") -> None:
+        super().__init__(message=message, code="CONFLICT", status_code=409)

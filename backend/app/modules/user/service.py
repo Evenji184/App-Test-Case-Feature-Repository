@@ -68,7 +68,9 @@ class UserService:
 
     @staticmethod
     async def set_user_status(prisma: Any, *, user_id: str, status: str, operator_id: str | None) -> Any:
-        await UserService.get_user_by_id(prisma, user_id)
+        user = await UserService.get_user_by_id(prisma, user_id)
+        if user.is_super_admin and status != "active":
+            return await prisma.user.update(where={"id": user_id}, data={"status": "active", "updated_by": operator_id})
         if status == "active":
             has_role = await prisma.userrole.find_first(where={"user_id": user_id, "deleted_at": None})
             if not has_role:
@@ -97,6 +99,8 @@ class UserService:
     @staticmethod
     async def delete_user(prisma: Any, *, user_id: str, operator_id: str | None) -> Any:
         user = await UserService.get_user_by_id(prisma, user_id)
+        if user.is_super_admin:
+            raise ValidationError("超级管理员账号不可删除")
         now = datetime.now(timezone.utc)
         existing_roles = await prisma.userrole.find_many(where={"user_id": user_id, "deleted_at": None})
         for item in existing_roles:

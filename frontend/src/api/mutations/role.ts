@@ -47,3 +47,16 @@ export const ASSIGN_PERMISSIONS_TO_ROLE_MUTATION = gql`
     }
   }
 `;
+
+export const DELETE_ROLE_MUTATION = gql`
+  mutation DeleteRole($roleId: String!) {
+    deleteRole(roleId: $roleId) {
+      success
+      message
+      error {
+        code
+        message
+      }
+    }
+  }
+`;

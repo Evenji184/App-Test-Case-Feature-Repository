@@ -24,7 +24,7 @@ from app.modules.feature_library.feature_service import FeatureService
 from app.modules.feature_library.node_service import NodeService
 from app.modules.rbac.service import RBACService
 from app.modules.user.service import UserService
-from app.utils.exceptions import AppError
+from app.utils.exceptions import AppError, NotFoundError, ValidationError
 from app.utils.pagination import build_page_info
 from app.utils.tree import build_tree
 
@@ -133,7 +133,7 @@ class Query:
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def node_detail(self, info: Info, node_id: str) -> NodeType:
-        await require_permission(info, "node:detail")
+        await require_permission(info, "feature:node:view")
         return _node_type(await NodeService._get_node(info.context.prisma, node_id))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
@@ -150,7 +150,7 @@ class Query:
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def feature_detail(self, info: Info, feature_id: str) -> FeatureType:
-        await require_permission(info, "feature:detail")
+        await require_permission(info, "feature:item:view")
         return _feature_type(await FeatureService._get_feature(info.context.prisma, feature_id))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
@@ -161,14 +161,14 @@ class Query:
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def audit_log_list(self, info: Info, pagination: PaginationInput = PaginationInput()) -> AuditLogListType:
-        await require_permission(info, "audit:list")
+        await require_permission(info, "audit:log:view")
         total = await info.context.prisma.auditlog.count()
         items = await info.context.prisma.auditlog.find_many(skip=(pagination.page - 1) * pagination.page_size, take=pagination.page_size, order={"created_at": "desc"})
         return AuditLogListType(items=[_audit_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=pagination.page, page_size=pagination.page_size)))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
     async def request_log_list(self, info: Info, pagination: PaginationInput = PaginationInput()) -> RequestLogListType:
-        await require_permission(info, "request_log:list")
+        await require_permission(info, "audit:request:view")
         total = await info.context.prisma.requestlog.count()
         items = await info.context.prisma.requestlog.find_many(skip=(pagination.page - 1) * pagination.page_size, take=pagination.page_size, order={"created_at": "desc"})
         return RequestLogListType(items=[_request_log_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=pagination.page, page_size=pagination.page_size)))
@@ -208,7 +208,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def reset_password(self, info: Info, user_id: str, new_password: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "user:reset_password")
+            operator = await require_permission(info, "system:user:manage")
             await AuthService.reset_password(info.context.prisma, user_id=user_id, new_password=new_password, operator_id=operator.id)
             logger.info("重置密码: operator=%s, target_user_id=%s", operator.username, user_id)
             await _audit_log(info, action="reset_password", target_type="User", target=type("T", (), {"id": user_id, "username": user_id})(), summary="重置用户密码")
@@ -218,9 +218,20 @@ class Mutation:
             return MutationResult(success=False, message=exc.message, error=_error_result(exc))
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def change_my_password(self, info: Info, old_password: str, new_password: str) -> MutationResult:
+        try:
+            user = await get_current_user(info)
+            await AuthService.change_password(info.context.prisma, user_id=user.id, old_password=old_password, new_password=new_password)
+            logger.info("修改密码: username=%s", user.username)
+            return MutationResult(success=True, message="密码修改成功", error=None)
+        except AppError as exc:
+            logger.warning("修改密码失败: username=%s, reason=%s", getattr(info.context.user, 'username', '?'), exc.message)
+            return MutationResult(success=False, message=exc.message, error=_error_result(exc))
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_user(self, info: Info, input: CreateUserInput) -> UserMutationResult:
         try:
-            operator = await require_permission(info, "user:create")
+            operator = await require_permission(info, "system:user:manage")
             user = await UserService.create_user(info.context.prisma, data=vars(input), operator_id=operator.id)
             logger.info("创建用户: operator=%s, username=%s", operator.username, user.username)
             await _audit_log(info, action="create_user", target_type="User", target=user, summary=f"创建用户 {user.username}", after_data={"username": user.username, "email": user.email})
@@ -235,7 +246,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_user(self, info: Info, user_id: str, input: UpdateUserInput) -> UserMutationResult:
         try:
-            operator = await require_permission(info, "user:update")
+            operator = await require_permission(info, "system:user:manage")
             before = await UserService.get_user_by_id(info.context.prisma, user_id)
             user = await UserService.update_user(info.context.prisma, user_id=user_id, data={k: v for k, v in vars(input).items() if v is not None}, operator_id=operator.id)
             logger.info("更新用户: operator=%s, target=%s", operator.username, user.username)
@@ -248,7 +259,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def enable_user(self, info: Info, user_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "user:enable")
+            operator = await require_permission(info, "system:user:manage")
             user = await UserService.set_user_status(info.context.prisma, user_id=user_id, status="active", operator_id=operator.id)
             logger.info("启用用户: operator=%s, target=%s", operator.username, user.username)
             await _audit_log(info, action="enable_user", target_type="User", target=user, summary=f"启用用户 {user.username}")
@@ -260,7 +271,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def disable_user(self, info: Info, user_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "user:disable")
+            operator = await require_permission(info, "system:user:manage")
             user = await UserService.set_user_status(info.context.prisma, user_id=user_id, status="disabled", operator_id=operator.id)
             logger.info("禁用用户: operator=%s, target=%s", operator.username, user.username)
             await _audit_log(info, action="disable_user", target_type="User", target=user, summary=f"禁用用户 {user.username}")
@@ -272,7 +283,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def assign_roles_to_user(self, info: Info, user_id: str, role_ids: list[str]) -> MutationResult:
         try:
-            operator = await require_permission(info, "user:assign_roles")
+            operator = await require_permission(info, "system:user:manage")
             await UserService.assign_roles(info.context.prisma, user_id=user_id, role_ids=role_ids, operator_id=operator.id)
             logger.info("分配用户角色: operator=%s, user_id=%s, role_count=%d", operator.username, user_id, len(role_ids))
             await _audit_log(info, action="assign_roles_to_user", target_type="User", target=type("T", (), {"id": user_id, "username": user_id})(), summary="分配用户角色", after_data={"role_ids": role_ids})
@@ -296,7 +307,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_role(self, info: Info, input: CreateRoleInput) -> RoleMutationResult:
         try:
-            operator = await require_permission(info, "role:create")
+            operator = await require_permission(info, "system:role:manage")
             role = await info.context.prisma.role.create(data={**vars(input), "status": "active", "created_by": operator.id, "updated_by": operator.id})
             logger.info("创建角色: operator=%s, role=%s(%s)", operator.username, role.name, role.code)
             await _audit_log(info, action="create_role", target_type="Role", target=role, summary=f"创建角色 {role.name}", after_data={"code": role.code})
@@ -308,7 +319,12 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_role(self, info: Info, role_id: str, input: UpdateRoleInput) -> RoleMutationResult:
         try:
-            operator = await require_permission(info, "role:update")
+            operator = await require_permission(info, "system:role:manage")
+            target_role = await info.context.prisma.role.find_first(where={"id": role_id, "deleted_at": None})
+            if not target_role:
+                raise NotFoundError("角色不存在")
+            if target_role.is_system:
+                raise ValidationError("系统角色不可编辑")
             role = await info.context.prisma.role.update(where={"id": role_id}, data={k: v for k, v in {**vars(input), "updated_by": operator.id}.items() if v is not None})
             logger.info("更新角色: operator=%s, role=%s", operator.username, role.name)
             await _audit_log(info, action="update_role", target_type="Role", target=role, summary=f"更新角色 {role.name}")
@@ -321,7 +337,12 @@ class Mutation:
     async def assign_permissions_to_role(self, info: Info, role_id: str, permission_ids: list[str]) -> MutationResult:
         from datetime import datetime, timezone
         try:
-            operator = await require_permission(info, "role:assign_permissions")
+            operator = await require_permission(info, "system:role:manage")
+            target_role = await info.context.prisma.role.find_first(where={"id": role_id, "deleted_at": None})
+            if not target_role:
+                raise NotFoundError("角色不存在")
+            if target_role.is_system:
+                raise ValidationError("系统角色权限不可修改")
             existing = await info.context.prisma.rolepermission.find_many(where={"role_id": role_id, "deleted_at": None})
             for item in existing:
                 await info.context.prisma.rolepermission.update(where={"id": item.id}, data={"deleted_at": datetime.now(timezone.utc), "deleted_by": operator.id})
@@ -335,9 +356,34 @@ class Mutation:
             return MutationResult(success=False, message=exc.message, error=_error_result(exc))
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def delete_role(self, info: Info, role_id: str) -> MutationResult:
+        from datetime import datetime, timezone
+        try:
+            operator = await require_permission(info, "role:delete")
+            target_role = await info.context.prisma.role.find_first(where={"id": role_id, "deleted_at": None})
+            if not target_role:
+                raise NotFoundError("角色不存在")
+            if target_role.is_system:
+                raise ValidationError("系统角色不可删除")
+            now = datetime.now(timezone.utc)
+            existing_perms = await info.context.prisma.rolepermission.find_many(where={"role_id": role_id, "deleted_at": None})
+            for item in existing_perms:
+                await info.context.prisma.rolepermission.update(where={"id": item.id}, data={"deleted_at": now, "deleted_by": operator.id})
+            existing_user_roles = await info.context.prisma.userrole.find_many(where={"role_id": role_id, "deleted_at": None})
+            for item in existing_user_roles:
+                await info.context.prisma.userrole.update(where={"id": item.id}, data={"deleted_at": now, "deleted_by": operator.id})
+            await info.context.prisma.role.update(where={"id": role_id}, data={"deleted_at": now, "deleted_by": operator.id})
+            logger.info("删除角色: operator=%s, role=%s", operator.username, target_role.name)
+            await _audit_log(info, action="delete_role", target_type="Role", target=target_role, summary=f"删除角色 {target_role.name}")
+            return MutationResult(success=True, message="角色删除成功", error=None)
+        except AppError as exc:
+            logger.warning("删除角色失败: operator=%s, role_id=%s, reason=%s", getattr(info.context.user, 'id', '?'), role_id, exc.message)
+            return MutationResult(success=False, message=exc.message, error=_error_result(exc))
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_node(self, info: Info, input: CreateNodeInput) -> NodeMutationResult:
         try:
-            operator = await require_permission(info, "node:create")
+            operator = await require_permission(info, "feature:node:manage")
             node = await NodeService.create_node(info.context.prisma, data=vars(input), operator_id=operator.id)
             logger.info("创建节点: operator=%s, node=%s(%s)", operator.username, node.name, node.code)
             await _audit_log(info, action="create_node", target_type="FeatureNode", target=node, summary=f"创建节点 {node.name}", after_data={"path": node.path})
@@ -349,7 +395,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def update_node(self, info: Info, node_id: str, input: UpdateNodeInput) -> NodeMutationResult:
         try:
-            operator = await require_permission(info, "node:update")
+            operator = await require_permission(info, "feature:node:manage")
             before = await NodeService._get_node(info.context.prisma, node_id)
             node = await NodeService.update_node(info.context.prisma, node_id=node_id, data={k: v for k, v in vars(input).items() if v is not None}, operator_id=operator.id)
             logger.info("更新节点: operator=%s, node=%s", operator.username, node.name)
@@ -362,7 +408,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def delete_node(self, info: Info, node_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "node:delete")
+            operator = await require_permission(info, "feature:node:manage")
             node = await NodeService.delete_node(info.context.prisma, node_id=node_id, operator_id=operator.id)
             logger.info("删除节点: operator=%s, node=%s", operator.username, node.name)
             await _audit_log(info, action="delete_node", target_type="FeatureNode", target=node, summary=f"删除节点 {node.name}")
@@ -374,7 +420,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def hide_node(self, info: Info, node_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "node:hide")
+            operator = await require_permission(info, "feature:node:manage")
             node = await NodeService.set_visibility(info.context.prisma, node_id=node_id, is_visible=False, operator_id=operator.id)
             logger.info("隐藏节点: operator=%s, node=%s", operator.username, node.name)
             await _audit_log(info, action="hide_node", target_type="FeatureNode", target=node, summary=f"隐藏节点 {node.name}")
@@ -386,7 +432,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def show_node(self, info: Info, node_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "node:show")
+            operator = await require_permission(info, "feature:node:manage")
             node = await NodeService.set_visibility(info.context.prisma, node_id=node_id, is_visible=True, operator_id=operator.id)
             logger.info("显示节点: operator=%s, node=%s", operator.username, node.name)
             await _audit_log(info, action="show_node", target_type="FeatureNode", target=node, summary=f"显示节点 {node.name}")
@@ -398,7 +444,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def copy_node(self, info: Info, node_id: str, target_parent_id: str | None = None, new_name: str | None = None) -> NodeMutationResult:
         try:
-            operator = await require_permission(info, "node:copy")
+            operator = await require_permission(info, "feature:node:manage")
             node = await NodeService.copy_node(info.context.prisma, node_id=node_id, target_parent_id=target_parent_id, new_name=new_name, operator_id=operator.id)
             logger.info("复制节点: operator=%s, node=%s, target_parent=%s", operator.username, node.name, target_parent_id)
             await _audit_log(info, action="copy_node", target_type="FeatureNode", target=node, summary=f"复制节点 {node.name}")
@@ -410,7 +456,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def move_node(self, info: Info, node_id: str, target_parent_id: str | None = None) -> NodeMutationResult:
         try:
-            operator = await require_permission(info, "node:move")
+            operator = await require_permission(info, "feature:node:manage")
             node = await NodeService.move_node(info.context.prisma, node_id=node_id, target_parent_id=target_parent_id, operator_id=operator.id)
             logger.info("移动节点: operator=%s, node=%s, target_parent=%s", operator.username, node.name, target_parent_id)
             await _audit_log(info, action="move_node", target_type="FeatureNode", target=node, summary=f"移动节点 {node.name}")
@@ -422,7 +468,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def create_feature(self, info: Info, input: CreateFeatureInput) -> FeatureMutationResult:
         try:
-            operator = await require_permission(info, "feature:create")
+            operator = await require_permission(info, "feature:item:manage")
             feature = await FeatureService.create_feature(info.context.prisma, data=vars(input), operator_id=operator.id)
             logger.info("创建特征: operator=%s, feature=%s(%s)", operator.username, feature.title, feature.code)
             await _audit_log(info, action="create_feature", target_type="Feature", target=feature, summary=f"创建特征 {feature.title}")
@@ -432,10 +478,10 @@ class Mutation:
             return FeatureMutationResult(success=False, message=exc.message, error=_error_result(exc), data=None)
 
     @strawberry.mutation(permission_classes=[IsAuthenticated])
-    async def update_feature(self, info: Info, feature_id: str, input: UpdateFeatureInput) -> FeatureMutationResult:
+    async def update_feature(self, info: Info, feature_id: str, input: UpdateFeatureInput, expected_updated_at: str | None = None) -> FeatureMutationResult:
         try:
-            operator = await require_permission(info, "feature:update")
-            feature = await FeatureService.update_feature(info.context.prisma, feature_id=feature_id, data={k: v for k, v in vars(input).items() if v is not None}, operator_id=operator.id)
+            operator = await require_permission(info, "feature:item:manage")
+            feature = await FeatureService.update_feature(info.context.prisma, feature_id=feature_id, data={k: v for k, v in vars(input).items() if v is not None}, operator_id=operator.id, expected_updated_at=expected_updated_at)
             logger.info("更新特征: operator=%s, feature=%s", operator.username, feature.title)
             await _audit_log(info, action="update_feature", target_type="Feature", target=feature, summary=f"更新特征 {feature.title}")
             return FeatureMutationResult(success=True, message="特征更新成功", data=_feature_type(feature), error=None)
@@ -446,7 +492,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def delete_feature(self, info: Info, feature_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "feature:delete")
+            operator = await require_permission(info, "feature:item:manage")
             feature = await FeatureService.delete_feature(info.context.prisma, feature_id=feature_id, operator_id=operator.id)
             logger.info("删除特征: operator=%s, feature=%s", operator.username, feature.title)
             await _audit_log(info, action="delete_feature", target_type="Feature", target=feature, summary=f"删除特征 {feature.title}")
@@ -458,7 +504,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def hide_feature(self, info: Info, feature_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "feature:hide")
+            operator = await require_permission(info, "feature:item:manage")
             feature = await FeatureService.set_visibility(info.context.prisma, feature_id=feature_id, is_visible=False, operator_id=operator.id)
             logger.info("隐藏特征: operator=%s, feature=%s", operator.username, feature.title)
             await _audit_log(info, action="hide_feature", target_type="Feature", target=feature, summary=f"隐藏特征 {feature.title}")
@@ -470,7 +516,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def show_feature(self, info: Info, feature_id: str) -> MutationResult:
         try:
-            operator = await require_permission(info, "feature:show")
+            operator = await require_permission(info, "feature:item:manage")
             feature = await FeatureService.set_visibility(info.context.prisma, feature_id=feature_id, is_visible=True, operator_id=operator.id)
             logger.info("显示特征: operator=%s, feature=%s", operator.username, feature.title)
             await _audit_log(info, action="show_feature", target_type="Feature", target=feature, summary=f"显示特征 {feature.title}")
@@ -482,7 +528,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def copy_feature(self, info: Info, feature_id: str, target_node_id: str) -> FeatureMutationResult:
         try:
-            operator = await require_permission(info, "feature:copy")
+            operator = await require_permission(info, "feature:item:manage")
             feature = await FeatureService.copy_feature(info.context.prisma, feature_id=feature_id, target_node_id=target_node_id, operator_id=operator.id)
             logger.info("复制特征: operator=%s, feature=%s, target_node=%s", operator.username, feature.title, target_node_id)
             await _audit_log(info, action="copy_feature", target_type="Feature", target=feature, summary=f"复制特征 {feature.title}")
@@ -494,7 +540,7 @@ class Mutation:
     @strawberry.mutation(permission_classes=[IsAuthenticated])
     async def move_feature(self, info: Info, feature_id: str, target_node_id: str) -> FeatureMutationResult:
         try:
-            operator = await require_permission(info, "feature:move")
+            operator = await require_permission(info, "feature:item:manage")
             feature = await FeatureService.move_feature(info.context.prisma, feature_id=feature_id, target_node_id=target_node_id, operator_id=operator.id)
             logger.info("移动特征: operator=%s, feature=%s, target_node=%s", operator.username, feature.title, target_node_id)
             await _audit_log(info, action="move_feature", target_type="Feature", target=feature, summary=f"移动特征 {feature.title}")

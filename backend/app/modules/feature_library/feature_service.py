@@ -5,7 +5,7 @@ from typing import Any
 from uuid import uuid4
 
 from app.modules.feature_library.node_service import NodeService
-from app.utils.exceptions import NotFoundError
+from app.utils.exceptions import ConflictError, NotFoundError
 from app.utils.pagination import normalize_pagination
 
 
@@ -42,8 +42,12 @@ class FeatureService:
         return await prisma.feature.create(data={**data, "created_by": operator_id, "updated_by": operator_id})
 
     @staticmethod
-    async def update_feature(prisma: Any, *, feature_id: str, data: dict[str, Any], operator_id: str | None) -> Any:
-        await FeatureService._get_feature(prisma, feature_id)
+    async def update_feature(prisma: Any, *, feature_id: str, data: dict[str, Any], operator_id: str | None, expected_updated_at: str | None = None) -> Any:
+        feature = await FeatureService._get_feature(prisma, feature_id)
+        if expected_updated_at is not None:
+            current_updated_at = feature.updated_at.isoformat() if hasattr(feature.updated_at, "isoformat") else str(feature.updated_at)
+            if current_updated_at != expected_updated_at:
+                raise ConflictError("特征已被其他用户修改，请刷新后重试")
         return await prisma.feature.update(where={"id": feature_id}, data={**data, "updated_by": operator_id})
 
     @staticmethod

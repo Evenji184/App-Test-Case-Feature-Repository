@@ -99,3 +99,16 @@ export const DELETE_USER_MUTATION = gql`
     }
   }
 `;
+
+export const CHANGE_MY_PASSWORD_MUTATION = gql`
+  mutation ChangeMyPassword($oldPassword: String!, $newPassword: String!) {
+    changeMyPassword(oldPassword: $oldPassword, newPassword: $newPassword) {
+      success
+      message
+      error {
+        code
+        message
+      }
+    }
+  }
+`;

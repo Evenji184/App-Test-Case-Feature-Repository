@@ -19,8 +19,8 @@ export const CREATE_FEATURE_MUTATION = gql`
 `;
 
 export const UPDATE_FEATURE_MUTATION = gql`
-  mutation UpdateFeature($featureId: String!, $input: UpdateFeatureInput!) {
-    updateFeature(featureId: $featureId, input: $input) {
+  mutation UpdateFeature($featureId: String!, $input: UpdateFeatureInput!, $expectedUpdatedAt: String) {
+    updateFeature(featureId: $featureId, input: $input, expectedUpdatedAt: $expectedUpdatedAt) {
       success
       message
       error {

@@ -14,6 +14,8 @@ import { USER_LIST_QUERY } from '@/api/queries/user';
 import { BottomActions } from '@/components/BottomActions';
 import { FormDrawer } from '@/components/FormDrawer';
 import { SearchBar } from '@/components/SearchBar';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/auth';
 import { usePermissionStore } from '@/stores/permission';
 import type { User } from '@/types/models';
 import type { UserListQueryData, UserListQueryVariables } from '@/types/graphql';
@@ -26,6 +28,9 @@ export function UserManagePage() {
   const [selectedRoleIds, setSelectedRoleIds] = useState<string[]>([]);
   const [form] = Form.useForm();
   const { roles, fetchRoles } = usePermissionStore();
+  const { isSuperAdmin } = useAuth();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const canDisableUser = isSuperAdmin || hasPermission('system:user:manage');
 
   const { data, refetch } = useQuery<UserListQueryData, UserListQueryVariables>(USER_LIST_QUERY, {
     variables: { pagination: { page: 1, pageSize: 50 }, keyword: keyword || undefined },
@@ -51,6 +56,54 @@ export function UserManagePage() {
 
   const roleOptions = roles.map((role) => ({ label: role.name, value: role.id }));
 
+  const getUserActions = (user: User) => {
+    const actions: Array<{ key: string; text: string; onClick?: () => void; danger?: boolean }> = [
+      { key: 'edit', text: '编辑', onClick: () => openDrawer(user) },
+    ];
+    if (canDisableUser) {
+      actions.push({
+        key: 'toggle',
+        text: user.status === 'active' ? '禁用' : '启用',
+        onClick: async () => {
+          const { data: result } = user.status === 'active'
+            ? await disableUser({ variables: { userId: user.id } })
+            : await enableUser({ variables: { userId: user.id } });
+          Toast.show({ content: result?.disableUser?.message ?? result?.enableUser?.message ?? '操作成功' });
+          void refetch();
+        },
+      });
+    }
+    actions.push({
+      key: 'roles',
+      text: '分配角色',
+      onClick: () => {
+        setEditingUser(user);
+        setSelectedRoleIds(user.roleIds ?? []);
+        setRoleDrawerOpen(true);
+      },
+    });
+    actions.push({
+      key: 'password',
+      text: '重置密码',
+      onClick: async () => {
+        const { data: result } = await resetPassword({ variables: { userId: user.id, newPassword: '123456' } });
+        Toast.show({ content: result?.resetPassword?.message ?? '密码已重置为 123456' });
+      },
+    });
+    if (isSuperAdmin) {
+      actions.push({
+        key: 'delete',
+        text: '删除',
+        danger: true,
+        onClick: async () => {
+          const { data: result } = await deleteUser({ variables: { userId: user.id } });
+          Toast.show({ content: result?.deleteUser?.message ?? '用户已删除' });
+        },
+      });
+    }
+    return actions;
+  };
+
   return (
     <div className="card-section" style={{ display: 'grid', gap: 12 }}>
       <Space justify="between" block>
@@ -58,9 +111,11 @@ export function UserManagePage() {
           <h2 className="page-title">人员管理</h2>
           <p className="page-subtitle">用户维护、启停用与角色分配</p>
         </div>
-        <Button color="primary" onClick={() => openDrawer()}>
-          新建人员
-        </Button>
+        {canDisableUser && (
+          <Button color="primary" onClick={() => openDrawer()}>
+            新建人员
+          </Button>
+        )}
       </Space>
       <SearchBar value={keyword} onChange={setKeyword} onSearch={() => void refetch()} placeholder="搜索用户名或邮箱" />
       <List>
@@ -69,48 +124,11 @@ export function UserManagePage() {
             key={user.id}
             description={`${user.email} · ${user.phone || '未填写手机号'}`}
             extra={
-              <BottomActions
-                actions={[
-                  { key: 'edit', text: '编辑', onClick: () => openDrawer(user) },
-                  {
-                    key: 'toggle',
-                    text: user.status === 'active' ? '禁用' : '启用',
-                    onClick: async () => {
-                      const { data: result } = user.status === 'active'
-                        ? await disableUser({ variables: { userId: user.id } })
-                        : await enableUser({ variables: { userId: user.id } });
-                      Toast.show({ content: result?.disableUser?.message ?? result?.enableUser?.message ?? '操作成功' });
-                      void refetch();
-                    },
-                  },
-                  {
-                    key: 'roles',
-                    text: '分配角色',
-                    onClick: () => {
-                      setEditingUser(user);
-                      setSelectedRoleIds(user.roleIds ?? []);
-                      setRoleDrawerOpen(true);
-                    },
-                  },
-                  {
-                    key: 'password',
-                    text: '重置密码',
-                    onClick: async () => {
-                      const { data: result } = await resetPassword({ variables: { userId: user.id, newPassword: '123456' } });
-                      Toast.show({ content: result?.resetPassword?.message ?? '密码已重置为 123456' });
-                    },
-                  },
-                  {
-                    key: 'delete',
-                    text: '删除',
-                    danger: true,
-                    onClick: async () => {
-                      const { data: result } = await deleteUser({ variables: { userId: user.id } });
-                      Toast.show({ content: result?.deleteUser?.message ?? '用户已删除' });
-                    },
-                  },
-                ]}
-              />
+              user.isSuperAdmin ? (
+                <Tag color="primary">超级管理员</Tag>
+              ) : (
+              <BottomActions actions={getUserActions(user)} />
+              )
             }
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -169,9 +187,11 @@ export function UserManagePage() {
           <Form.Item name="remark" label="备注">
             <TextArea placeholder="请输入备注" rows={2} />
           </Form.Item>
-          <Form.Item name="isSuperAdmin" label="超级管理员" trigger="onChange" valuePropName="checked">
-            <Switch />
-          </Form.Item>
+          {isSuperAdmin && (
+            <Form.Item name="isSuperAdmin" label="超级管理员" trigger="onChange" valuePropName="checked">
+              <Switch />
+            </Form.Item>
+          )}
         </Form>
       </FormDrawer>
 

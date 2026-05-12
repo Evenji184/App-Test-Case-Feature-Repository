@@ -77,8 +77,6 @@ class ProviderClient:
         max_tokens: int,
     ) -> GenerateResult:
         url = config.request_url.rstrip("/")
-        if not url.endswith("/chat/completions"):
-            url = f"{url}/chat/completions"
 
         payload: dict[str, Any] = {
             "model": config.model_name,
@@ -120,8 +118,6 @@ class ProviderClient:
         max_tokens: int,
     ) -> GenerateResult:
         url = config.request_url.rstrip("/")
-        if not url.endswith("/messages"):
-            url = f"{url}/messages"
 
         payload: dict[str, Any] = {
             "model": config.model_name,

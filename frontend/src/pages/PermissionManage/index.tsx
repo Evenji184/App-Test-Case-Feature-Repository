@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { Button, Form, Input, List, Space, Tag, TextArea, Toast } from 'antd-mobile';
-import { ASSIGN_PERMISSIONS_TO_ROLE_MUTATION, CREATE_ROLE_MUTATION, UPDATE_ROLE_MUTATION } from '@/api/mutations/role';
+import { ASSIGN_PERMISSIONS_TO_ROLE_MUTATION, CREATE_ROLE_MUTATION, DELETE_ROLE_MUTATION, UPDATE_ROLE_MUTATION } from '@/api/mutations/role';
 import { FormDrawer } from '@/components/FormDrawer';
 import { PermissionSelector } from '@/components/PermissionSelector';
+import { useAuth } from '@/hooks/useAuth';
+import { useAuthStore } from '@/stores/auth';
 import { usePermissionStore } from '@/stores/permission';
 import type { Role } from '@/types/models';
 
@@ -14,10 +16,14 @@ export function PermissionManagePage() {
   const [editingRole, setEditingRole] = useState<Role | null>(null);
   const [selectedPermissionIds, setSelectedPermissionIds] = useState<string[]>([]);
   const [form] = Form.useForm();
+  const { isSuperAdmin } = useAuth();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const canManageRole = hasPermission('system:role:manage');
 
   const [createRole] = useMutation(CREATE_ROLE_MUTATION);
   const [updateRole] = useMutation(UPDATE_ROLE_MUTATION);
   const [assignPermissions] = useMutation(ASSIGN_PERMISSIONS_TO_ROLE_MUTATION);
+  const [deleteRole] = useMutation(DELETE_ROLE_MUTATION, { refetchQueries: ['RoleList'] });
 
   useEffect(() => {
     void fetchPermissionTree();
@@ -36,16 +42,18 @@ export function PermissionManagePage() {
           <h2 className="page-title">权限管理</h2>
           <p className="page-subtitle">角色维护与权限分配，当前权限总数 {permissionCount}</p>
         </div>
-        <Button
-          color="primary"
-          onClick={() => {
-            setEditingRole(null);
-            form.resetFields();
-            setDrawerOpen(true);
-          }}
-        >
-          新建角色
-        </Button>
+        {canManageRole && (
+          <Button
+            color="primary"
+            onClick={() => {
+              setEditingRole(null);
+              form.resetFields();
+              setDrawerOpen(true);
+            }}
+          >
+            新建角色
+          </Button>
+        )}
       </Space>
 
       <List>
@@ -54,29 +62,50 @@ export function PermissionManagePage() {
             key={role.id}
             description={role.description || '暂无描述'}
             extra={
+              role.isSystem ? (
+                <Tag color="primary">系统角色</Tag>
+              ) : (
               <Space>
-                <Button
-                  size="mini"
-                  onClick={() => {
-                    setEditingRole(role);
-                    form.setFieldsValue(role);
-                    setDrawerOpen(true);
-                  }}
-                >
-                  编辑
-                </Button>
-                <Button
-                  size="mini"
-                  color="primary"
-                  onClick={() => {
-                    setEditingRole(role);
-                    setSelectedPermissionIds(role.permissionIds ?? []);
-                    setPermissionDrawerOpen(true);
-                  }}
-                >
-                  分配权限
-                </Button>
+                {canManageRole && (
+                  <Button
+                    size="mini"
+                    onClick={() => {
+                      setEditingRole(role);
+                      form.setFieldsValue(role);
+                      setDrawerOpen(true);
+                    }}
+                  >
+                    编辑
+                  </Button>
+                )}
+                {canManageRole && (
+                  <Button
+                    size="mini"
+                    color="primary"
+                    onClick={() => {
+                      setEditingRole(role);
+                      setSelectedPermissionIds(role.permissionIds ?? []);
+                      setPermissionDrawerOpen(true);
+                    }}
+                  >
+                    分配权限
+                  </Button>
+                )}
+                {isSuperAdmin && (
+                  <Button
+                    size="mini"
+                    color="danger"
+                    onClick={async () => {
+                      const { data: result } = await deleteRole({ variables: { roleId: role.id } });
+                      Toast.show({ content: result?.deleteRole?.message ?? '角色已删除' });
+                      void fetchRoles();
+                    }}
+                  >
+                    删除
+                  </Button>
+                )}
               </Space>
+              )
             }
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>

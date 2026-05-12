@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { Button, Form, Input, Selector, Space, TextArea, Toast } from 'antd-mobile';
+import { Button, Dialog, Form, Input, Selector, Space, TextArea, Toast } from 'antd-mobile';
 import {
   COPY_FEATURE_MUTATION,
   CREATE_FEATURE_MUTATION,
@@ -23,6 +23,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { TreeView } from '@/components/TreeView';
 import { useAppStore } from '@/stores/app';
 import { useAiProviderStore } from '@/stores/aiProvider';
+import { useAuthStore } from '@/stores/auth';
 import type { AiProvider, FeatureItem, NodeItem } from '@/types/models';
 import type { AiProviderListResult, FeatureListQueryData, FeatureListQueryVariables, FeatureMutationData, NodeMutationData, NodeTreeQueryData } from '@/types/graphql';
 
@@ -44,6 +45,10 @@ const priorityOptions = [
 
 export function FeatureManagePage() {
   const { selectedNodeIds, toggleNodeSelection, clearNodeSelection } = useAppStore();
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const canManageNode = hasPermission('feature:node:manage');
+  const canManageFeature = hasPermission('feature:item:manage');
+  const canAiGenerate = hasPermission('ai:generate');
   const [keyword, setKeyword] = useState('');
   const [featureDrawerOpen, setFeatureDrawerOpen] = useState(false);
   const [nodeDrawerOpen, setNodeDrawerOpen] = useState(false);
@@ -152,9 +157,11 @@ export function FeatureManagePage() {
             <div style={{ fontSize: 18, fontWeight: 700 }}>节点管理</div>
             <div className="page-subtitle">勾选节点筛选特征，单选可编辑</div>
           </div>
-          <Button size="small" color="primary" onClick={() => openNodeDrawer()}>
-            新建节点
-          </Button>
+          {canManageNode && (
+            <Button size="small" color="primary" onClick={() => openNodeDrawer()}>
+              新建节点
+            </Button>
+          )}
         </Space>
         {selectedNodeIds.size > 0 && (
           <Button block fill="outline" onClick={clearNodeSelection}>
@@ -169,18 +176,21 @@ export function FeatureManagePage() {
           selectedId={singleSelectedNodeId}
           onSelect={() => {}}
         />
-        <Button
-          block
-          disabled={!singleSelectedNodeId}
-          onClick={() => {
-            if (currentNode) {
-              openNodeDrawer(currentNode);
-            }
-          }}
-        >
-          编辑当前节点
-        </Button>
-        <BottomActions
+        {canManageNode && (
+          <Button
+            block
+            disabled={!singleSelectedNodeId}
+            onClick={() => {
+              if (currentNode) {
+                openNodeDrawer(currentNode);
+              }
+            }}
+          >
+            编辑当前节点
+          </Button>
+        )}
+        {canManageNode && (
+          <BottomActions
           triggerText="节点更多操作"
           actions={[
             {
@@ -206,19 +216,22 @@ export function FeatureManagePage() {
             },
           ]}
         />
-        <Button
-          block
-          color="danger"
-          disabled={!singleSelectedNodeId}
-          onClick={async () => {
-            if (!singleSelectedNodeId) return;
-            const { data } = await deleteNode({ variables: { nodeId: singleSelectedNodeId } });
-            Toast.show({ content: data?.deleteNode?.message ?? '节点已删除' });
-            toggleNodeSelection(singleSelectedNodeId);
-          }}
-        >
-          删除当前节点
-        </Button>
+        )}
+        {canManageNode && (
+          <Button
+            block
+            color="danger"
+            disabled={!singleSelectedNodeId}
+            onClick={async () => {
+              if (!singleSelectedNodeId) return;
+              const { data } = await deleteNode({ variables: { nodeId: singleSelectedNodeId } });
+              Toast.show({ content: data?.deleteNode?.message ?? '节点已删除' });
+              toggleNodeSelection(singleSelectedNodeId);
+            }}
+          >
+            删除当前节点
+          </Button>
+        )}
       </div>
 
       <div className="card-section" style={{ display: 'grid', gap: 12 }}>
@@ -228,7 +241,7 @@ export function FeatureManagePage() {
             <p className="page-subtitle">支持新增、编辑、隐藏与删除特征</p>
           </div>
           <Space>
-            {selectedFeatureIds.size > 0 && (
+            {canAiGenerate && selectedFeatureIds.size > 0 && (
               <Button
                 color="primary"
                 fill="outline"
@@ -254,9 +267,11 @@ export function FeatureManagePage() {
             >
               {selectedFeatureIds.size > 0 ? '取消选择' : '全选'}
             </Button>
-            <Button color="primary" onClick={() => openFeatureDrawer()}>
-              新建特征
-            </Button>
+            {canManageFeature && (
+              <Button color="primary" onClick={() => openFeatureDrawer()}>
+                新建特征
+              </Button>
+            )}
           </Space>
         </Space>
         <SearchBar value={keyword} onChange={setKeyword} placeholder="筛选当前节点下特征" />
@@ -275,9 +290,11 @@ export function FeatureManagePage() {
               return next;
             });
           }}
-          onClick={(item) => openFeatureDrawer(item)}
-          extra={(item) => (
-            <BottomActions
+          onClick={(item) => canManageFeature ? openFeatureDrawer(item) : undefined}
+          extra={(item) => {
+            if (!canManageFeature) return null;
+            return (
+              <BottomActions
               actions={[
                 { key: 'edit', text: '编辑', onClick: () => openFeatureDrawer(item) },
                 {
@@ -316,8 +333,9 @@ export function FeatureManagePage() {
                   },
                 },
               ]}
-            />
-          )}
+              />
+            );
+          }}
         />
       </div>
 
@@ -337,10 +355,34 @@ export function FeatureManagePage() {
               priority: values.priority?.[0] ?? 'medium',
               tags: typeof values.tags === 'string' ? values.tags : '',
             };
-            const { data } = editingFeature
-              ? await updateFeature({ variables: { featureId: editingFeature.id, input: payload } })
-              : await createFeature({ variables: { input: payload } });
-            Toast.show({ content: data?.updateFeature?.message ?? data?.createFeature?.message ?? '保存成功' });
+            if (!editingFeature) {
+              const { data } = await createFeature({ variables: { input: payload } });
+              Toast.show({ content: data?.createFeature?.message ?? '保存成功' });
+              setFeatureDrawerOpen(false);
+              return;
+            }
+            const { data } = await updateFeature({
+              variables: { featureId: editingFeature.id, input: payload, expectedUpdatedAt: editingFeature.updatedAt },
+            });
+            if (data?.updateFeature?.error?.code === 'CONFLICT') {
+              const result = await Dialog.confirm({
+                content: '该特征在您编辑期间已被其他用户修改，您的保存可能覆盖他人更改。',
+                confirmText: '强制保存',
+                cancelText: '刷新重编',
+              });
+              if (result) {
+                const { data: forceData } = await updateFeature({
+                  variables: { featureId: editingFeature.id, input: payload },
+                });
+                Toast.show({ content: forceData?.updateFeature?.message ?? '强制保存成功' });
+                setFeatureDrawerOpen(false);
+              } else {
+                featureQuery.refetch();
+                Toast.show({ content: '已刷新数据，请重新编辑', icon: 'fail' });
+              }
+              return;
+            }
+            Toast.show({ content: data?.updateFeature?.message ?? '保存成功' });
             setFeatureDrawerOpen(false);
           }}
         >

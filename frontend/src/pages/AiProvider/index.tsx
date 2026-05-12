@@ -9,6 +9,7 @@ import {
 } from '@/api/mutations/aiProvider';
 import { AI_PROVIDER_LIST_QUERY } from '@/api/queries/aiProvider';
 import { FormDrawer } from '@/components/FormDrawer';
+import { useAuthStore } from '@/stores/auth';
 import type { AiProvider } from '@/types/models';
 import type { AiProviderListResult } from '@/types/models';
 
@@ -22,10 +23,18 @@ const statusOptions = [
   { label: '禁用', value: 'disabled' },
 ];
 
+const requestUrlPlaceholder: Record<string, string> = {
+  openai_compatible: '完整端点，如 https://api.openai.com/v1/chat/completions',
+  anthropic: '完整端点，如 https://api.anthropic.com/v1/messages',
+};
+
 export function AiProviderPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingProvider, setEditingProvider] = useState<AiProvider | null>(null);
   const [form] = Form.useForm();
+  const selectedFormat = Form.useWatch('providerFormat', form)?.[0] ?? 'openai_compatible';
+  const hasPermission = useAuthStore((state) => state.hasPermission);
+  const canManage = hasPermission('ai:provider:manage');
 
   const providerQuery = useQuery<{ aiProviderList: AiProviderListResult }>(AI_PROVIDER_LIST_QUERY, {
     variables: { pagination: { page: 1, pageSize: 50 } },
@@ -88,9 +97,11 @@ export function AiProviderPage() {
           <h2 className="page-title">AI 供应商管理</h2>
           <p className="page-subtitle">管理 AI 供应商配置和 API 连接</p>
         </div>
-        <Button color="primary" onClick={() => openDrawer()}>
-          新建供应商
-        </Button>
+        {canManage && (
+          <Button color="primary" onClick={() => openDrawer()}>
+            新建供应商
+          </Button>
+        )}
       </Space>
 
       {providers.length === 0 ? (
@@ -117,17 +128,19 @@ export function AiProviderPage() {
                   API Key: {provider.apiKeyHint}
                 </div>
               </div>
-              <Space>
-                <Button size="mini" onClick={() => handleTestConnection(provider)}>
-                  测试连接
-                </Button>
-                <Button size="mini" onClick={() => openDrawer(provider)}>
-                  编辑
-                </Button>
-                <Button size="mini" color="danger" onClick={() => handleDelete(provider)}>
-                  删除
-                </Button>
-              </Space>
+              {canManage ? (
+                <Space>
+                  <Button size="mini" onClick={() => handleTestConnection(provider)}>
+                    测试连接
+                  </Button>
+                  <Button size="mini" onClick={() => openDrawer(provider)}>
+                    编辑
+                  </Button>
+                  <Button size="mini" color="danger" onClick={() => handleDelete(provider)}>
+                    删除
+                  </Button>
+                </Space>
+              ) : null}
             </div>
           </Card>
         ))
@@ -191,7 +204,7 @@ export function AiProviderPage() {
             <Input placeholder={editingProvider ? '留空则不修改' : '请输入 API Key'} type="password" />
           </Form.Item>
           <Form.Item name="requestUrl" label="请求地址" rules={[{ required: true, message: '请输入请求地址' }]}>
-            <Input placeholder="如 https://api.deepseek.com/v1" />
+            <Input placeholder={requestUrlPlaceholder[selectedFormat] ?? requestUrlPlaceholder.openai_compatible} />
           </Form.Item>
           <Form.Item name="modelName" label="模型名称" rules={[{ required: true, message: '请输入模型名称' }]}>
             <Input placeholder="如 deepseek-chat" />
