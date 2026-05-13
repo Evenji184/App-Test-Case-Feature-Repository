@@ -8,6 +8,7 @@ interface AppState {
   toggleNodeSelection: (nodeId: string) => void;
   clearNodeSelection: () => void;
   setKeyword: (keyword: string) => void;
+  clearKeyword: () => void;
   setMobileMenuVisible: (visible: boolean) => void;
 }
 
@@ -28,5 +29,6 @@ export const useAppStore = create<AppState>((set) => ({
     }),
   clearNodeSelection: () => set({ selectedNodeIds: new Set() }),
   setKeyword: (keyword) => set({ keyword }),
+  clearKeyword: () => set({ keyword: '' }),
   setMobileMenuVisible: (mobileMenuVisible) => set({ mobileMenuVisible }),
 }));

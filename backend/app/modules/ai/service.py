@@ -126,6 +126,7 @@ class AiProviderService:
         prisma: Any,
         *,
         provider_id: str,
+        name: str | None = None,
         node_ids: list[str],
         feature_ids: list[str],
         custom_instruction: str | None = None,
@@ -215,6 +216,7 @@ class AiProviderService:
         # Save prompt to database
         prompt_record = await prisma.prompt.create(
             data={
+                "name": name,
                 "content": result.content,
                 "provider_id": provider_id,
                 "model": result.model,
@@ -232,10 +234,17 @@ class AiProviderService:
 
     @staticmethod
     async def list_prompts(
-        prisma: Any, *, page: int, page_size: int
+        prisma: Any, *, page: int, page_size: int, keyword: str | None = None, created_by: str | None = None
     ) -> tuple[list[Any], int, int, int]:
         current_page, current_page_size, skip = normalize_pagination(page, page_size)
         where: dict[str, Any] = {"deleted_at": None}
+        if keyword:
+            where["OR"] = [
+                {"name": {"contains": keyword}},
+                {"content": {"contains": keyword}},
+            ]
+        if created_by:
+            where["created_by"] = created_by
         total = await prisma.prompt.count(where=where)
         items = await prisma.prompt.find_many(
             where=where,
@@ -248,6 +257,20 @@ class AiProviderService:
             },
         )
         return items, total, current_page, current_page_size
+
+    @staticmethod
+    async def update_prompt(
+        prisma: Any, *, prompt_id: str, name: str | None, operator_id: str | None
+    ) -> Any:
+        prompt = await prisma.prompt.find_first(
+            where={"id": prompt_id, "deleted_at": None}
+        )
+        if not prompt:
+            raise NotFoundError("提示词记录不存在", code="PROMPT_NOT_FOUND")
+        return await prisma.prompt.update(
+            where={"id": prompt_id},
+            data={"name": name, "updated_by": operator_id},
+        )
 
     @staticmethod
     async def delete_prompt(

@@ -67,3 +67,13 @@ export const DELETE_PROMPT_MUTATION = gql`
     }
   }
 `;
+
+export const UPDATE_PROMPT_NAME_MUTATION = gql`
+  mutation UpdatePromptName($promptId: String!, $name: String) {
+    updatePromptName(promptId: $promptId, name: $name) {
+      success
+      message
+      error { code message }
+    }
+  }
+`;

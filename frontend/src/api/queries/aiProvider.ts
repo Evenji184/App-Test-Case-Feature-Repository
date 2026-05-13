@@ -21,8 +21,8 @@ export const AI_PROVIDER_LIST_QUERY = gql`
 `;
 
 export const PROMPT_LIST_QUERY = gql`
-  query PromptList($pagination: PaginationInput!) {
-    promptList(pagination: $pagination) {
+  query PromptList($pagination: PaginationInput!, $keyword: String, $createdBy: String) {
+    promptList(pagination: $pagination, keyword: $keyword, createdBy: $createdBy) {
       items {
         ...PromptBase
       }

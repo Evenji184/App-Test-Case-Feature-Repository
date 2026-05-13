@@ -86,7 +86,7 @@ def _ai_provider_type(provider: Any) -> AiProviderType:
 def _prompt_type(prompt: Any) -> PromptType:
     provider_name = prompt.provider.name if prompt.provider else "未知"
     created_by_name = (prompt.created_by_user.display_name or prompt.created_by_user.username) if prompt.created_by_user else None
-    return PromptType(id=prompt.id, content=prompt.content, provider_id=prompt.provider_id, provider_name=provider_name, model=prompt.model, created_by_name=created_by_name, node_ids=prompt.node_ids, feature_ids=prompt.feature_ids, custom_instruction=prompt.custom_instruction, created_at=_dt(prompt.created_at) or "", updated_at=_dt(prompt.updated_at) or "")
+    return PromptType(id=prompt.id, name=prompt.name, content=prompt.content, provider_id=prompt.provider_id, provider_name=provider_name, model=prompt.model, created_by_id=prompt.created_by, created_by_name=created_by_name, node_ids=prompt.node_ids, feature_ids=prompt.feature_ids, custom_instruction=prompt.custom_instruction, created_at=_dt(prompt.created_at) or "", updated_at=_dt(prompt.updated_at) or "")
 
 
 async def _audit_log(info: Info, *, action: str, target_type: str, target: Any, summary: str, before_data: dict[str, Any] | None = None, after_data: dict[str, Any] | None = None) -> None:
@@ -193,9 +193,9 @@ class Query:
         return AiProviderListType(items=[_ai_provider_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
 
     @strawberry.field(permission_classes=[IsAuthenticated])
-    async def prompt_list(self, info: Info, pagination: PaginationInput = PaginationInput()) -> PromptListType:
+    async def prompt_list(self, info: Info, pagination: PaginationInput = PaginationInput(), keyword: str | None = None, created_by: str | None = None) -> PromptListType:
         await require_permission(info, "ai:prompt:list")
-        items, total, page, page_size = await AiProviderService.list_prompts(info.context.prisma, page=pagination.page, page_size=pagination.page_size)
+        items, total, page, page_size = await AiProviderService.list_prompts(info.context.prisma, page=pagination.page, page_size=pagination.page_size, keyword=keyword, created_by=created_by)
         return PromptListType(items=[_prompt_type(item) for item in items], page_info=PageInfo(**build_page_info(total=total, page=page, page_size=page_size)))
 
 
@@ -616,9 +616,9 @@ class Mutation:
         try:
             import json
             operator = await require_permission(info, "ai:generate")
-            result = await AiProviderService.generate_prompt(info.context.prisma, provider_id=input.provider_id, node_ids=input.node_ids, feature_ids=input.feature_ids, custom_instruction=input.custom_instruction, operator_id=operator.id)
+            result = await AiProviderService.generate_prompt(info.context.prisma, provider_id=input.provider_id, name=input.name, node_ids=input.node_ids, feature_ids=input.feature_ids, custom_instruction=input.custom_instruction, operator_id=operator.id)
             logger.info("生成提示词: operator=%s, provider_id=%s, prompt_id=%s", operator.username, input.provider_id, result.prompt_id)
-            await _audit_log(info, action="generate_prompt", target_type="Prompt", target=type("T", (), {"id": result.prompt_id, "name": f"Prompt-{result.prompt_id}"})(), summary="AI生成提示词")
+            await _audit_log(info, action="generate_prompt", target_type="Prompt", target=type("T", (), {"id": result.prompt_id, "name": input.name or f"Prompt-{result.prompt_id}"})(), summary="AI生成提示词")
             return AiGenerateResult(success=True, message="提示词生成成功", content=result.content, model=result.model, usage=json.dumps(result.usage) if result.usage else None, error=None)
         except AppError as exc:
             logger.warning("生成提示词失败: operator=%s, reason=%s", getattr(info.context.user, 'id', '?'), exc.message)
@@ -639,6 +639,17 @@ class Mutation:
             return MutationResult(success=True, message="提示词删除成功", error=None)
         except AppError as exc:
             logger.warning("删除提示词失败: prompt_id=%s, reason=%s", prompt_id, exc.message)
+            return MutationResult(success=False, message=exc.message, error=_error_result(exc))
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def update_prompt_name(self, info: Info, prompt_id: str, name: str | None) -> MutationResult:
+        try:
+            user = await get_current_user(info)
+            await AiProviderService.update_prompt(info.context.prisma, prompt_id=prompt_id, name=name, operator_id=user.id)
+            logger.info("修改提示词名称: operator=%s, prompt_id=%s, name=%s", user.username, prompt_id, name)
+            return MutationResult(success=True, message="提示词名称修改成功", error=None)
+        except AppError as exc:
+            logger.warning("修改提示词名称失败: prompt_id=%s, reason=%s", prompt_id, exc.message)
             return MutationResult(success=False, message=exc.message, error=_error_result(exc))
 
 

@@ -210,6 +210,7 @@ export interface SimpleMutationData {
   changeMyPassword?: MutationResult;
   deleteRole?: MutationResult;
   deletePrompt?: MutationResult;
+  updatePromptName?: MutationResult;
 }
 
 export interface AiProviderListQueryData {
@@ -246,6 +247,7 @@ export interface UpdateAiProviderInput {
 
 export interface GeneratePromptInput {
   providerId: string;
+  name?: string;
   nodeIds?: string[];
   featureIds?: string[];
   customInstruction?: string;
@@ -266,4 +268,6 @@ export interface PromptListQueryData {
 
 export interface PromptListQueryVariables {
   pagination?: PaginationInput;
+  keyword?: string | null;
+  createdBy?: string | null;
 }

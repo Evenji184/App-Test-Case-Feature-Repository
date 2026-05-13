@@ -44,10 +44,12 @@ class AiGenerateResult(MutationResult):
 @strawberry.type
 class PromptType:
     id: str
+    name: str | None
     content: str
     provider_id: str
     provider_name: str
     model: str | None
+    created_by_id: str | None
     created_by_name: str | None
     node_ids: str | None
     feature_ids: str | None
@@ -91,6 +93,7 @@ class UpdateAiProviderInput:
 @strawberry.input
 class GeneratePromptInput:
     provider_id: str
+    name: str | None = None
     node_ids: list[str] = strawberry.field(default_factory=list)
     feature_ids: list[str] = strawberry.field(default_factory=list)
     custom_instruction: str | None = None

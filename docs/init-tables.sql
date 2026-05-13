@@ -279,6 +279,7 @@ CREATE TABLE ai_providers (
 
 CREATE TABLE prompts (
   id                CHAR(36)     NOT NULL,
+  name              VARCHAR(200) DEFAULT NULL,
   content           LONGTEXT     NOT NULL,
   provider_id       CHAR(36)     DEFAULT NULL,
   model             VARCHAR(128) DEFAULT NULL,

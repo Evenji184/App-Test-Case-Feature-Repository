@@ -115,10 +115,12 @@ export const AI_PROVIDER_BASE_FRAGMENT = gql`
 export const PROMPT_BASE_FRAGMENT = gql`
   fragment PromptBase on PromptType {
     id
+    name
     content
     providerId
     providerName
     model
+    createdById
     createdByName
     nodeIds
     featureIds

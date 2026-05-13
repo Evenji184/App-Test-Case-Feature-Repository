@@ -212,21 +212,23 @@ FeatureNode                          Feature
 
 **提示词管理页面**
 
-- 展示所有通过 AI 生成的提示词记录：提示词内容、发起人、AI 供应商、模型名称
+- 展示所有通过 AI 生成的提示词记录：名称、提示词内容、发起人、AI 供应商、模型名称
+- 支持按关键词搜索提示词名称或内容
+- 支持按发起人筛选提示词
 - 支持查看完整提示词详情
-- 删除按钮仅超级管理员可见，后端删除也仅允许超级管理员操作
+- 删除按钮仅超级管理员或拥有 `ai:provider:manage` 权限的用户可见
 
 **GraphQL 接口**
 
 | 操作 | 类型 | 说明 |
 |------|------|------|
 | `aiProviderList(pagination)` | Query | 分页查询供应商列表 |
-| `promptList(pagination)` | Query | 分页查询提示词列表 |
+| `promptList(pagination, keyword, createdBy)` | Query | 分页查询提示词列表，可按关键词搜索名称/内容，按发起人筛选 |
 | `createAiProvider(input)` | Mutation | 创建供应商（API Key 输入时为明文，存储时自动加密） |
 | `updateAiProvider(providerId, input)` | Mutation | 更新供应商（API Key 留空则不修改） |
 | `deleteAiProvider(providerId)` | Mutation | 软删除供应商 |
 | `testAiConnection(providerId)` | Mutation | 测试供应商连接是否可用 |
-| `generatePrompt(input)` | Mutation | 根据选中的节点/特征 ID 调用 AI 生成测试要点提示词，自动保存到数据库 |
+| `generatePrompt(input)` | Mutation | 根据选中的节点/特征 ID 调用 AI 生成测试要点提示词，支持自定义名称（name），自动保存到数据库 |
 | `deletePrompt(promptId)` | Mutation | 软删除提示词记录（超级管理员或拥有 ai:provider:manage 权限） |
 
 ## 2. 依赖清单
@@ -547,6 +549,7 @@ CREATE TABLE ai_providers (
 
 CREATE TABLE prompts (
   id                CHAR(36)     NOT NULL,
+  name              VARCHAR(200) DEFAULT NULL,
   content           LONGTEXT     NOT NULL,
   provider_id       CHAR(36)     DEFAULT NULL,
   model             VARCHAR(128) DEFAULT NULL,
@@ -568,7 +571,7 @@ CREATE TABLE prompts (
 
 > `api_key_encrypted` 存储 Fernet 加密后的密文，`api_key_hint` 存储脱敏提示（如 `sk-****cdef`），前端仅展示 hint。`provider_format` 取值 `openai_compatible` 或 `anthropic`。
 
-> `prompts` 表存储 AI 生成的测试要点提示词，`provider_id` 可选（供应商删除后置 NULL），`content` 为 AI 返回的完整 Markdown 提示词，`usage_info` 为 JSON 格式的令牌用量统计。
+> `prompts` 表存储 AI 生成的测试要点提示词，`name` 为可选的自定义名称（便于辨识），`provider_id` 可选（供应商删除后置 NULL），`content` 为 AI 返回的完整 Markdown 提示词，`usage_info` 为 JSON 格式的令牌用量统计。
 
 ## 4. 本地开发启动指南
 
@@ -865,11 +868,13 @@ Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.
 
 - 在特征管理页多选特征（支持全选/取消），点击"AI 生成"
 - 生成前校验：至少需选择一个节点或特征，否则提示用户
+- 支持自定义提示词名称（可选），便于后续辨识和管理
 - 选择供应商，可选填补充要求（如"重点覆盖边界值和异常场景"）
 - 后端自动构建提示词：节点层级结构 + 特征详情 + 补充要求
 - 返回 Markdown 格式的测试要点提示词（仅描述"要测什么"，不展开为具体步骤和预期结果）
 - 生成的提示词自动保存到数据库，可在提示词管理页面查看详情
-- 提示词管理页面展示：提示词内容、发起人、AI 供应商、模型名称、创建时间
+- 提示词管理页面展示：名称（优先显示自定义名称，无名称显示"未命名"）、提示词内容、发起人、AI 供应商、模型名称、创建时间
+- 提示词管理支持关键词搜索（搜索名称或内容）和按发起人筛选
 - 删除提示词：超级管理员或拥有 `ai:provider:manage` 权限的用户可见删除按钮，后端同样允许这两种身份操作
 
 ### 6.7 日志审计

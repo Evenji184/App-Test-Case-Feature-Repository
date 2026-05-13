@@ -44,12 +44,11 @@ const priorityOptions = [
 ];
 
 export function FeatureManagePage() {
-  const { selectedNodeIds, toggleNodeSelection, clearNodeSelection } = useAppStore();
+  const { selectedNodeIds, toggleNodeSelection, clearNodeSelection, keyword, setKeyword } = useAppStore();
   const hasPermission = useAuthStore((state) => state.hasPermission);
   const canManageNode = hasPermission('feature:node:manage');
   const canManageFeature = hasPermission('feature:item:manage');
   const canAiGenerate = hasPermission('ai:generate');
-  const [keyword, setKeyword] = useState('');
   const [featureDrawerOpen, setFeatureDrawerOpen] = useState(false);
   const [nodeDrawerOpen, setNodeDrawerOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<FeatureItem | null>(null);
@@ -65,6 +64,7 @@ export function FeatureManagePage() {
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<Set<string>>(new Set());
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
   const [aiProviderId, setAiProviderId] = useState('');
+  const [aiPromptName, setAiPromptName] = useState('');
   const [aiCustomInstruction, setAiCustomInstruction] = useState('');
   const { isGenerating, setGeneratedContent, setIsGenerating, generatedContent } = useAiProviderStore();
 
@@ -76,18 +76,18 @@ export function FeatureManagePage() {
     variables: { pagination: { page: 1, pageSize: 50 }, nodeIds: nodeIdsForQuery, includeHidden: true },
   });
 
-  const [createFeature] = useMutation(CREATE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY, NODE_TREE_QUERY] });
-  const [updateFeature] = useMutation(UPDATE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY] });
-  const [deleteFeature] = useMutation(DELETE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY] });
-  const [hideFeature] = useMutation(HIDE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY] });
-  const [showFeature] = useMutation(SHOW_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY] });
-  const [copyFeature] = useMutation<FeatureMutationData>(COPY_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY, NODE_TREE_QUERY] });
-  const [moveFeature] = useMutation<FeatureMutationData>(MOVE_FEATURE_MUTATION, { refetchQueries: [FEATURE_LIST_QUERY, NODE_TREE_QUERY] });
-  const [createNode] = useMutation(CREATE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY] });
-  const [updateNode] = useMutation(UPDATE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY] });
-  const [deleteNode] = useMutation(DELETE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
-  const [copyNode] = useMutation<NodeMutationData>(COPY_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
-  const [moveNode] = useMutation<NodeMutationData>(MOVE_NODE_MUTATION, { refetchQueries: [NODE_TREE_QUERY, FEATURE_LIST_QUERY] });
+  const [createFeature] = useMutation(CREATE_FEATURE_MUTATION);
+  const [updateFeature] = useMutation(UPDATE_FEATURE_MUTATION);
+  const [deleteFeature] = useMutation(DELETE_FEATURE_MUTATION);
+  const [hideFeature] = useMutation(HIDE_FEATURE_MUTATION);
+  const [showFeature] = useMutation(SHOW_FEATURE_MUTATION);
+  const [copyFeature] = useMutation<FeatureMutationData>(COPY_FEATURE_MUTATION);
+  const [moveFeature] = useMutation<FeatureMutationData>(MOVE_FEATURE_MUTATION);
+  const [createNode] = useMutation(CREATE_NODE_MUTATION);
+  const [updateNode] = useMutation(UPDATE_NODE_MUTATION);
+  const [deleteNode] = useMutation(DELETE_NODE_MUTATION);
+  const [copyNode] = useMutation<NodeMutationData>(COPY_NODE_MUTATION);
+  const [moveNode] = useMutation<NodeMutationData>(MOVE_NODE_MUTATION);
 
   const providerQuery = useQuery<{ aiProviderList: AiProviderListResult }>(AI_PROVIDER_LIST_QUERY, {
     variables: { pagination: { page: 1, pageSize: 50 } },
@@ -227,6 +227,8 @@ export function FeatureManagePage() {
               const { data } = await deleteNode({ variables: { nodeId: singleSelectedNodeId } });
               Toast.show({ content: data?.deleteNode?.message ?? '节点已删除' });
               toggleNodeSelection(singleSelectedNodeId);
+              await nodeTreeQuery.refetch();
+              await featureQuery.refetch();
             }}
           >
             删除当前节点
@@ -247,6 +249,7 @@ export function FeatureManagePage() {
                 fill="outline"
                 onClick={() => {
                   setAiProviderId(defaultProvider?.id ?? aiProviders[0]?.id ?? '');
+                  setAiPromptName('');
                   setAiCustomInstruction('');
                   setGeneratedContent('');
                   setAiDrawerOpen(true);
@@ -305,6 +308,7 @@ export function FeatureManagePage() {
                       ? await hideFeature({ variables: { featureId: item.id } })
                       : await showFeature({ variables: { featureId: item.id } });
                     Toast.show({ content: data?.hideFeature?.message ?? data?.showFeature?.message ?? '操作成功' });
+                    await featureQuery.refetch();
                   },
                 },
                 {
@@ -330,6 +334,7 @@ export function FeatureManagePage() {
                   onClick: async () => {
                     const { data } = await deleteFeature({ variables: { featureId: item.id } });
                     Toast.show({ content: data?.deleteFeature?.message ?? '删除成功' });
+                    await featureQuery.refetch();
                   },
                 },
               ]}
@@ -359,6 +364,7 @@ export function FeatureManagePage() {
               const { data } = await createFeature({ variables: { input: payload } });
               Toast.show({ content: data?.createFeature?.message ?? '保存成功' });
               setFeatureDrawerOpen(false);
+              await featureQuery.refetch();
               return;
             }
             const { data } = await updateFeature({
@@ -376,14 +382,16 @@ export function FeatureManagePage() {
                 });
                 Toast.show({ content: forceData?.updateFeature?.message ?? '强制保存成功' });
                 setFeatureDrawerOpen(false);
+                await featureQuery.refetch();
               } else {
-                featureQuery.refetch();
+                await featureQuery.refetch();
                 Toast.show({ content: '已刷新数据，请重新编辑', icon: 'fail' });
               }
               return;
             }
             Toast.show({ content: data?.updateFeature?.message ?? '保存成功' });
             setFeatureDrawerOpen(false);
+            await featureQuery.refetch();
           }}
         >
           <Form.Item name="nodeId" label="所属节点" rules={[{ required: true, message: '请选择节点' }]}>
@@ -437,6 +445,7 @@ export function FeatureManagePage() {
               : await createNode({ variables: { input: values } });
             Toast.show({ content: data?.updateNode?.message ?? data?.createNode?.message ?? '保存成功' });
             setNodeDrawerOpen(false);
+            await nodeTreeQuery.refetch();
           }}
         >
           <Form.Item name="parentId" label="父节点 ID">
@@ -469,6 +478,8 @@ export function FeatureManagePage() {
           const { data } = await copyNode({ variables: { nodeId: copyingNode.id, targetParentId: targetNodeId, newName: copyNodeName || undefined } });
           Toast.show({ content: data?.copyNode?.message ?? '节点复制成功' });
           resetNodeActionState();
+          await nodeTreeQuery.refetch();
+          await featureQuery.refetch();
         }}
         content={
           <div style={{ display: 'grid', gap: 12 }}>
@@ -488,6 +499,8 @@ export function FeatureManagePage() {
           const { data } = await moveNode({ variables: { nodeId: movingNode.id, targetParentId: targetNodeId } });
           Toast.show({ content: data?.moveNode?.message ?? '节点移动成功' });
           resetNodeActionState();
+          await nodeTreeQuery.refetch();
+          await featureQuery.refetch();
         }}
         content={
           <div style={{ display: 'grid', gap: 12 }}>
@@ -506,6 +519,7 @@ export function FeatureManagePage() {
           const { data } = await copyFeature({ variables: { featureId: copyingFeature.id, targetNodeId } });
           Toast.show({ content: data?.copyFeature?.message ?? '特征复制成功' });
           resetFeatureActionState();
+          await featureQuery.refetch();
         }}
         content={
           <div style={{ display: 'grid', gap: 12 }}>
@@ -524,6 +538,7 @@ export function FeatureManagePage() {
           const { data } = await moveFeature({ variables: { featureId: movingFeature.id, targetNodeId } });
           Toast.show({ content: data?.moveFeature?.message ?? '特征移动成功' });
           resetFeatureActionState();
+          await featureQuery.refetch();
         }}
         content={
           <div style={{ display: 'grid', gap: 12 }}>
@@ -553,6 +568,7 @@ export function FeatureManagePage() {
               variables: {
                 input: {
                   providerId: aiProviderId,
+                  name: aiPromptName || undefined,
                   featureIds: Array.from(selectedFeatureIds),
                   nodeIds: Array.from(selectedNodeIds),
                   customInstruction: aiCustomInstruction || undefined,
@@ -582,6 +598,13 @@ export function FeatureManagePage() {
           <div style={{ color: '#6b7280', fontSize: 13 }}>
             已选 {selectedFeatureIds.size} 个特征
           </div>
+          <div style={{ fontWeight: 600 }}>提示词名称（可选）</div>
+          <Input
+            value={aiPromptName}
+            onChange={setAiPromptName}
+            placeholder="如：登录模块边界值测试"
+            clearable
+          />
           <div style={{ fontWeight: 600 }}>选择 AI 供应商</div>
           {aiProviders.length === 0 ? (
             <div style={{ color: '#999' }}>暂无可用供应商，请先在 AI 管理页配置</div>
