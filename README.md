@@ -174,7 +174,8 @@ FeatureNode                          Feature
                                                    │
                                           ┌────────▼────────┐
                                           │Prompt Service   │
-                                          │(list / delete)  │
+                                          │(list / update  │
+                                          │ name / delete) │
                                           └─────────────────┘
                                 │
                          ┌──────▼───────┐
@@ -229,6 +230,7 @@ FeatureNode                          Feature
 | `deleteAiProvider(providerId)` | Mutation | 软删除供应商 |
 | `testAiConnection(providerId)` | Mutation | 测试供应商连接是否可用 |
 | `generatePrompt(input)` | Mutation | 根据选中的节点/特征 ID 调用 AI 生成测试要点提示词，支持自定义名称（name），自动保存到数据库 |
+| `updatePromptName(promptId, name)` | Mutation | 修改提示词名称（留空则清除名称） |
 | `deletePrompt(promptId)` | Mutation | 软删除提示词记录（超级管理员或拥有 ai:provider:manage 权限） |
 
 ## 2. 依赖清单
@@ -788,6 +790,7 @@ Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.
 | 特征库 | 新建/编辑/隐藏/删除/复制/移动特征 | `feature:item:manage` |
 | 特征库 | AI 生成提示词 | `ai:generate` |
 | AI 供应商 | 新建/编辑/删除/测试连接 | `ai:provider:manage` |
+| 提示词管理 | 改名/修改名称 | 所有登录用户 |
 | 提示词管理 | 删除提示词 | `isSuperAdmin` 或 `ai:provider:manage` |
 | 权限管理 | 新建角色/编辑/分配权限 | `system:role:manage` |
 | 权限管理 | 删除角色 | `isSuperAdmin` |
@@ -875,6 +878,7 @@ Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.
 - 生成的提示词自动保存到数据库，可在提示词管理页面查看详情
 - 提示词管理页面展示：名称（优先显示自定义名称，无名称显示"未命名"）、提示词内容、发起人、AI 供应商、模型名称、创建时间
 - 提示词管理支持关键词搜索（搜索名称或内容）和按发起人筛选
+- 提示词改名：列表和详情页均提供"改名/修改名称"按钮，支持修改或清除提示词名称
 - 删除提示词：超级管理员或拥有 `ai:provider:manage` 权限的用户可见删除按钮，后端同样允许这两种身份操作
 
 ### 6.7 日志审计

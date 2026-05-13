@@ -99,7 +99,9 @@
       "Bash(Get-ChildItem -Path \"E:\\\\App-Test-Case-Feature-Repository\\\\frontend\\\\src\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
       "Bash(dir *)",
-      "Bash(cmd.exe *)"
+      "Bash(cmd.exe *)",
+      "Bash(Get-ChildItem -Path \"E:\\\\App-Test-Case-Feature-Repository\" -Recurse -Directory)",
+      "PowerShell(head *)"
     ]
   }
 }
