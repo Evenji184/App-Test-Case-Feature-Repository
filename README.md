@@ -12,38 +12,67 @@ APP 特征库管理系统用于维护移动端 APP 的功能节点、特征条�
 | UI 库 | antd-mobile 5 / antd 5 | 移动端 + 桌面端组件 |
 | 状态 | Zustand | 轻量状态管理 |
 | 数据层 | Apollo Client 3 + GraphQL | 与后端统一通信 |
-| 后端 | FastAPI + Strawberry GraphQL | 统一 GraphQL 接口 |
-| ORM | Prisma Client Python | 数据库访问与类型安全 |
-| 认证 | JWT (python-jose) + bcrypt | 登录鉴权与密码哈希 |
-| AI 调用 | httpx + cryptography (Fernet) | 多供应商 AI 调用，API Key 加密存储 |
+| 后端（主） | Express.js + @apollo/server 4 + TypeScript | 统一 GraphQL 接口，Node.js 原生 |
+| ORM | Sequelize 6 + sequelize-typescript | MySQL 数据库访问，模型驱动 |
+| 认证 | JWT (jsonwebtoken) + bcrypt | 登录鉴权与密码哈希 |
+| AI 调用 | CodeGPT JS SDK (overlay) + axios + AES-128-CBC（Fernet 兼容） | CodeGPT 浮窗 AI 助手替代后端生成，供应商管理仍保留 |
 | 数据库 | MySQL 8.0 (utf8mb4) | InnoDB, DYNAMIC row format |
 | 部署 | Docker Compose + Nginx | 开发/生产两套编排 |
+| 后端（Legacy） | FastAPI + Strawberry GraphQL + Prisma（Python） | 旧版后端，GraphQL 接口契约已完全保留于 Node.js 版 |
 
 ### 1.2 目录结构
 
 ```text
 .
-├─ backend/                 # FastAPI + GraphQL + Prisma 后端
+├─ backend-node/            # ★ 主后端：Express.js + Apollo Server + Sequelize（TypeScript）
+│  ├─ src/
+│  │  ├─ config.ts          # 环境变量配置
+│  │  ├─ index.ts           # 服务入口（Express + Apollo + 中间件注册）
+│  │  ├─ db/
+│  │  │  ├─ connection.ts   # Sequelize 连接初始化
+│  │  │  └─ models/         # User, Role, Permission, FeatureNode, Feature,
+│  │  │                     # UserRole, RolePermission, AiProvider, Prompt,
+│  │  │                     # AuditLog, RequestLog, LoginLog
+│  │  ├─ graphql/
+│  │  │  ├─ typeDefs.ts     # SDL 类型定义（完整 GraphQL Schema）
+│  │  │  ├─ resolvers.ts    # Query / Mutation resolver 实现
+│  │  │  ├─ context.ts      # JWT 解析，构建 AppContext
+│  │  │  ├─ scalars.ts      # DateTime scalar
+│  │  │  └─ helpers.ts      # requireAuth / makeErrorResult
+│  │  ├─ services/          # authService, userService, roleService, rbacService,
+│  │  │                     # featureService, nodeService, aiService,
+│  │  │                     # logService, providerClient
+│  │  ├─ middleware/
+│  │  │  ├─ requestLogger.ts # HTTP 请求日志中间件
+│  │  │  └─ ipWhitelist.ts  # IP 白名单中间件
+│  │  └─ utils/
+│  │     ├─ jwt.ts          # JWT 签发与验证
+│  │     ├─ password.ts     # bcrypt 密码哈希
+│  │     ├─ audit.ts        # 审计日志工具
+│  │     └─ encryption.ts   # AES-128-CBC Fernet 兼容加密（API Key 存储）
+│  ├─ package.json          # scripts: dev / build / start / typecheck
+│  ├─ tsconfig.json
+│  └─ .env                  # 后端环境变量（见 4.2 节）
+├─ backend/                 # Legacy 后端：FastAPI + Strawberry GraphQL + Prisma（Python）
 │  ├─ app/
 │  │  ├─ core/              # config, security, context, logging
-│  │  ├─ db/                # Prisma 客户端管理 (PrismaManager)
-│  │  ├─ graphql/           # schema, types, directives (IsAuthenticated)
+│  │  ├─ db/                # Prisma 客户端管理
+│  │  ├─ graphql/           # schema, types, directives
 │  │  ├─ middleware/        # 请求日志中间件
 │  │  ├─ modules/           # auth / rbac / user / audit / feature_library / ai
 │  │  └─ utils/             # exceptions, pagination, tree
-│  ├─ prisma/               # schema.prisma + seed.py
-│  ├─ scripts/              # init-db.sh / init-db.bat
-│  └─ tests/
+│  ├─ prisma/               # schema.prisma + seed.py（种子数据仍用此脚本）
+│  └─ scripts/              # init-db.sh / init-db.bat
 ├─ frontend/                # React + Vite 前端
 │  └─ src/
 │     ├─ api/               # GraphQL queries / mutations / client / fragments
 │     ├─ components/        # FormDrawer, FeatureList, NodeList, PermissionSelector 等
-│     ├─ hooks/             # useAuth, usePermission
+│     ├─ hooks/             # useAuth, usePermission, useCodeGPT
 │     ├─ layouts/           # 登录布局、主布局 (5 TabBar)
 │     ├─ pages/             # Login / FeatureManage / UserManage / PermissionManage / AiProvider / PromptManage
 │     ├─ routes/            # 路由定义 + 权限守卫
 │     ├─ stores/            # auth / app / permission / aiProvider (Zustand)
-│     ├─ types/             # graphql 类型, models 类型, common 类型
+│     ├─ types/             # graphql 类型, models 类型, common 类型, codegpt.d.ts
 │     └─ utils/             # storage, permission, tree
 ├─ docker/                  # backend.Dockerfile, frontend.Dockerfile, nginx.conf
 ├─ docs/                    # 项目文档 + init-tables.sql
@@ -140,36 +169,38 @@ FeatureNode                          Feature
 ### 1.4 核心模块关系
 
 ```text
-                         ┌──────────────┐
-                         │   FastAPI    │
-                         │  (main.py)   │
-                         └──────┬───────┘
+                         ┌──────────────────┐
+                         │   Express.js     │
+                         │   (index.ts)     │
+                         └──────┬───────────┘
                                 │
               ┌─────────────────┼─────────────────┐
               │                 │                   │
      ┌────────▼──────┐  ┌──────▼───────┐  ┌───────▼──────┐
-     │  Middleware    │  │   GraphQL    │  │   REST API   │
-     │ request_logging│  │   Router     │  │   /health    │
-     └────────────────┘  └──────┬───────┘  └──────────────┘
-                                │
+     │  Middleware    │  │   Apollo     │  │  REST API    │
+     │ requestLogger  │  │   Server     │  │   /health    │
+     │ ipWhitelist    │  └──────┬───────┘  └──────────────┘
+     └────────────────┘         │
+                                │ GraphQL SDL + Resolvers
               ┌─────────────────┼─────────────────┐
               │                 │                   │
      ┌────────▼──────┐  ┌──────▼───────┐  ┌───────▼──────┐
-     │   Query       │  │   Mutation   │  │  Directives  │
-     │ (读操作)       │  │ (写操作)      │  │ IsAuthenticated│
+     │   Query       │  │   Mutation   │  │   Context    │
+     │ (读操作)       │  │ (写操作)      │  │ JWT → userId │
      └────────────────┘  └──────┬───────┘  └──────────────┘
                                 │
      ┌──────────┬───────────────┼────────────────┬──────────────┐
      │          │               │                │              │
 ┌────▼───┐ ┌───▼────┐  ┌───────▼──────┐  ┌──────▼──────┐ ┌───▼──────┐
-│Auth    │ │Node    │  │Feature       │  │AI Provider  │ │User/RBAC │
-│Service │ │Service │  │Service       │  │Service      │ │/Audit    │
+│Auth    │ │Node    │  │Feature       │  │AI Service   │ │User/RBAC │
+│Service │ │Service │  │Service       │  │             │ │/Audit    │
 └────────┘ └────────┘  └──────────────┘  └──────┬──────┘ └──────────┘
                                                    │
                                           ┌────────▼────────┐
-                                          │encryption.py    │
-                                          │provider_client  │
-                                          │prompt_builder   │
+                                          │encryption.ts    │
+                                          │providerClient   │
+                                          │(OpenAI/Anthropic│
+                                          │ 格式调用)        │
                                           └─────────────────┘
                                                    │
                                           ┌────────▼────────┐
@@ -179,8 +210,8 @@ FeatureNode                          Feature
                                           └─────────────────┘
                                 │
                          ┌──────▼───────┐
-                         │    Prisma    │
-                         │   Client     │
+                         │  Sequelize   │
+                         │   Models     │
                          └──────┬───────┘
                                 │
                          ┌──────▼───────┐
@@ -190,7 +221,19 @@ FeatureNode                          Feature
 
 ### 1.5 AI 供应商集成
 
-系统支持可配置的多 AI 供应商调用，用于根据特征数据自动生成测试要点提示词（仅描述"要测什么"，不展开为具体步骤）。
+系统采用 CodeGPT JS SDK 作为 AI 助手的主要交互方式，以 overlay 浮窗模式嵌入前端页面。特征管理页选中特征后点击"AI 助手"按钮，SDK 自动发起提问并将结果保存到数据库。原有的后端 AI 供应商调用流程（选择供应商 → 后端调 API → 返回结果）已被此模式替代。
+
+**CodeGPT SDK 集成**
+
+- SDK 通过 `<script>` 标签在 `index.html` 中加载（`//idc-storage-gzlyl01-prod-huyaoss.huya.info/web-sdk/codegpt.min.js`）
+- 配置参数（templateId / pluginId / model）通过 `VITE_CODEGPT_*` 环境变量传入，暂无具体值时留空
+- `useCodeGPT` hook：初始化 CodeGPT 实例（overlay 模式、隐藏默认悬浮按钮），挂载 `onChatResult` 回调自动调用 `savePrompt` mutation 保存结果
+- 特征管理页选中特征 → 点击"AI 助手" → 前端构建提问文本（`buildFeaturePrompt` 拼接特征详情）→ `codegpt.use({ instruction })` 发起提问 → overlay 弹出交互 → 返回结果自动保存
+- SDK 加载失败或环境变量为空时不初始化，不影响页面其他功能
+
+**供应商管理（保留）**
+
+供应商管理页面保留不动，用于查看和记录 AI 配置信息。但特征管理页不再通过后端直接调 AI 供应商 API 生成提示词。
 
 **供应商管理**
 
@@ -201,13 +244,9 @@ FeatureNode                          Feature
 
 **提示词生成与管理**
 
-- 在特征管理页多选特征后（需至少选择一个节点或特征），选择供应商和自定义指令，调用 AI 生成测试要点提示词
-- 提示词自动包含：节点层级结构 + 特征详情（标题/摘要/描述/平台/优先级/标签）+ 补充要求
-- 后端根据 `provider_format` 自动选择 OpenAI 或 Anthropic 请求格式
-- OpenAI 格式响应：安全链式取值提取 content 字段，content 为 None 时 fallback 到空字符串
-- Anthropic 格式响应：遍历所有 content block，只拼接 `type=text` 的 block，忽略 tool_use 等非文本 block
-- AI 返回内容为空时后端抛出 ValidationError，前端提示"AI 供应商返回内容为空"，不会显示"生成成功"
-- 生成的提示词自动保存到数据库，可在提示词管理页面查看和管理
+- CodeGPT 浮窗模式下，选中特征后点击"AI 助手"按钮，前端自动构建提问文本（特征标题/编码/摘要/描述/平台/优先级）并发送给 CodeGPT
+- CodeGPT `onChatResult` 回调自动调用 `savePrompt` mutation 将结果保存到数据库
+- 后端 `generatePrompt` mutation 仍保留，供需要直接调 AI 供应商的场景使用
 - httpx 请求使用 stream 模式 + `decode_content=False` 禁用自动解压，避免代理服务器错误 Content-Encoding 导致解压失败
 - `_send_request` 方法增加空响应体、JSON 解析失败、非 dict 响应格式的错误检查，避免静默失败
 
@@ -230,30 +269,65 @@ FeatureNode                          Feature
 | `deleteAiProvider(providerId)` | Mutation | 软删除供应商 |
 | `testAiConnection(providerId)` | Mutation | 测试供应商连接是否可用 |
 | `generatePrompt(input)` | Mutation | 根据选中的节点/特征 ID 调用 AI 生成测试要点提示词，支持自定义名称（name），自动保存到数据库 |
+| `savePrompt(input)` | Mutation | 保存提示词到数据库（CodeGPT 回调自动调用，content 必填，其余可选） |
 | `updatePromptName(promptId, name)` | Mutation | 修改提示词名称（留空则清除名称） |
 | `deletePrompt(promptId)` | Mutation | 软删除提示词记录（超级管理员或拥有 ai:provider:manage 权限） |
 
 ## 2. 依赖清单
 
-### 2.1 后端 Python 依赖
+### 2.1 后端 Node.js 依赖（主）
 
-> 来源：`backend/requirements.txt`
+> 来源：`backend-node/package.json`
+
+| 包 | 版本 | 用途 |
+|---|------|------|
+| express | ^4.21.2 | Web 框架 |
+| @apollo/server | ^4.11.3 | GraphQL 服务器 |
+| graphql | ^16.10.0 | GraphQL 核心 |
+| sequelize | ^6.37.5 | ORM |
+| sequelize-typescript | ^2.1.6 | Sequelize TypeScript 装饰器 |
+| mysql2 | ^3.12.0 | MySQL 驱动 |
+| jsonwebtoken | ^9.0.2 | JWT 签发与验证 |
+| bcrypt | ^5.1.1 | 密码哈希 |
+| uuid | ^11.1.0 | UUID 生成 |
+| axios | ^1.7.9 | HTTP 客户端（AI 供应商调用） |
+| cors | ^2.8.5 | CORS 中间件 |
+| dotenv | ^16.4.7 | .env 文件加载 |
+| @types/express | ^5.0.0 | TypeScript 类型 |
+| @types/jsonwebtoken | ^9.0.8 | TypeScript 类型 |
+| @types/bcrypt | ^5.0.2 | TypeScript 类型 |
+| ts-node-dev | ^2.0.0 | 开发热重载 |
+| typescript | ^5.7.3 | TypeScript 编译器 |
+
+开发脚本：
+```json
+"dev":       "ts-node-dev --respawn --transpile-only src/index.ts",
+"build":     "tsc",
+"start":     "node dist/index.js",
+"typecheck": "tsc --noEmit"
+```
+
+> Node.js 版本要求：>=20
+
+### 2.2 后端 Python 依赖（Legacy）
+
+> 来源：`backend/requirements.txt`，仅在运行种子脚本（`seed.py`）或维护旧后端时需要。
 
 | 包 | 版本 | 用途 |
 |---|------|------|
 | fastapi | 0.115.12 | Web 框架 |
 | uvicorn[standard] | 0.34.2 | ASGI 服务器 |
 | strawberry-graphql[fastapi] | 0.275.5 | GraphQL Schema 与 Resolver |
-| prisma | 0.15.0 | 数据库 ORM |
+| prisma | 0.15.0 | 数据库 ORM（仅用于 seed.py） |
 | pydantic | 2.11.3 | 数据验证 |
-| pydantic-settings | 2.9.1 | 环境变量配置（读取 `.env`） |
+| pydantic-settings | 2.9.1 | 环境变量配置 |
 | bcrypt | >=4.0.0 | 密码哈希 |
 | python-jose[cryptography] | 3.4.0 | JWT 编解码 |
 | python-dotenv | 1.1.0 | .env 文件加载 |
-| httpx | >=0.27.0 | 异步 HTTP 客户端（AI 供应商调用） |
+| httpx | >=0.27.0 | 异步 HTTP 客户端 |
 | cryptography | >=43.0.0 | API Key Fernet 加密存储 |
 
-> Python 版本要求：>=3.10（代码使用 `from __future__ import annotations`）
+> Python 版本要求：>=3.10
 
 ### 2.2 前端依赖
 
@@ -277,9 +351,8 @@ FeatureNode                          Feature
 
 ## 3. 数据库建表 SQL
 
-> 由于 `prisma db push` 在 MySQL 8.0 + utf8mb4 环境下存在 index key 长度超限问题（`Specified key was too long; max key length is 3072 bytes`），当前需要手动执行以下 SQL 完成建表。
->
-> 完整 SQL 脚本见 [docs/init-tables.sql](docs/init-tables.sql)
+> 完整 DDL 脚本见 [docs/init-tables.sql](docs/init-tables.sql)，共 12 张表。
+> Node.js 主后端使用 Sequelize（无迁移，启动时 `sync({ alter: false })` 不自动建表），需手动执行 SQL 完成建表。
 
 ### 3.1 创建数据库
 
@@ -579,43 +652,37 @@ CREATE TABLE prompts (
 
 ### 4.1 环境要求
 
-- Python >= 3.10
-- Node.js >= 20
-- MySQL 8.0（utf8mb4, InnoDB）
-- 本机需安装 `mysql` 客户端命令行工具
+| 工具 | 版本要求 | 用途 |
+|------|----------|------|
+| Node.js | >= 20 | 主后端 + 前端 |
+| MySQL | 8.0 (utf8mb4, InnoDB) | 数据库 |
+| Python | >= 3.10 | 仅运行种子脚本 `seed.py` 时需要 |
+| mysql 命令行 | 任意 | 建库、导入 DDL |
 
 ### 4.2 配置环境变量
 
-需要配置三份 `.env` 文件：
+需要配置两份 `.env` 文件：
 
 ```bash
-# 1. 项目根目录（Docker Compose 读取）
-cp .env.example .env
+# 1. 主后端（Node.js）
+cp backend-node/.env.example backend-node/.env
 
-# 2. 后端目录（Prisma Client 和 FastAPI 读取）
-cp backend/.env.example backend/.env
-
-# 3. 前端目录（Vite 开发服务器读取）
+# 2. 前端
 cp frontend/.env.example frontend/.env.local
 ```
 
-**后端环境变量**（`backend/.env`，来源：`backend/.env.example` + `app/core/config.py`）：
+**Node.js 后端环境变量**（`backend-node/.env`）：
 
 | 变量 | 默认值 | 说明 |
 |------|--------|------|
-| `DATABASE_URL` | `mysql://evenji:evenji@localhost:3306/app_feature_repository` | 数据库连接（本地用 localhost，Docker 内用 mysql 服务名） |
+| `DATABASE_URL` | `mysql://evenji:evenji@localhost:3306/app_feature_repository` | 数据库连接字符串 |
 | `SECRET_KEY` | `change-this-secret-in-production` | JWT 签名密钥 + API Key 加密密钥派生 |
-| `JWT_ALGORITHM` | `HS256` | JWT 签名算法 |
+| `JWT_ALGORITHM` | `HS256` | JWT 签名算法（固定 HS256） |
 | `ACCESS_TOKEN_EXPIRE_MINUTES` | `60` | JWT 有效期（分钟） |
 | `HOST` | `0.0.0.0` | 后端监听地址 |
 | `PORT` | `8001` | 后端服务端口 |
-| `FRONTEND_HOST` | `localhost` | 前端地址（CORS 自动生成依据） |
-| `FRONTEND_PORT` | `5173` | 前端端口（CORS 自动生成依据） |
-| `FRONTEND_SCHEME` | `http` | 前端协议（http/https） |
-| `CORS_ORIGINS` | （空，自动生成） | 跨域白名单，逗号分隔；留空则根据 FRONTEND_* 自动生成 |
+| `CORS_ORIGINS` | `http://localhost:5173,http://localhost:3000` | 跨域白名单，逗号分隔；留空则拒绝跨域 |
 | `IP_WHITELIST` | （空，允许所有） | IP 访问白名单，逗号分隔；留空则允许所有 IP |
-| `LOG_LEVEL` | `INFO` | 日志级别 |
-| `LOG_JSON` | `false` | 是否输出 JSON 格式日志 |
 
 > **重要**：更换 `SECRET_KEY` 后，已加密的 AI 供应商 API Key 将无法解密，需重新配置。
 
@@ -627,60 +694,49 @@ cp frontend/.env.example frontend/.env.local
 | `VITE_API_HOST` | `localhost` | 前端请求后端地址 |
 | `VITE_API_PORT` | `8001` | 前端请求后端端口 |
 | `VITE_APP_TITLE` | `APP 特征库管理系统` | 应用标题 |
-
-> `.env` 文件路径使用绝对路径计算（`Path(__file__).resolve().parent.parent.parent / ".env"`），不依赖进程工作目录。
+| `VITE_CODEGPT_TEMPLATE_ID` | （空） | CodeGPT 模板 ID |
+| `VITE_CODEGPT_PLUGIN_ID` | （空） | CodeGPT 插件 ID |
+| `VITE_CODEGPT_MODEL` | （空） | CodeGPT 模型名称 |
 
 ### 4.3 初始化数据库
-
-方式一：手动建表 + 种子数据（推荐，绕过 `prisma db push` 的 index 长度超限问题）
 
 ```bash
 # 1. 创建数据库
 mysql -u evenji -pevenji -e "CREATE DATABASE IF NOT EXISTS app_feature_repository CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
 
-# 2. 建表（12 张表，包含 ai_providers 和 prompts）
+# 2. 建表（12 张表，含 ai_providers 和 prompts）
 mysql -u evenji -pevenji app_feature_repository < docs/init-tables.sql
 
-# 3. 安装后端依赖
+# 3. 写入种子数据（23 项权限、admin 用户、示例特征树）
+#    需要 Python >= 3.10 和 Prisma Client
 cd backend
 pip install -r requirements.txt
-
-# 4. 生成 Prisma Client
 python -m prisma generate
-
-# 5. 写入种子数据（23 项权限、admin 用户、示例特征树）
 python prisma/seed.py
 ```
 
-方式二：初始化脚本（Linux/macOS）
-
-```bash
-cd backend/scripts
-bash init-db.sh
-```
-
-方式三：初始化脚本（Windows）
-
-```cmd
-cd backend\scripts
-init-db.bat
-```
-
-> 注意：`init-db.sh` 和 `init-db.bat` 内部调用 `prisma db push`，在 MySQL 8.0 + utf8mb4 环境下可能因 index key 长度超限（3072 bytes）而失败。如遇此问题，请使用方式一手动建表。脚本会自动从 `DATABASE_URL` 环境变量解析数据库连接信息。
+> 种子脚本仍使用 Python（`backend/prisma/seed.py`），仅需运行一次。Node.js 主后端运行时不依赖 Python 环境。
 
 ### 4.4 启动后端
 
 ```bash
-cd backend
-pip install -r requirements.txt   # 首次需安装依赖
-python -m uvicorn app.main:app --host 0.0.0.0 --port 8001 --reload
+cd backend-node
+npm install       # 首次需安装依赖
+npm run dev       # 开发模式（ts-node-dev 热重载）
+```
+
+生产模式：
+
+```bash
+npm run build     # 编译 TypeScript → dist/
+npm start         # 运行编译产物
 ```
 
 验证：
 
 ```bash
 curl http://localhost:8001/health
-# 期望返回: {"status":"ok","database_connected":true}
+# 期望返回: {"status":"ok","database":true}
 ```
 
 ### 4.5 启动前端
@@ -702,7 +758,7 @@ docker compose up --build
 
 启动后默认端口：Nginx 80 / 后端 8001 / 前端 3000 / MySQL 3306
 
-Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.py` → `uvicorn`。
+Docker Compose 会自动执行建表 SQL → 种子数据 → 启动 `backend-node`（Node.js）和前端。
 
 ## 5. 默认账号与种子数据
 
@@ -788,7 +844,7 @@ Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.
 | 特征库 | 新建/编辑/删除/复制/移动节点 | `feature:node:manage` |
 | 特征库 | 新建特征 | `feature:item:manage`（未选中节点时禁用） |
 | 特征库 | 新建/编辑/隐藏/删除/复制/移动特征 | `feature:item:manage` |
-| 特征库 | AI 生成提示词 | `ai:generate` |
+| 特征库 | AI 助手（CodeGPT 浮窗） | `ai:generate` |
 | AI 供应商 | 新建/编辑/删除/测试连接 | `ai:provider:manage` |
 | 提示词管理 | 改名/修改名称 | 所有登录用户 |
 | 提示词管理 | 删除提示词 | `isSuperAdmin` 或 `ai:provider:manage` |
@@ -867,15 +923,14 @@ Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.
 - 测试连接：验证供应商配置是否可用
 - 默认供应商：可设置一个默认供应商，生成提示词时自动选中
 
-### 6.6 AI 生成提示词
+### 6.6 AI 助手（CodeGPT 集成）
 
-- 在特征管理页多选特征（支持全选/取消），点击"AI 生成"
-- 生成前校验：至少需选择一个节点或特征，否则提示用户
-- 支持自定义提示词名称（可选），便于后续辨识和管理
-- 选择供应商，可选填补充要求（如"重点覆盖边界值和异常场景"）
-- 后端自动构建提示词：节点层级结构 + 特征详情 + 补充要求
-- 返回 Markdown 格式的测试要点提示词（仅描述"要测什么"，不展开为具体步骤和预期结果）
-- 生成的提示词自动保存到数据库，可在提示词管理页面查看详情
+- 特征管理页多选特征后（支持全选/取消），点击"AI 助手"按钮
+- 前端自动构建提问文本（`buildFeaturePrompt` 拼接选中特征的标题/编码/摘要/描述/平台/优先级），通过 CodeGPT `use()` 方法发送
+- CodeGPT overlay 浮窗弹出交互界面，用户可补充修改提问
+- `onChatResult` 回调自动将结果保存到数据库（调用 `savePrompt` mutation）
+- 保存的提示词可在提示词管理页面查看和管理
+- 提示词管理页面展示
 - 提示词管理页面展示：名称（优先显示自定义名称，无名称显示"未命名"）、提示词内容、发起人、AI 供应商、模型名称、创建时间
 - 提示词管理支持关键词搜索（搜索名称或内容）和按发起人筛选
 - 提示词改名：列表和详情页均提供"改名/修改名称"按钮，支持修改或清除提示词名称
@@ -890,13 +945,12 @@ Docker Compose 会自动执行 `prisma generate` → `prisma db push` → `seed.
 
 ## 7. 已知限制
 
-1. `prisma db push` 在 MySQL 8.0 + utf8mb4 环境下因 index key 长度超限（3072 bytes）无法直接建表，需手动执行 SQL（见第 3 节）
-2. 当前数据库结构初始化基于手动建表 + `prisma generate`，适合开发环境，不等同于正式迁移方案
+1. 数据库表需手动执行 `docs/init-tables.sql` 建表，Node.js 主后端启动时不自动建表（`sync({ alter: false })`）
+2. 种子数据脚本（`backend/prisma/seed.py`）仍为 Python，需一次性执行；Node.js 主后端运行时不依赖 Python 环境
 3. 生产部署仍需补充 HTTPS、备份、监控与 CI/CD
-4. `passlib` 与 `bcrypt >= 4.0` 不兼容，项目已切换为直接使用 `bcrypt` 库
-5. 更换 `SECRET_KEY` 后，已加密的 AI 供应商 API Key 将无法解密，需重新配置所有供应商
-6. AI 生成提示词当前为同步等待模式（最长 120 秒），大批量特征建议分批生成
-7. GraphQL mutation 仅捕获 `AppError` 时，非 AppError 异常（如网络错误、解析失败）会变成 GraphQL 内部错误；关键 mutation（`create_user`、`generate_prompt`、`test_ai_connection`）已增加 `except Exception` 兜底
+4. 更换 `SECRET_KEY` 后，已加密的 AI 供应商 API Key 将无法解密，需重新配置所有供应商
+5. CodeGPT SDK 加载依赖外部 CDN，离线或网络受限时 AI 助手功能不可用（不影响页面其他功能）
+6. GraphQL mutation 仅捕获 `AppError` 时，非 AppError 异常（如网络错误、解析失败）会变成 GraphQL 内部错误；关键 mutation（`createUser`、`generatePrompt`、`testAiConnection`）已在 resolver 层增加 `catch(e)` 兜底处理
 
 ## 8. 文档索引
 

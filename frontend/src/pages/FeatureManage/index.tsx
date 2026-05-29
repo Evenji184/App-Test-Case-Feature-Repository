@@ -11,10 +11,9 @@ import {
   UPDATE_FEATURE_MUTATION,
 } from '@/api/mutations/feature';
 import { COPY_NODE_MUTATION, CREATE_NODE_MUTATION, DELETE_NODE_MUTATION, MOVE_NODE_MUTATION, UPDATE_NODE_MUTATION } from '@/api/mutations/node';
-import { GENERATE_TEST_CASES_MUTATION as GENERATE_PROMPT_MUTATION } from '@/api/mutations/aiProvider';
 import { FEATURE_LIST_QUERY } from '@/api/queries/feature';
 import { NODE_TREE_QUERY } from '@/api/queries/node';
-import { AI_PROVIDER_LIST_QUERY } from '@/api/queries/aiProvider';
+import { useCodeGPT } from '@/hooks/useCodeGPT';
 import { BottomActions } from '@/components/BottomActions';
 import { FeatureList } from '@/components/FeatureList';
 import { FormDrawer } from '@/components/FormDrawer';
@@ -22,13 +21,25 @@ import { FormModal } from '@/components/FormModal';
 import { SearchBar } from '@/components/SearchBar';
 import { TreeView } from '@/components/TreeView';
 import { useAppStore } from '@/stores/app';
-import { useAiProviderStore } from '@/stores/aiProvider';
 import { useAuthStore } from '@/stores/auth';
-import type { AiProvider, FeatureItem, NodeItem } from '@/types/models';
-import type { AiProviderListResult, FeatureListQueryData, FeatureListQueryVariables, FeatureMutationData, NodeMutationData, NodeTreeQueryData } from '@/types/graphql';
+import type { FeatureItem, NodeItem } from '@/types/models';
+import type { FeatureListQueryData, FeatureListQueryVariables, FeatureMutationData, NodeMutationData, NodeTreeQueryData } from '@/types/graphql';
 
 function findNodeById(nodes: NodeItem[], nodeId?: string): NodeItem | undefined {
   return nodes.find((item) => item.id === nodeId);
+}
+
+function buildFeaturePrompt(features: FeatureItem[]): string {
+  if (features.length === 0) return '';
+  const lines = features.map((f) => {
+    const parts = [`【${f.title}】(${f.code})`];
+    if (f.summary) parts.push(`摘要: ${f.summary}`);
+    if (f.description) parts.push(`描述: ${f.description}`);
+    if (f.platform) parts.push(`平台: ${f.platform}`);
+    if (f.priority) parts.push(`优先级: ${f.priority}`);
+    return parts.join('\n');
+  });
+  return `请根据以下特征信息生成测试用例：\n\n${lines.join('\n\n')}`;
 }
 
 const featureStatusOptions = [
@@ -62,11 +73,7 @@ export function FeatureManagePage() {
   const [featureForm] = Form.useForm();
   const [nodeForm] = Form.useForm();
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<Set<string>>(new Set());
-  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
-  const [aiProviderId, setAiProviderId] = useState('');
-  const [aiPromptName, setAiPromptName] = useState('');
-  const [aiCustomInstruction, setAiCustomInstruction] = useState('');
-  const { isGenerating, setGeneratedContent, setIsGenerating, generatedContent } = useAiProviderStore();
+  const { use: codegptUse, show: codegptShow } = useCodeGPT();
 
   const nodeTreeQuery = useQuery<NodeTreeQueryData>(NODE_TREE_QUERY);
 
@@ -89,14 +96,7 @@ export function FeatureManagePage() {
   const [copyNode] = useMutation<NodeMutationData>(COPY_NODE_MUTATION);
   const [moveNode] = useMutation<NodeMutationData>(MOVE_NODE_MUTATION);
 
-  const providerQuery = useQuery<{ aiProviderList: AiProviderListResult }>(AI_PROVIDER_LIST_QUERY, {
-    variables: { pagination: { page: 1, pageSize: 50 } },
-  });
-  const [generatePrompt] = useMutation(GENERATE_PROMPT_MUTATION);
-
-  const aiProviders: AiProvider[] = providerQuery.data?.aiProviderList.items ?? [];
-  const defaultProvider = aiProviders.find((p) => p.isDefault && p.status === 'active');
-
+  
   const features = useMemo(() => {
     const items = featureQuery.data?.featureList.items ?? [];
     if (!keyword) {
@@ -248,14 +248,13 @@ export function FeatureManagePage() {
                 color="primary"
                 fill="outline"
                 onClick={() => {
-                  setAiProviderId(defaultProvider?.id ?? aiProviders[0]?.id ?? '');
-                  setAiPromptName('');
-                  setAiCustomInstruction('');
-                  setGeneratedContent('');
-                  setAiDrawerOpen(true);
+                  const selectedFeatures = features.filter((f) => selectedFeatureIds.has(f.id));
+                  const instruction = buildFeaturePrompt(selectedFeatures);
+                  codegptUse({ instruction });
+                  codegptShow();
                 }}
               >
-                AI 生成 ({selectedFeatureIds.size})
+                AI 助手 ({selectedFeatureIds.size})
               </Button>
             )}
             <Button
@@ -548,98 +547,6 @@ export function FeatureManagePage() {
         }
       />
 
-      <FormDrawer
-        open={aiDrawerOpen}
-        title="AI 生成提示词"
-        onClose={() => setAiDrawerOpen(false)}
-        onSubmit={async () => {
-          if (!aiProviderId) {
-            Toast.show({ content: '请选择 AI 供应商' });
-            return;
-          }
-          if (selectedNodeIds.size === 0 && selectedFeatureIds.size === 0) {
-            Toast.show({ content: '请至少选择一个节点或特征' });
-            return;
-          }
-          setIsGenerating(true);
-          setGeneratedContent('');
-          try {
-            const { data } = await generatePrompt({
-              variables: {
-                input: {
-                  providerId: aiProviderId,
-                  name: aiPromptName || undefined,
-                  featureIds: Array.from(selectedFeatureIds),
-                  nodeIds: Array.from(selectedNodeIds),
-                  customInstruction: aiCustomInstruction || undefined,
-                },
-              },
-            });
-            if (data?.generatePrompt?.success) {
-              const content = data.generatePrompt.content ?? '';
-              if (!content) {
-                Toast.show({ content: 'AI 供应商返回内容为空，请检查配置或更换模型', icon: 'fail' });
-              } else {
-                setGeneratedContent(content);
-                Toast.show({ content: '提示词生成成功', icon: 'success' });
-              }
-            } else {
-              Toast.show({ content: data?.generatePrompt?.message ?? '生成失败', icon: 'fail' });
-            }
-          } catch {
-            Toast.show({ content: '生成失败，请稍后重试', icon: 'fail' });
-          } finally {
-            setIsGenerating(false);
-          }
-        }}
-        submitText={isGenerating ? '生成中...' : '生成'}
-      >
-        <div style={{ display: 'grid', gap: 12 }}>
-          <div style={{ color: '#6b7280', fontSize: 13 }}>
-            已选 {selectedFeatureIds.size} 个特征
-          </div>
-          <div style={{ fontWeight: 600 }}>提示词名称（可选）</div>
-          <Input
-            value={aiPromptName}
-            onChange={setAiPromptName}
-            placeholder="如：登录模块边界值测试"
-            clearable
-          />
-          <div style={{ fontWeight: 600 }}>选择 AI 供应商</div>
-          {aiProviders.length === 0 ? (
-            <div style={{ color: '#999' }}>暂无可用供应商，请先在 AI 管理页配置</div>
-          ) : (
-            <Selector
-              options={aiProviders.map((p) => ({ label: `${p.name} (${p.modelName})`, value: p.id }))}
-              value={[aiProviderId]}
-              onChange={(v) => setAiProviderId(v[0])}
-            />
-          )}
-          <div style={{ fontWeight: 600 }}>补充要求（可选）</div>
-          <TextArea
-            value={aiCustomInstruction}
-            onChange={setAiCustomInstruction}
-            placeholder="如：重点覆盖边界值和异常场景"
-            rows={3}
-          />
-          {generatedContent && (
-            <div style={{ marginTop: 12 }}>
-              <div style={{ fontWeight: 600, marginBottom: 8 }}>生成结果</div>
-              <div style={{
-                background: '#f5f5f5',
-                padding: 12,
-                borderRadius: 8,
-                whiteSpace: 'pre-wrap',
-                fontSize: 13,
-                maxHeight: 400,
-                overflowY: 'auto',
-              }}>
-                {generatedContent}
-              </div>
-            </div>
-          )}
-        </div>
-      </FormDrawer>
-    </div>
+      </div>
   );
 }

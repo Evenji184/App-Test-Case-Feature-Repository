@@ -27,6 +27,8 @@ export function LoginPage() {
             }
             Toast.show({ icon: 'success', content: result.message });
             navigate(from, { replace: true });
+          } catch {
+            Toast.show({ icon: 'fail', content: '登录请求异常，请稍后重试' });
           } finally {
             setLoading(false);
           }

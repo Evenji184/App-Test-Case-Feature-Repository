@@ -211,6 +211,7 @@ export interface SimpleMutationData {
   deleteRole?: MutationResult;
   deletePrompt?: MutationResult;
   updatePromptName?: MutationResult;
+  savePrompt?: MutationResult;
 }
 
 export interface AiProviderListQueryData {
@@ -250,6 +251,15 @@ export interface GeneratePromptInput {
   name?: string;
   nodeIds?: string[];
   featureIds?: string[];
+  customInstruction?: string;
+}
+
+export interface SavePromptInput {
+  name?: string;
+  content: string;
+  model?: string;
+  nodeIds?: string;
+  featureIds?: string;
   customInstruction?: string;
 }
 

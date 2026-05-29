@@ -15,7 +15,7 @@ from app.graphql.types.node import CreateNodeInput, NodeListType, NodeMutationRe
 from app.graphql.types.permission import PermissionModuleGroup, PermissionResourceGroup, PermissionType
 from app.graphql.types.role import CreateRoleInput, RoleListType, RoleMutationResult, RoleType, UpdateRoleInput
 from app.graphql.types.user import CreateUserInput, UpdateUserInput, UserListType, UserMutationResult, UserType
-from app.graphql.types.ai_provider import AiGenerateResult, AiProviderListType, AiProviderMutationResult, AiProviderType, CreateAiProviderInput, GeneratePromptInput, PromptListType, PromptType, UpdateAiProviderInput
+from app.graphql.types.ai_provider import AiGenerateResult, AiProviderListType, AiProviderMutationResult, AiProviderType, CreateAiProviderInput, GeneratePromptInput, PromptListType, PromptType, SavePromptInput, UpdateAiProviderInput
 from app.modules.ai.service import AiProviderService
 from app.modules.audit.service import AuditService
 from app.modules.auth.dependencies import get_current_user, require_permission
@@ -650,6 +650,22 @@ class Mutation:
             return MutationResult(success=True, message="提示词名称修改成功", error=None)
         except AppError as exc:
             logger.warning("修改提示词名称失败: prompt_id=%s, reason=%s", prompt_id, exc.message)
+            return MutationResult(success=False, message=exc.message, error=_error_result(exc))
+
+    @strawberry.mutation(permission_classes=[IsAuthenticated])
+    async def save_prompt(self, info: Info, input: SavePromptInput) -> MutationResult:
+        try:
+            user = await get_current_user(info)
+            await AiProviderService.save_prompt(
+                info.context.prisma, name=input.name, content=input.content,
+                model=input.model, node_ids=input.node_ids,
+                feature_ids=input.feature_ids,
+                custom_instruction=input.custom_instruction,
+                operator_id=user.id,
+            )
+            logger.info("保存提示词: operator=%s", user.username)
+            return MutationResult(success=True, message="提示词保存成功", error=None)
+        except AppError as exc:
             return MutationResult(success=False, message=exc.message, error=_error_result(exc))
 
 

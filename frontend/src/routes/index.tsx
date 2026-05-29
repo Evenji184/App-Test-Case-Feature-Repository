@@ -12,11 +12,9 @@ import { RequireAuth, RequirePermission } from './guards';
 import { useAuthStore } from '@/stores/auth';
 
 export function AppRoutes() {
-  const bootstrap = useAuthStore((state) => state.bootstrap);
-
   useEffect(() => {
-    void bootstrap();
-  }, [bootstrap]);
+    void useAuthStore.getState().bootstrap();
+  }, []);
 
   return (
     <Routes>

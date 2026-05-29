@@ -273,6 +273,31 @@ class AiProviderService:
         )
 
     @staticmethod
+    async def save_prompt(
+        prisma: Any,
+        *,
+        name: str | None = None,
+        content: str,
+        model: str | None = None,
+        node_ids: str | None = None,
+        feature_ids: str | None = None,
+        custom_instruction: str | None = None,
+        operator_id: str | None = None,
+    ) -> Any:
+        return await prisma.prompt.create(
+            data={
+                "name": name,
+                "content": content,
+                "model": model,
+                "node_ids": node_ids,
+                "feature_ids": feature_ids,
+                "custom_instruction": custom_instruction,
+                "created_by": operator_id,
+                "updated_by": operator_id,
+            }
+        )
+
+    @staticmethod
     async def delete_prompt(
         prisma: Any, *, prompt_id: str, operator_id: str | None
     ) -> Any:

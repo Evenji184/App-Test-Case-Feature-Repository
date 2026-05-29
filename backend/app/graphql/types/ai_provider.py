@@ -97,3 +97,13 @@ class GeneratePromptInput:
     node_ids: list[str] = strawberry.field(default_factory=list)
     feature_ids: list[str] = strawberry.field(default_factory=list)
     custom_instruction: str | None = None
+
+
+@strawberry.input
+class SavePromptInput:
+    name: str | None = None
+    content: str
+    model: str | None = None
+    node_ids: str | None = None
+    feature_ids: str | None = None
+    custom_instruction: str | None = None

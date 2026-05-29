@@ -9,6 +9,11 @@ const graphqlEndpoint = `${apiScheme}://${apiHost}:${apiPort}/graphql`;
 
 const httpLink = new HttpLink({
   uri: graphqlEndpoint,
+  fetch: (uri, options) => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    return fetch(uri, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+  },
 });
 
 const authLink = new ApolloLink((operation, forward) => {
@@ -29,7 +34,9 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
 
   if (unauthorized || ('statusCode' in (networkError ?? {}) && (networkError as { statusCode?: number }).statusCode === 401)) {
     storage.clearAuth();
-    window.location.href = '/login';
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
   }
 });
 

@@ -77,3 +77,13 @@ export const UPDATE_PROMPT_NAME_MUTATION = gql`
     }
   }
 `;
+
+export const SAVE_PROMPT_MUTATION = gql`
+  mutation SavePrompt($input: SavePromptInput!) {
+    savePrompt(input: $input) {
+      success
+      message
+      error { code message }
+    }
+  }
+`;
