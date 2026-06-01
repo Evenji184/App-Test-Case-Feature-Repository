@@ -10,10 +10,10 @@ import {
   SHOW_FEATURE_MUTATION,
   UPDATE_FEATURE_MUTATION,
 } from '@/api/mutations/feature';
+import { GENERATE_TEST_CASES_MUTATION } from '@/api/mutations/aiProvider';
 import { COPY_NODE_MUTATION, CREATE_NODE_MUTATION, DELETE_NODE_MUTATION, MOVE_NODE_MUTATION, UPDATE_NODE_MUTATION } from '@/api/mutations/node';
 import { FEATURE_LIST_QUERY } from '@/api/queries/feature';
 import { NODE_TREE_QUERY } from '@/api/queries/node';
-import { useCodeGPT } from '@/hooks/useCodeGPT';
 import { BottomActions } from '@/components/BottomActions';
 import { FeatureList } from '@/components/FeatureList';
 import { FormDrawer } from '@/components/FormDrawer';
@@ -27,19 +27,6 @@ import type { FeatureListQueryData, FeatureListQueryVariables, FeatureMutationDa
 
 function findNodeById(nodes: NodeItem[], nodeId?: string): NodeItem | undefined {
   return nodes.find((item) => item.id === nodeId);
-}
-
-function buildFeaturePrompt(features: FeatureItem[]): string {
-  if (features.length === 0) return '';
-  const lines = features.map((f) => {
-    const parts = [`【${f.title}】(${f.code})`];
-    if (f.summary) parts.push(`摘要: ${f.summary}`);
-    if (f.description) parts.push(`描述: ${f.description}`);
-    if (f.platform) parts.push(`平台: ${f.platform}`);
-    if (f.priority) parts.push(`优先级: ${f.priority}`);
-    return parts.join('\n');
-  });
-  return `请根据以下特征信息生成测试用例：\n\n${lines.join('\n\n')}`;
 }
 
 const featureStatusOptions = [
@@ -73,7 +60,7 @@ export function FeatureManagePage() {
   const [featureForm] = Form.useForm();
   const [nodeForm] = Form.useForm();
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<Set<string>>(new Set());
-  const { use: codegptUse, show: codegptShow } = useCodeGPT();
+  const [generatePrompt, { loading: isGenerating }] = useMutation(GENERATE_TEST_CASES_MUTATION);
 
   const nodeTreeQuery = useQuery<NodeTreeQueryData>(NODE_TREE_QUERY);
 
@@ -247,14 +234,28 @@ export function FeatureManagePage() {
               <Button
                 color="primary"
                 fill="outline"
-                onClick={() => {
+                loading={isGenerating}
+                onClick={async () => {
                   const selectedFeatures = features.filter((f) => selectedFeatureIds.has(f.id));
-                  const instruction = buildFeaturePrompt(selectedFeatures);
-                  codegptUse({ instruction });
-                  codegptShow();
+                  const nodeIds = [...new Set(selectedFeatures.map((f) => f.nodeId))];
+                  const { data } = await generatePrompt({
+                    variables: {
+                      input: {
+                        nodeIds,
+                        featureIds: Array.from(selectedFeatureIds),
+                      },
+                    },
+                  });
+                  const result = data?.generatePrompt;
+                  if (result?.success) {
+                    Toast.show({ content: '提示词已生成并保存', icon: 'success' });
+                    setSelectedFeatureIds(new Set());
+                  } else {
+                    Toast.show({ content: result?.error?.message ?? result?.message ?? '生成失败', icon: 'fail' });
+                  }
                 }}
               >
-                AI 助手 ({selectedFeatureIds.size})
+                AI 生成 ({selectedFeatureIds.size})
               </Button>
             )}
             <Button

@@ -12,76 +12,72 @@ export const typeDefs = `#graphql
     error: MutationError
   }
 
-  # ===== User types =====
-  type UserInfo {
-    id: ID!
-    username: String!
-    email: String
-    fullName: String
-    avatar: String
-    status: String!
-    isSuperAdmin: Boolean!
-    isSystem: Boolean!
-    lastLoginAt: DateTime
-    lastLoginIp: String
-    createdAt: DateTime!
-    updatedAt: DateTime!
-    roles: [RoleInfo!]!
-    permissions: [String!]!
+  type PageInfo {
+    total: Int!
+    page: Int!
+    pageSize: Int!
+    totalPages: Int!
+    hasNextPage: Boolean!
+    hasPreviousPage: Boolean!
   }
 
-  type UserListItem {
+  # ===== User types =====
+  type UserType {
     id: ID!
     username: String!
     email: String
-    fullName: String
-    avatar: String
+    displayName: String
+    phone: String
+    avatarUrl: String
     status: String!
     isSuperAdmin: Boolean!
-    isSystem: Boolean!
+    roleIds: [String!]!
     lastLoginAt: DateTime
+    lastLoginIp: String
+    remark: String
     createdAt: DateTime!
-    roles: [RoleInfo!]!
+    updatedAt: DateTime!
   }
 
   type UserListResult {
-    total: Int!
-    items: [UserListItem!]!
+    items: [UserType!]!
+    pageInfo: PageInfo!
   }
 
   type UserMutationResult {
     success: Boolean!
     message: String!
     error: MutationError
-    user: UserInfo
+    data: UserType
   }
 
   # ===== Role types =====
-  type RoleInfo {
+  type RoleType {
     id: ID!
     name: String!
     code: String!
     description: String
     isSystem: Boolean!
     status: String!
+    permissionIds: [String!]!
     createdAt: DateTime!
-    permissions: [PermissionInfo!]!
+    updatedAt: DateTime!
   }
 
   type RoleListResult {
-    total: Int!
-    items: [RoleInfo!]!
+    items: [RoleType!]!
+    pageInfo: PageInfo!
   }
 
   type RoleMutationResult {
     success: Boolean!
     message: String!
     error: MutationError
-    role: RoleInfo
+    data: RoleType
   }
 
   # ===== Permission types =====
-  type PermissionInfo {
+  type PermissionType {
     id: ID!
     name: String!
     code: String!
@@ -93,7 +89,7 @@ export const typeDefs = `#graphql
 
   type PermissionResourceGroup {
     resource: String!
-    actions: [PermissionInfo!]!
+    permissions: [PermissionType!]!
   }
 
   type PermissionModuleGroup {
@@ -101,50 +97,38 @@ export const typeDefs = `#graphql
     resources: [PermissionResourceGroup!]!
   }
 
-  # ===== FeatureNode types =====
-  type NodeInfo {
+  # ===== Node types =====
+  type NodeType {
     id: ID!
+    parentId: String
     name: String!
     code: String!
-    description: String
-    parentId: String
+    nodeType: String
     path: String!
     level: Int!
     sortOrder: Int!
     isVisible: Boolean!
+    isLocked: Boolean!
+    remark: String
     createdAt: DateTime!
     updatedAt: DateTime!
-    children: [NodeInfo!]!
-  }
-
-  type NodeListItem {
-    id: ID!
-    name: String!
-    code: String!
-    description: String
-    parentId: String
-    path: String!
-    level: Int!
-    sortOrder: Int!
-    isVisible: Boolean!
-    createdAt: DateTime!
-    updatedAt: DateTime!
+    children: [NodeType!]!
   }
 
   type NodeListResult {
-    total: Int!
-    items: [NodeListItem!]!
+    items: [NodeType!]!
+    pageInfo: PageInfo!
   }
 
   type NodeMutationResult {
     success: Boolean!
     message: String!
     error: MutationError
-    node: NodeInfo
+    data: NodeType
   }
 
   # ===== Feature types =====
-  type FeatureInfo {
+  type FeatureType {
     id: ID!
     nodeId: String!
     title: String!
@@ -152,86 +136,93 @@ export const typeDefs = `#graphql
     summary: String
     description: String
     platform: String
-    priority: String
     status: String!
+    priority: String
+    version: String
+    tags: String
     isVisible: Boolean!
-    archivedAt: DateTime
+    isArchived: Boolean!
+    remark: String
     createdAt: DateTime!
     updatedAt: DateTime!
-    createdBy: String
   }
 
   type FeatureListResult {
-    total: Int!
-    items: [FeatureInfo!]!
+    items: [FeatureType!]!
+    pageInfo: PageInfo!
   }
 
   type FeatureMutationResult {
     success: Boolean!
     message: String!
     error: MutationError
-    feature: FeatureInfo
+    data: FeatureType
   }
 
   # ===== AI Provider types =====
-  type AiProviderInfo {
+  type AiProviderType {
     id: ID!
     name: String!
     providerFormat: String!
     requestUrl: String!
     apiKeyHint: String
     modelName: String
+    websiteUrl: String
     isDefault: Boolean!
     status: String!
-    description: String
+    remark: String
     createdAt: DateTime!
     updatedAt: DateTime!
+  }
+
+  type AiProviderListResult {
+    items: [AiProviderType!]!
+    pageInfo: PageInfo!
   }
 
   type AiProviderMutationResult {
     success: Boolean!
     message: String!
     error: MutationError
-    provider: AiProviderInfo
+    data: AiProviderType
   }
 
   # ===== Prompt types =====
-  type PromptProviderInfo {
-    id: ID!
-    name: String!
-    modelName: String
-  }
-
-  type PromptCreatedByUser {
-    id: ID!
-    username: String!
-    fullName: String
-  }
-
-  type PromptInfo {
+  type PromptType {
     id: ID!
     name: String
     content: String!
     model: String
+    providerId: String
+    providerName: String
+    createdById: String
+    createdByName: String
     nodeIds: String
     featureIds: String
     customInstruction: String
-    provider: PromptProviderInfo
-    createdByUser: PromptCreatedByUser
     createdAt: DateTime!
     updatedAt: DateTime!
   }
 
   type PromptListResult {
-    total: Int!
-    items: [PromptInfo!]!
+    items: [PromptType!]!
+    pageInfo: PageInfo!
   }
 
   type PromptMutationResult {
     success: Boolean!
     message: String!
     error: MutationError
-    prompt: PromptInfo
+    data: PromptType
+  }
+
+  type AiGenerateResult {
+    success: Boolean!
+    message: String!
+    error: MutationError
+    content: String
+    model: String
+    usage: String
   }
 
   # ===== Log types =====
@@ -288,55 +279,84 @@ export const typeDefs = `#graphql
   }
 
   # ===== Auth types =====
+  type AuthUserType {
+    id: ID!
+    username: String!
+    email: String
+    displayName: String
+    status: String!
+    isSuperAdmin: Boolean!
+  }
+
+  type LoginPayload {
+    accessToken: String!
+    tokenType: String!
+    permissions: [String!]!
+    user: AuthUserType!
+  }
+
   type LoginResult {
     success: Boolean!
     message: String!
     error: MutationError
-    token: String
-    user: UserInfo
+    data: LoginPayload
   }
 
   # ===== Inputs =====
+  input PaginationInput {
+    page: Int
+    pageSize: Int
+  }
+
   input CreateUserInput {
     username: String!
     password: String!
     email: String
-    fullName: String
+    displayName: String
+    phone: String
+    avatarUrl: String
+    remark: String
+    isSuperAdmin: Boolean
   }
 
   input UpdateUserInput {
-    userId: ID!
     email: String
-    fullName: String
+    displayName: String
+    phone: String
+    avatarUrl: String
+    remark: String
+    isSuperAdmin: Boolean
   }
 
   input CreateRoleInput {
     name: String!
     code: String!
     description: String
+    isSystem: Boolean
   }
 
   input UpdateRoleInput {
-    roleId: ID!
     name: String
     description: String
+    status: String
   }
 
   input CreateNodeInput {
     name: String!
     code: String!
-    description: String
+    nodeType: String
     parentId: ID
     sortOrder: Int
+    remark: String
   }
 
   input UpdateNodeInput {
-    nodeId: ID!
     name: String
     code: String
-    description: String
+    nodeType: String
     parentId: ID
     sortOrder: Int
+    remark: String
   }
 
   input CreateFeatureInput {
@@ -347,16 +367,20 @@ export const typeDefs = `#graphql
     description: String
     platform: String
     priority: String
+    version: String
+    tags: String
+    remark: String
   }
 
   input UpdateFeatureInput {
-    featureId: ID!
     title: String
     summary: String
     description: String
     platform: String
     priority: String
-    expectedUpdatedAt: DateTime
+    version: String
+    tags: String
+    remark: String
   }
 
   input CreateAiProviderInput {
@@ -365,18 +389,21 @@ export const typeDefs = `#graphql
     requestUrl: String!
     apiKey: String
     modelName: String
+    websiteUrl: String
     isDefault: Boolean
-    description: String
+    remark: String
   }
 
   input UpdateAiProviderInput {
-    providerId: ID!
     name: String
     requestUrl: String
     apiKey: String
     modelName: String
+    websiteUrl: String
     isDefault: Boolean
-    description: String
+    remark: String
+    status: String
+    providerFormat: String
   }
 
   input GeneratePromptInput {
@@ -397,22 +424,22 @@ export const typeDefs = `#graphql
 
   # ===== Query =====
   type Query {
-    currentUser: UserInfo
-    userList(keyword: String, page: Int, pageSize: Int): UserListResult!
-    roleList(keyword: String, page: Int, pageSize: Int): RoleListResult!
+    currentUser: UserType
+    userList(pagination: PaginationInput!, keyword: String): UserListResult!
+    roleList(pagination: PaginationInput!): RoleListResult!
     permissionTree: [PermissionModuleGroup!]!
-    nodeTree: [NodeInfo!]!
-    nodeList(keyword: String, page: Int, pageSize: Int): NodeListResult!
-    nodeDetail(nodeId: ID!): NodeInfo
-    searchNodes(keyword: String!): [NodeListItem!]!
-    featureList(nodeId: ID, nodeIds: [ID!], keyword: String, page: Int, pageSize: Int, includeHidden: Boolean): FeatureListResult!
-    featureDetail(featureId: ID!): FeatureInfo
-    searchFeatures(keyword: String!): [FeatureInfo!]!
+    nodeTree: [NodeType!]!
+    nodeList(pagination: PaginationInput!): NodeListResult!
+    nodeDetail(nodeId: String!): NodeType
+    searchNodes(keyword: String!, pagination: PaginationInput!): NodeListResult!
+    featureList(pagination: PaginationInput!, nodeIds: [String!], includeHidden: Boolean): FeatureListResult!
+    featureDetail(featureId: String!): FeatureType
+    searchFeatures(keyword: String!, pagination: PaginationInput!, includeHidden: Boolean): FeatureListResult!
     auditLogList(keyword: String, action: String, operatorId: ID, page: Int, pageSize: Int): AuditLogListResult!
     requestLogList(keyword: String, userId: ID, page: Int, pageSize: Int): RequestLogListResult!
     loginLogList(keyword: String, userId: ID, success: Boolean, page: Int, pageSize: Int): LoginLogListResult!
-    aiProviderList: [AiProviderInfo!]!
-    promptList(providerId: ID, keyword: String, page: Int, pageSize: Int): PromptListResult!
+    aiProviderList(pagination: PaginationInput!): AiProviderListResult!
+    promptList(pagination: PaginationInput!, keyword: String, createdBy: String): PromptListResult!
   }
 
   # ===== Mutation =====
@@ -420,51 +447,51 @@ export const typeDefs = `#graphql
     # Auth
     login(username: String!, password: String!): LoginResult!
     logout: MutationResult!
-    resetPassword(userId: ID!, newPassword: String!): MutationResult!
+    resetPassword(userId: String!, newPassword: String!): MutationResult!
     changeMyPassword(oldPassword: String!, newPassword: String!): MutationResult!
 
     # User management
     createUser(input: CreateUserInput!): UserMutationResult!
-    updateUser(input: UpdateUserInput!): UserMutationResult!
-    enableUser(userId: ID!): MutationResult!
-    disableUser(userId: ID!): MutationResult!
-    assignRolesToUser(userId: ID!, roleIds: [ID!]!): MutationResult!
-    deleteUser(userId: ID!): MutationResult!
+    updateUser(userId: String!, input: UpdateUserInput!): UserMutationResult!
+    enableUser(userId: String!): MutationResult!
+    disableUser(userId: String!): MutationResult!
+    assignRolesToUser(userId: String!, roleIds: [String!]!): MutationResult!
+    deleteUser(userId: String!): MutationResult!
 
     # Role management
     createRole(input: CreateRoleInput!): RoleMutationResult!
-    updateRole(input: UpdateRoleInput!): RoleMutationResult!
-    assignPermissionsToRole(roleId: ID!, permissionIds: [ID!]!): MutationResult!
-    deleteRole(roleId: ID!): MutationResult!
+    updateRole(roleId: String!, input: UpdateRoleInput!): RoleMutationResult!
+    assignPermissionsToRole(roleId: String!, permissionIds: [String!]!): MutationResult!
+    deleteRole(roleId: String!): MutationResult!
 
     # Node management
     createNode(input: CreateNodeInput!): NodeMutationResult!
-    updateNode(input: UpdateNodeInput!): NodeMutationResult!
-    deleteNode(nodeId: ID!): MutationResult!
-    hideNode(nodeId: ID!): MutationResult!
-    showNode(nodeId: ID!): MutationResult!
-    copyNode(nodeId: ID!): NodeMutationResult!
-    moveNode(nodeId: ID!, targetParentId: ID): NodeMutationResult!
+    updateNode(nodeId: String!, input: UpdateNodeInput!): NodeMutationResult!
+    deleteNode(nodeId: String!): MutationResult!
+    hideNode(nodeId: String!): MutationResult!
+    showNode(nodeId: String!): MutationResult!
+    copyNode(nodeId: String!, targetParentId: String, newName: String): NodeMutationResult!
+    moveNode(nodeId: String!, targetParentId: String): NodeMutationResult!
 
     # Feature management
     createFeature(input: CreateFeatureInput!): FeatureMutationResult!
-    updateFeature(input: UpdateFeatureInput!): FeatureMutationResult!
-    deleteFeature(featureId: ID!): MutationResult!
-    hideFeature(featureId: ID!): MutationResult!
-    showFeature(featureId: ID!): MutationResult!
-    copyFeature(featureId: ID!, targetNodeId: ID): FeatureMutationResult!
-    moveFeature(featureId: ID!, targetNodeId: ID!): FeatureMutationResult!
+    updateFeature(featureId: String!, input: UpdateFeatureInput!, expectedUpdatedAt: String): FeatureMutationResult!
+    deleteFeature(featureId: String!): MutationResult!
+    hideFeature(featureId: String!): MutationResult!
+    showFeature(featureId: String!): MutationResult!
+    copyFeature(featureId: String!, targetNodeId: String!): FeatureMutationResult!
+    moveFeature(featureId: String!, targetNodeId: String!): FeatureMutationResult!
 
     # AI Provider management
     createAiProvider(input: CreateAiProviderInput!): AiProviderMutationResult!
-    updateAiProvider(input: UpdateAiProviderInput!): AiProviderMutationResult!
-    deleteAiProvider(providerId: ID!): MutationResult!
-    testAiConnection(providerId: ID!): MutationResult!
+    updateAiProvider(providerId: String!, input: UpdateAiProviderInput!): AiProviderMutationResult!
+    deleteAiProvider(providerId: String!): MutationResult!
+    testAiConnection(providerId: String!): MutationResult!
 
     # Prompt management
-    generatePrompt(input: GeneratePromptInput!): PromptMutationResult!
-    savePrompt(input: SavePromptInput!): PromptMutationResult!
-    deletePrompt(promptId: ID!): MutationResult!
-    updatePromptName(promptId: ID!, name: String!): PromptMutationResult!
+    generatePrompt(input: GeneratePromptInput!): AiGenerateResult!
+    savePrompt(input: SavePromptInput!): MutationResult!
+    deletePrompt(promptId: String!): MutationResult!
+    updatePromptName(promptId: String!, name: String): MutationResult!
   }
 `;

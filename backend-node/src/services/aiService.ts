@@ -150,10 +150,11 @@ function buildPromptText(nodes: FeatureNode[], features: Feature[]): string {
     parts.push(`## ${node.name} (${node.code})\n`);
     for (const feat of nodeFeatures) {
       parts.push(`### ${feat.title} [${feat.code}]`);
-      if (feat.platform) parts.push(`平台: ${feat.platform}`);
-      if (feat.priority) parts.push(`优先级: ${feat.priority}`);
-      if (feat.summary) parts.push(`摘要: ${feat.summary}`);
-      if (feat.description) parts.push(`详情: ${feat.description}`);
+      if (feat.platform) parts.push(`- 平台: ${feat.platform}`);
+      if (feat.priority) parts.push(`- 优先级: ${feat.priority}`);
+      if (feat.summary) parts.push(`- 摘要: ${feat.summary}`);
+      if (feat.description) parts.push(`- 详情: ${feat.description}`);
+      if (feat.tags) parts.push(`- 标签: ${feat.tags}`);
       parts.push('');
     }
   }
@@ -196,7 +197,45 @@ export async function generatePrompt(params: {
   }
 
   const promptText = buildPromptText(nodes, features);
-  const instruction = params.customInstruction || '请根据以上特征数据，生成详细的测试用例，包括正常流程和异常流程，覆盖主要功能点。';
+  const instruction = params.customInstruction || `你是一名资深软件测试工程师，擅长根据产品特征描述提炼测试要点。
+
+请根据以上特征库数据，为每个特征生成一份测试分析提纲。
+
+**输出规则：**
+- 每个特征单独输出，特征之间用 --- 分隔
+- 仅描述"要测什么"，不展开为具体的测试步骤和预期结果
+- 测试要点按高/中/低三个优先级分组，每条用 [维度标签] 标注测试维度（功能/边界/异常/权限/并发/性能/兼容）
+- 有平台字段时，在对应优先级组内直接标注平台差异点（iOS：… / Android：…），无平台字段或全平台无差异时省略
+- 涉及系统权限才列权限要点，否则跳过；无并发风险则跳过并发；无性能/兼容隐患则省略对应条目
+- 内容精炼，结合特征的标题/摘要/描述/标签给出针对性要点，禁止照搬描述原文或泛泛而谈
+- 只输出 Markdown 正文，不输出任何前言、结语或多余解释
+
+**模板（每个特征严格按此结构输出）：**
+
+## {特征标题}（{特征编码}）
+
+- **适用平台**：{iOS / Android / 全平台；无平台字段则填"全平台"}
+
+**高优先级**
+- [功能] {核心主流程与关键状态变化}
+- [功能] {与其他模块的联动关系（如有）}
+- [边界] {最关键的输入/数量/状态边界}
+- [异常] {断网、服务端错误、操作中断等核心异常场景}
+- {iOS/Android 平台差异（如有）}
+
+**中优先级**
+- [权限] {需申请的系统权限及降级策略（无则省略此条）}
+- [并发] {多设备/多用户/重复操作的冲突场景（无则省略此条）}
+- [边界] {次要边界：特殊字符、emoji、弱网等}
+- [异常] {杀进程/切后台/来电中断后的恢复逻辑}
+- {iOS/Android 平台差异（如有）}
+
+**低优先级**
+- [性能] {首屏加载、列表流畅度、流量/电量影响（无明显风险则省略）}
+- [兼容] {最低系统版本、刘海屏/折叠屏、深色模式/大字号（无明显风险则省略）}
+- {iOS/Android 平台差异（如有）}
+
+---`;
 
   const messages = [
     { role: 'user', content: `${promptText}\n\n${instruction}` },

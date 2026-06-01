@@ -138,7 +138,9 @@
       "Bash(pkill -f \"ts-node-dev.*src/index.ts\")",
       "Bash(xargs kill -9)",
       "Bash(fuser -k 8001/tcp)",
-      "Bash(python3 -m json.tool)"
+      "Bash(python3 -m json.tool)",
+      "PowerShell(tasklist *)",
+      "Bash(npx ts-node-dev *)"
     ]
   }
 }

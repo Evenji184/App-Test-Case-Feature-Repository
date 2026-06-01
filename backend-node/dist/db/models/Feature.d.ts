@@ -1,0 +1,61 @@
+import { Model, Optional } from 'sequelize';
+export interface FeatureAttributes {
+    id: string;
+    node_id: string;
+    title: string;
+    code: string;
+    summary: string | null;
+    description: string | null;
+    platform: string | null;
+    priority: string | null;
+    status: string;
+    version: string | null;
+    tags: string | null;
+    is_visible: boolean;
+    is_archived: boolean;
+    remark: string | null;
+    source_feature_id: string | null;
+    copied_from_id: string | null;
+    moved_from_node_id: string | null;
+    move_operation_id: string | null;
+    copy_operation_id: string | null;
+    last_copied_at: Date | null;
+    last_moved_at: Date | null;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+    created_by: string | null;
+    updated_by: string | null;
+    deleted_by: string | null;
+}
+export type FeatureCreationAttributes = Optional<FeatureAttributes, 'id' | 'summary' | 'description' | 'platform' | 'priority' | 'status' | 'version' | 'tags' | 'is_visible' | 'is_archived' | 'remark' | 'source_feature_id' | 'copied_from_id' | 'moved_from_node_id' | 'move_operation_id' | 'copy_operation_id' | 'last_copied_at' | 'last_moved_at' | 'created_at' | 'updated_at' | 'deleted_at' | 'created_by' | 'updated_by' | 'deleted_by'>;
+export declare class Feature extends Model<FeatureAttributes, FeatureCreationAttributes> implements FeatureAttributes {
+    id: string;
+    node_id: string;
+    title: string;
+    code: string;
+    summary: string | null;
+    description: string | null;
+    platform: string | null;
+    priority: string | null;
+    status: string;
+    version: string | null;
+    tags: string | null;
+    is_visible: boolean;
+    is_archived: boolean;
+    remark: string | null;
+    source_feature_id: string | null;
+    copied_from_id: string | null;
+    moved_from_node_id: string | null;
+    move_operation_id: string | null;
+    copy_operation_id: string | null;
+    last_copied_at: Date | null;
+    last_moved_at: Date | null;
+    created_at: Date;
+    updated_at: Date;
+    deleted_at: Date | null;
+    created_by: string | null;
+    updated_by: string | null;
+    deleted_by: string | null;
+}
+//# sourceMappingURL=Feature.d.ts.map
