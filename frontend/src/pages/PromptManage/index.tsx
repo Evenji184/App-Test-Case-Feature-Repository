@@ -126,7 +126,7 @@ export function PromptManagePage() {
       )}
 
       {prompts.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '40px 0', color: '#999' }}>
+        <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--color-text-muted)' }}>
           暂无提示词记录
         </div>
       ) : (
@@ -176,7 +176,7 @@ export function PromptManagePage() {
                     textOverflow: 'ellipsis',
                     whiteSpace: 'nowrap',
                     maxWidth: 200,
-                    color: '#999',
+                    color: 'var(--color-text-muted)',
                   }}>
                     {prompt.content.slice(0, 40)}...
                   </span>
@@ -204,16 +204,16 @@ export function PromptManagePage() {
                 修改名称
               </Button>
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>
+            <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
               发起人：{selected.createdByName ?? '未知'} · 供应商：{selected.providerName} · 模型：{selected.model ?? '未知'}
             </div>
-            <div style={{ fontSize: 12, color: '#6b7280' }}>
+            <div style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}>
               创建时间：{selected.createdAt}
             </div>
             {selected.customInstruction && (
               <div>
                 <div style={{ fontWeight: 600, marginBottom: 4 }}>补充要求</div>
-                <div style={{ background: '#f0f0f0', padding: 8, borderRadius: 8, fontSize: 13 }}>
+                <div style={{ background: 'var(--bg-elevated)', border: '1px solid var(--color-border)', padding: 8, borderRadius: 8, fontSize: 13, color: 'var(--color-text)' }}>
                   {selected.customInstruction}
                 </div>
               </div>
@@ -221,11 +221,13 @@ export function PromptManagePage() {
             <div>
               <div style={{ fontWeight: 600, marginBottom: 4 }}>提示词内容</div>
               <div style={{
-                background: '#f5f5f5',
+                background: 'var(--bg-elevated)',
+                border: '1px solid var(--color-border)',
                 padding: 12,
                 borderRadius: 8,
                 whiteSpace: 'pre-wrap',
                 fontSize: 13,
+                color: 'var(--color-text)',
                 maxHeight: 500,
                 overflowY: 'auto',
               }}>
@@ -243,7 +245,7 @@ export function PromptManagePage() {
         onSubmit={handleSaveName}
       >
         <div style={{ display: 'grid', gap: 12 }}>
-          <div style={{ fontSize: 13, color: '#6b7280' }}>
+          <div style={{ fontSize: 13, color: 'var(--color-text-secondary)' }}>
             当前名称：{editNameTarget?.name ?? '未命名'}
           </div>
           <Input

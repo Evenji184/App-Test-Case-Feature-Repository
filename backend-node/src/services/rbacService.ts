@@ -76,6 +76,8 @@ export async function getPermissionTree(): Promise<PermissionTree[]> {
           id: p.id,
           name: p.name,
           code: p.code,
+          module: p.module,
+          resource: p.resource,
           action: p.action,
           description: p.description,
         })),

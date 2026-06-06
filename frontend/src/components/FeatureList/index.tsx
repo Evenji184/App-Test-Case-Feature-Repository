@@ -29,12 +29,12 @@ export function FeatureList({ items, onClick, extra, selectable, selectedIds, on
               )}
               <div>
                 <div style={{ fontSize: 16, fontWeight: 700 }}>{item.title}</div>
-                <div style={{ color: '#6b7280', fontSize: 12, marginTop: 4 }}>{item.code}</div>
+                <div style={{ color: 'var(--color-text-secondary)', fontSize: 12, marginTop: 4 }}>{item.code}</div>
               </div>
             </div>
             {extra?.(item)}
           </div>
-          <div style={{ color: '#4b5563', marginTop: 8 }}>{item.summary || '暂无摘要'}</div>
+          <div style={{ color: 'var(--color-text-secondary)', marginTop: 8 }}>{item.summary || '暂无摘要'}</div>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 12 }}>
             <Tag color="primary">{item.status}</Tag>
             <Tag color="warning">{item.priority}</Tag>

@@ -44,7 +44,7 @@ function TreeNode({
         justifyContent: 'space-between',
         gap: 8,
         alignItems: 'center',
-        background: (selectable ? isChecked : isSelected) ? '#e6f4ff' : undefined,
+        background: (selectable ? isChecked : isSelected) ? 'var(--color-primary-alpha)' : 'transparent',
         borderRadius: 8,
         padding: '4px 8px',
       }}
@@ -67,7 +67,8 @@ function TreeNode({
         style={{
           padding: '10px 12px',
           borderRadius: 12,
-          background: (selectable ? isChecked : isSelected) ? '#e6f4ff' : '#f7f8fa',
+          background: (selectable ? isChecked : isSelected) ? 'var(--color-primary-alpha)' : 'var(--bg-elevated)',
+          border: (selectable ? isChecked : isSelected) ? '1px solid var(--color-border-accent)' : '1px solid var(--color-border)',
           marginBottom: 8,
         }}
       >

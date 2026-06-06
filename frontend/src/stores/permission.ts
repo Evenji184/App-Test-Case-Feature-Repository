@@ -21,9 +21,11 @@ export const usePermissionStore = create<PermissionState>((set) => ({
     try {
       const { data } = await apolloClient.query<PermissionTreeQueryData>({
         query: PERMISSION_TREE_QUERY,
-        fetchPolicy: 'network-only',
+        fetchPolicy: 'no-cache',
       });
       set({ permissionTree: data.permissionTree });
+    } catch (err) {
+      console.error('[permission] fetchPermissionTree failed:', err);
     } finally {
       set({ loading: false });
     }

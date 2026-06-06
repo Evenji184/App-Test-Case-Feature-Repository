@@ -21,7 +21,7 @@ export function FormDrawer({ open, title, onClose, onSubmit, submitText, childre
     >
       <div style={{ padding: '16px 16px 0', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 18, fontWeight: 700 }}>{title}</div>
-        <div style={{ fontSize: 22, color: '#999', cursor: 'pointer', lineHeight: 1 }} onClick={onClose}>
+        <div style={{ fontSize: 22, color: 'var(--color-text-muted)', cursor: 'pointer', lineHeight: 1 }} onClick={onClose}>
           &times;
         </div>
       </div>

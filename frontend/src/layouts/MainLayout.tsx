@@ -56,7 +56,7 @@ export function MainLayout() {
       <TabBar
         activeKey={currentTab?.key ?? '/features'}
         onChange={(value) => navigate(value)}
-        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, borderTop: '1px solid #f0f0f0', background: '#fff' }}
+        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, borderTop: '1px solid rgba(255,255,255,0.07)', background: '#0e1220' }}
       >
         {visibleTabs.map((item) => (
           <TabBar.Item key={item.key} icon={item.icon} title={item.title} />

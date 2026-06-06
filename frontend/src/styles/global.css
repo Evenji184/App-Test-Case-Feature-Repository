@@ -1,14 +1,47 @@
 :root {
-  color-scheme: light;
+  color-scheme: dark;
   font-family: Inter, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
   line-height: 1.5;
   font-weight: 400;
-  color: #1f2937;
-  background: #f5f7fb;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* Design tokens */
+  --bg-base: #080a12;
+  --bg-surface: #0e1220;
+  --bg-elevated: #161d30;
+  --bg-hover: #1c2540;
+  --color-primary: #5c78ff;
+  --color-primary-alpha: rgba(92, 120, 255, 0.15);
+  --color-primary-glow: rgba(92, 120, 255, 0.28);
+  --color-text: #dce3f0;
+  --color-text-secondary: #7888a0;
+  --color-text-muted: #4a5570;
+  --color-border: rgba(255, 255, 255, 0.07);
+  --color-border-accent: rgba(92, 120, 255, 0.35);
+  --color-danger: #f56b6b;
+
+  /* antd-mobile CSS variable overrides */
+  --adm-color-primary: #5c78ff;
+  --adm-color-success: #34d399;
+  --adm-color-warning: #fbbf24;
+  --adm-color-danger: #f56b6b;
+  --adm-color-background: #080a12;
+  --adm-color-box: #0e1220;
+  --adm-color-border: rgba(255, 255, 255, 0.07);
+  --adm-color-text: #dce3f0;
+  --adm-color-text-secondary: #7888a0;
+  --adm-color-weak: #4a5570;
+  --adm-color-light: #161d30;
+  --adm-color-fill-content: #161d30;
+  --adm-color-fill: rgba(255, 255, 255, 0.05);
+  --adm-color-fill-secondary: rgba(255, 255, 255, 0.03);
+  --adm-font-family: Inter, -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+
+  color: var(--color-text);
+  background: var(--bg-base);
 }
 
 * {
@@ -24,7 +57,7 @@ body,
 
 body {
   min-width: 320px;
-  background: #f5f7fb;
+  background: var(--bg-base);
 }
 
 a {
@@ -39,32 +72,47 @@ select {
   font: inherit;
 }
 
+/* ─── Layout shells ─── */
+
 .app-shell {
-  min-height: 100vh;
+  min-height: 100dvh;
+  background: var(--bg-base);
 }
 
 .page-container {
   padding: 12px;
 }
 
+/* ─── Card / Surface ─── */
+
 .card-section {
-  background: #fff;
-  border-radius: 16px;
-  padding: 12px;
-  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  background: var(--bg-surface);
+  border-radius: 14px;
+  padding: 14px;
+  border: 1px solid var(--color-border);
+  box-shadow:
+    0 0 0 1px rgba(92, 120, 255, 0.05),
+    0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
+/* ─── Typography ─── */
+
 .page-title {
-  margin: 0 0 12px;
-  font-size: 20px;
+  margin: 0 0 4px;
+  font-size: 18px;
   font-weight: 700;
+  color: var(--color-text);
+  letter-spacing: -0.02em;
 }
 
 .page-subtitle {
-  margin: 4px 0 0;
-  color: #6b7280;
-  font-size: 13px;
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: 12px;
+  line-height: 1.7;
 }
+
+/* ─── Split layout ─── */
 
 .split-layout {
   display: grid;
@@ -80,4 +128,406 @@ select {
     grid-template-columns: 320px minmax(0, 1fr);
     align-items: start;
   }
+}
+
+/* ════════════════════════════════════════════
+   antd-mobile dark theme overrides
+   ════════════════════════════════════════════ */
+
+/* NavBar */
+.adm-nav-bar {
+  background: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.adm-nav-bar-title {
+  color: var(--color-text) !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.01em !important;
+}
+
+/* TabBar */
+.adm-tab-bar {
+  background: var(--bg-surface) !important;
+}
+
+.adm-tab-bar-item {
+  color: var(--color-text-muted) !important;
+  font-size: 11px !important;
+}
+
+.adm-tab-bar-item-active {
+  color: var(--color-primary) !important;
+}
+
+/* List */
+.adm-list {
+  background: transparent !important;
+}
+
+.adm-list-body {
+  background: transparent !important;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+.adm-list-item {
+  background: var(--bg-elevated) !important;
+  border-radius: 10px !important;
+  margin-bottom: 3px !important;
+}
+
+.adm-list-item::after {
+  display: none !important;
+}
+
+.adm-list-item-content-main {
+  color: var(--color-text) !important;
+  font-size: 14px !important;
+}
+
+.adm-list-item-content-extra {
+  color: var(--color-text-secondary) !important;
+}
+
+.adm-list-item-content-arrow {
+  color: var(--color-text-muted) !important;
+}
+
+/* List body separator lines */
+.adm-list-body::before,
+.adm-list-body::after {
+  display: none !important;
+}
+
+/* Form */
+.adm-form {
+  background: transparent !important;
+}
+
+.adm-form .adm-list-body {
+  background: transparent !important;
+  border-top: none !important;
+  border-bottom: none !important;
+}
+
+.adm-form-item {
+  background: var(--bg-elevated) !important;
+  border-radius: 10px !important;
+  margin-bottom: 6px !important;
+}
+
+.adm-form-item::after {
+  display: none !important;
+}
+
+.adm-form-item-label {
+  color: var(--color-text-secondary) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+}
+
+.adm-form-item-child-inner {
+  color: var(--color-text) !important;
+}
+
+.adm-form-footer {
+  background: transparent !important;
+}
+
+/* Input */
+.adm-input-element {
+  color: var(--color-text) !important;
+  caret-color: var(--color-primary) !important;
+}
+
+.adm-input-element::placeholder {
+  color: var(--color-text-muted) !important;
+}
+
+.adm-input-clear {
+  color: var(--color-text-muted) !important;
+}
+
+/* Textarea */
+.adm-text-area-element {
+  color: var(--color-text) !important;
+  caret-color: var(--color-primary) !important;
+}
+
+/* Button — base */
+.adm-button {
+  border-radius: 8px !important;
+  font-weight: 500 !important;
+  transition: opacity 0.15s ease, transform 0.1s ease !important;
+}
+
+.adm-button:active:not([disabled]) {
+  opacity: 0.82 !important;
+  transform: scale(0.97) !important;
+}
+
+.adm-button[disabled] {
+  opacity: 0.38 !important;
+}
+
+/* Primary solid */
+.adm-button-primary.adm-button-fill-solid {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: #fff !important;
+  box-shadow: 0 2px 14px var(--color-primary-glow) !important;
+}
+
+/* Primary outline */
+.adm-button-primary.adm-button-fill-outline {
+  background: var(--color-primary-alpha) !important;
+  border-color: var(--color-border-accent) !important;
+  color: var(--color-primary) !important;
+  box-shadow: none !important;
+}
+
+/* Primary none (text only) */
+.adm-button-primary.adm-button-fill-none {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--color-primary) !important;
+}
+
+/* Default solid */
+.adm-button-default.adm-button-fill-solid {
+  background: var(--bg-elevated) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+/* Default outline */
+.adm-button-default.adm-button-fill-outline {
+  background: transparent !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+/* Danger solid */
+.adm-button-danger.adm-button-fill-solid {
+  background: var(--color-danger) !important;
+  border-color: var(--color-danger) !important;
+  color: #fff !important;
+}
+
+/* Danger outline */
+.adm-button-danger.adm-button-fill-outline {
+  background: rgba(245, 107, 107, 0.1) !important;
+  border-color: rgba(245, 107, 107, 0.4) !important;
+  color: var(--color-danger) !important;
+}
+
+/* Danger none */
+.adm-button-danger.adm-button-fill-none {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--color-danger) !important;
+}
+
+.adm-button-mini {
+  border-radius: 6px !important;
+  font-size: 11px !important;
+}
+
+/* Collapse */
+.adm-collapse-panel-header {
+  background: var(--bg-elevated) !important;
+  color: var(--color-text) !important;
+  border-radius: 10px !important;
+}
+
+.adm-collapse-panel-header-title {
+  color: var(--color-text) !important;
+}
+
+.adm-collapse-panel-header::after {
+  display: none !important;
+}
+
+.adm-collapse-panel {
+  border-bottom: none !important;
+}
+
+.adm-collapse-panel-content {
+  background: var(--bg-surface) !important;
+}
+
+.adm-collapse-panel-content-inner {
+  color: var(--color-text) !important;
+}
+
+/* Popup / Drawer */
+.adm-popup-body {
+  background: var(--bg-surface) !important;
+  border-top: 1px solid var(--color-border) !important;
+}
+
+.adm-mask {
+  background: rgba(0, 0, 0, 0.72) !important;
+}
+
+/* Search bar */
+.adm-search-bar {
+  background: var(--bg-elevated) !important;
+  border-radius: 10px !important;
+  padding: 6px 10px !important;
+}
+
+.adm-search-bar-input-box {
+  background: transparent !important;
+}
+
+.adm-search-bar-input-box-icon {
+  color: var(--color-text-muted) !important;
+}
+
+.adm-search-bar-suffix {
+  color: var(--color-primary) !important;
+}
+
+/* Checkbox */
+.adm-checkbox .adm-checkbox-content {
+  color: var(--color-text) !important;
+}
+
+.adm-checkbox-icon {
+  border-color: var(--color-border-accent) !important;
+  background: var(--bg-elevated) !important;
+}
+
+.adm-checkbox-icon-checked {
+  background: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+
+/* Tag */
+.adm-tag {
+  background: var(--bg-elevated) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text-secondary) !important;
+}
+
+/* Action sheet */
+.adm-action-sheet-popup .adm-popup-body {
+  background: var(--bg-surface) !important;
+}
+
+.adm-action-sheet-button-item-name {
+  color: var(--color-text) !important;
+}
+
+.adm-action-sheet-button-item {
+  background: var(--bg-elevated) !important;
+  border-radius: 10px !important;
+  margin-bottom: 4px !important;
+}
+
+.adm-action-sheet-button-item::after {
+  display: none !important;
+}
+
+.adm-action-sheet-cancel-button {
+  background: var(--bg-surface) !important;
+  margin-top: 8px !important;
+}
+
+/* Dialog */
+.adm-dialog-body {
+  background: var(--bg-surface) !important;
+  border-radius: 16px !important;
+  border: 1px solid var(--color-border) !important;
+}
+
+.adm-dialog-title {
+  color: var(--color-text) !important;
+}
+
+.adm-dialog-content {
+  color: var(--color-text-secondary) !important;
+}
+
+.adm-dialog-footer .adm-dialog-action-button {
+  color: var(--color-text) !important;
+  border-top: 1px solid var(--color-border) !important;
+}
+
+.adm-dialog-footer .adm-dialog-action-button:first-child {
+  color: var(--color-text-secondary) !important;
+}
+
+.adm-dialog-footer .adm-dialog-action-button:last-child {
+  color: var(--color-primary) !important;
+  font-weight: 600 !important;
+}
+
+/* Selector */
+.adm-selector-item {
+  background: var(--bg-elevated) !important;
+  color: var(--color-text-secondary) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 8px !important;
+}
+
+.adm-selector-item-active {
+  background: var(--color-primary-alpha) !important;
+  color: var(--color-primary) !important;
+  border-color: var(--color-border-accent) !important;
+}
+
+/* Toast */
+.adm-toast-main {
+  background: rgba(20, 26, 48, 0.96) !important;
+  color: var(--color-text) !important;
+  border: 1px solid var(--color-border) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5) !important;
+}
+
+/* Safe area */
+.adm-safe-area {
+  background: transparent;
+}
+
+/* Swipe action */
+.adm-swipe-action-actions {
+  background: var(--bg-elevated) !important;
+}
+
+/* Card */
+.adm-card {
+  background: var(--bg-elevated) !important;
+  border: 1px solid var(--color-border) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35) !important;
+}
+
+.adm-card-body {
+  background: transparent !important;
+  color: var(--color-text) !important;
+}
+
+/* Empty */
+.adm-empty {
+  background: transparent !important;
+}
+
+.adm-empty-description {
+  color: var(--color-text-muted) !important;
+}
+
+/* Collapse panel — selected node highlight */
+.adm-collapse-panel-header {
+  border-radius: 10px !important;
+}
+
+/* Collapse content area indent */
+.adm-collapse-panel-content-inner {
+  padding: 8px 0 4px !important;
 }
