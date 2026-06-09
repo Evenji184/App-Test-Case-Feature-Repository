@@ -9,7 +9,9 @@ export function LoginPage() {
   const location = useLocation();
   const [loading, setLoading] = useState(false);
 
-  const from = (location.state as { from?: string } | null)?.from ?? '/features';
+  const stateFrom = (location.state as { from?: string } | null)?.from;
+  const queryFrom = new URLSearchParams(location.search).get('redirect');
+  const from = stateFrom ?? (queryFrom ? decodeURIComponent(queryFrom) : '/features');
 
   return (
     <div>

@@ -962,4 +962,5 @@ Docker Compose 会自动执行建表 SQL → 种子数据 → 启动 `backend-no
 6. [docs/rbac-design.md](docs/rbac-design.md)
 7. [docs/logging-audit.md](docs/logging-audit.md)
 8. [docs/frontend-pages.md](docs/frontend-pages.md)
+9. [docs/plugin-feature-picker.md](docs/plugin-feature-picker.md) — FeaturePicker 插件集成文档（iframe 嵌入、postMessage 协议、GraphQL 接口说明）
 9. [docs/deployment.md](docs/deployment.md)

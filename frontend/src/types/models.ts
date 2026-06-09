@@ -145,6 +145,7 @@ export interface AiProviderMutationResult extends MutationResult {
 }
 
 export interface AiGenerateResult extends MutationResult {
+  id?: string | null;
   content?: string | null;
   model?: string | null;
   usage?: string | null;

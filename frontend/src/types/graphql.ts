@@ -12,6 +12,7 @@ import type {
   NodeMutationResult,
   NodeTreeItem,
   PermissionModuleGroup,
+  Prompt,
   PromptListResult,
   RoleListResult,
   RoleMutationResult,
@@ -280,4 +281,12 @@ export interface PromptListQueryVariables {
   pagination?: PaginationInput;
   keyword?: string | null;
   createdBy?: string | null;
+}
+
+export interface GetPromptQueryData {
+  getPrompt: Prompt | null;
+}
+
+export interface GetPromptQueryVariables {
+  id: string;
 }

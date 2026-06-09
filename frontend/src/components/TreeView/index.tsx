@@ -30,9 +30,7 @@ function TreeNode({
 
   const handleNameClick = (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (selectable && onCheck) {
-      onCheck(node.id);
-    } else {
+    if (!selectable) {
       onSelect(node);
     }
   };

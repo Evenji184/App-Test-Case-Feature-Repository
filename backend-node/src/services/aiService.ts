@@ -309,12 +309,14 @@ export async function savePrompt(params: {
 export async function listPrompts(params: {
   providerId?: string;
   keyword?: string;
+  createdBy?: string;
   page?: number;
   pageSize?: number;
 }) {
-  const { keyword, page = 1, pageSize = 20 } = params;
+  const { keyword, createdBy, page = 1, pageSize = 20 } = params;
   const where: Record<string, unknown> = { deleted_at: null };
   if (params.providerId) where.provider_id = params.providerId;
+  if (createdBy) where.created_by = createdBy;
   if (keyword) {
     where[Op.or as unknown as string] = [
       { name: { [Op.like]: `%${keyword}%` } },
@@ -368,4 +370,20 @@ export async function updatePromptName(promptId: string, name: string, operatorI
 
   await logAudit({ userId: operatorId, action: 'update_prompt_name', targetType: 'prompt', targetId: promptId, ipAddress });
   return updated!;
+}
+
+export async function getPromptById(promptId: string) {
+  const prompt = await Prompt.findOne({ where: { id: promptId, deleted_at: null } });
+  if (!prompt) throw new AppError('NOT_FOUND', '提示词不存在');
+
+  const [provider, createdByUser] = await Promise.all([
+    prompt.provider_id ? AiProvider.findByPk(prompt.provider_id) : null,
+    prompt.created_by ? User.findByPk(prompt.created_by) : null,
+  ]);
+
+  return {
+    ...prompt.toJSON(),
+    provider: provider ?? null,
+    createdByUser: createdByUser ?? null,
+  };
 }

@@ -4,7 +4,7 @@ import { listRoles, getRoleWithPermissions, createRole, updateRole, assignPermis
 import { getPermissionTree, PermissionTree } from '../services/rbacService';
 import { getNodeTree, listNodes, getNodeDetail, searchNodes, createNode, updateNode, deleteNode, hideNode, showNode, copyNode, moveNode } from '../services/nodeService';
 import { listFeatures, getFeatureDetail, searchFeatures, createFeature, updateFeature, deleteFeature, hideFeature, showFeature, copyFeature, moveFeature } from '../services/featureService';
-import { listProviders, createProvider, updateProvider, deleteProvider, testAiConnection, generatePrompt, savePrompt, listPrompts, deletePrompt, updatePromptName } from '../services/aiService';
+import { listProviders, createProvider, updateProvider, deleteProvider, testAiConnection, generatePrompt, savePrompt, listPrompts, deletePrompt, updatePromptName, getPromptById } from '../services/aiService';
 import { listAuditLogs, listRequestLogs, listLoginLogs } from '../services/logService';
 import { AppContext } from './context';
 import { requireAuth, requirePermission, makeErrorResult } from './helpers';
@@ -263,7 +263,7 @@ export const resolvers = {
     promptList: async (_: unknown, args: { pagination: PaginationInput; keyword?: string; createdBy?: string }, ctx: AppContext) => {
       requirePermission(ctx, 'ai:prompt:list');
       const { page, pageSize } = extractPagination(args.pagination);
-      const result = await listPrompts({ keyword: args.keyword, page, pageSize });
+      const result = await listPrompts({ keyword: args.keyword, createdBy: args.createdBy, page, pageSize });
       const items = result.items.map((p) => ({
         id: p.id,
         name: p.name,
@@ -282,6 +282,28 @@ export const resolvers = {
         updatedAt: p.updated_at,
       }));
       return { items, pageInfo: buildPageInfo(result.total, page, pageSize) };
+    },
+
+    getPrompt: async (_: unknown, args: { id: string }, ctx: AppContext) => {
+      requirePermission(ctx, 'ai:prompt:list');
+      const p = await getPromptById(args.id);
+      return {
+        id: p.id,
+        name: p.name,
+        content: p.content,
+        model: p.model,
+        providerId: p.provider ? p.provider.id : null,
+        providerName: p.provider ? p.provider.name : null,
+        createdById: p.createdByUser ? p.createdByUser.id : null,
+        createdByName: p.createdByUser
+          ? (p.createdByUser.display_name ?? p.createdByUser.username)
+          : null,
+        nodeIds: p.node_ids,
+        featureIds: p.feature_ids,
+        customInstruction: p.custom_instruction,
+        createdAt: p.created_at,
+        updatedAt: p.updated_at,
+      };
     },
   },
 
@@ -690,12 +712,13 @@ export const resolvers = {
           success: true,
           message: '提示词生成成功',
           error: null,
+          id: result.id ?? null,
           content: result.content ?? null,
           model: result.model ?? null,
           usage: null,
         };
       } catch (err) {
-        return { ...makeErrorResult(err), content: null, model: null, usage: null };
+        return { ...makeErrorResult(err), id: null, content: null, model: null, usage: null };
       }
     },
 

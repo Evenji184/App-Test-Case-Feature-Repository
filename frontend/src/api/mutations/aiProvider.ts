@@ -51,6 +51,7 @@ export const GENERATE_TEST_CASES_MUTATION = gql`
       success
       message
       error { code message }
+      id
       content
       model
       usage

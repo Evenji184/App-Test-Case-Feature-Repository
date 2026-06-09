@@ -8,6 +8,7 @@ import { PermissionManagePage } from '@/pages/PermissionManage';
 import { UserManagePage } from '@/pages/UserManage';
 import { AiProviderPage } from '@/pages/AiProvider';
 import { PromptManagePage } from '@/pages/PromptManage';
+import { FeaturePickerPage } from '@/pages/FeaturePicker';
 import { RequireAuth, RequireGuest, RequirePermission } from './guards';
 import { useAuthStore } from '@/stores/auth';
 
@@ -29,6 +30,7 @@ export function AppRoutes() {
         />
       </Route>
       <Route element={<RequireAuth />}>
+        <Route path="/plugin/feature-picker" element={<FeaturePickerPage />} />
         <Route element={<MainLayout />}>
           <Route path="/features" element={<FeatureManagePage />} />
           <Route element={<RequirePermission permission="ai:provider:list" />}>

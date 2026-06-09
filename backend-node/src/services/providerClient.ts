@@ -24,7 +24,7 @@ export async function callOpenAI(params: {
         'Content-Type': 'application/json',
         'Accept-Encoding': 'identity',
       },
-      timeout: 60000,
+      timeout: 300000,
       decompress: false,
     }
   );
@@ -60,7 +60,7 @@ export async function callAnthropic(params: {
         'Content-Type': 'application/json',
         'Accept-Encoding': 'identity',
       },
-      timeout: 60000,
+      timeout: 300000,
       decompress: false,
     }
   );

@@ -11,7 +11,7 @@ const httpLink = new HttpLink({
   uri: graphqlEndpoint,
   fetch: (uri, options) => {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 15000);
+    const timer = setTimeout(() => controller.abort(), 300000);
     return fetch(uri, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
   },
 });
@@ -35,7 +35,14 @@ const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (unauthorized || ('statusCode' in (networkError ?? {}) && (networkError as { statusCode?: number }).statusCode === 401)) {
     storage.clearAuth();
     if (window.location.pathname !== '/login') {
-      window.location.href = '/login';
+      const from = window.location.pathname + window.location.search;
+      window.location.href = `/login?redirect=${encodeURIComponent(from)}`;
+      // 通知宿主 iframe session 已失效
+      try {
+        window.parent.postMessage({ type: 'SESSION_EXPIRED' }, '*');
+      } catch {
+        // 非 iframe 环境忽略
+      }
     }
   }
 });

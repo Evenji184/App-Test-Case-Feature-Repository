@@ -38,3 +38,13 @@ export const PROMPT_LIST_QUERY = gql`
   }
   ${PROMPT_BASE_FRAGMENT}
 `;
+
+export const GET_PROMPT_QUERY = gql`
+  query GetPrompt($id: ID!) {
+    getPrompt(id: $id) {
+      ...PromptBase
+    }
+  }
+  ${PROMPT_BASE_FRAGMENT}
+`;
+

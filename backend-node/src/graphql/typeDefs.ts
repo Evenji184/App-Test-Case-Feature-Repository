@@ -220,6 +220,7 @@ export const typeDefs = `#graphql
     success: Boolean!
     message: String!
     error: MutationError
+    id: String
     content: String
     model: String
     usage: String
@@ -440,6 +441,7 @@ export const typeDefs = `#graphql
     loginLogList(keyword: String, userId: ID, success: Boolean, page: Int, pageSize: Int): LoginLogListResult!
     aiProviderList(pagination: PaginationInput!): AiProviderListResult!
     promptList(pagination: PaginationInput!, keyword: String, createdBy: String): PromptListResult!
+    getPrompt(id: ID!): PromptType
   }
 
   # ===== Mutation =====
