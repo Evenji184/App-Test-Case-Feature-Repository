@@ -21,6 +21,24 @@ export function RequireAuth() {
   return <Outlet />;
 }
 
+export function RequireGuest() {
+  const { initialized, isAuthenticated } = useAuthStore();
+
+  if (!initialized) {
+    return (
+      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+        <DotLoading />
+      </div>
+    );
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/features" replace />;
+  }
+
+  return <Outlet />;
+}
+
 export function RequirePermission({ permission }: { permission: string }) {
   const canAccess = useAuthStore((state) => state.hasPermission(permission));
 

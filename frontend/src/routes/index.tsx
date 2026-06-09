@@ -8,7 +8,7 @@ import { PermissionManagePage } from '@/pages/PermissionManage';
 import { UserManagePage } from '@/pages/UserManage';
 import { AiProviderPage } from '@/pages/AiProvider';
 import { PromptManagePage } from '@/pages/PromptManage';
-import { RequireAuth, RequirePermission } from './guards';
+import { RequireAuth, RequireGuest, RequirePermission } from './guards';
 import { useAuthStore } from '@/stores/auth';
 
 export function AppRoutes() {
@@ -18,14 +18,16 @@ export function AppRoutes() {
 
   return (
     <Routes>
-      <Route
-        path="/login"
-        element={
-          <AuthLayout>
-            <LoginPage />
-          </AuthLayout>
-        }
-      />
+      <Route element={<RequireGuest />}>
+        <Route
+          path="/login"
+          element={
+            <AuthLayout>
+              <LoginPage />
+            </AuthLayout>
+          }
+        />
+      </Route>
       <Route element={<RequireAuth />}>
         <Route element={<MainLayout />}>
           <Route path="/features" element={<FeatureManagePage />} />
