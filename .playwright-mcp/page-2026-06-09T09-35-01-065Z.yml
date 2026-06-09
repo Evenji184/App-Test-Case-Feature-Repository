@@ -1,0 +1,14 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button
+    - generic [ref=e5]: APP 特征库 · 选择特征
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: 选择节点
+      - img [ref=e11]
+    - generic [ref=e14]: 请先在上方选择节点
+  - generic [ref=e16]:
+    - button "清除已选 (0)" [disabled] [ref=e18]:
+      - generic [ref=e19]: 清除已选 (0)
+    - button "生成提示词 (0 条特征)" [disabled] [ref=e21]:
+      - generic [ref=e22]: 生成提示词 (0 条特征)

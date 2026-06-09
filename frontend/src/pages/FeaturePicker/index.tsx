@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import { Button, Input, NavBar, Space, SpinLoading, TextArea, Toast } from 'antd-mobile';
+import { Button, Checkbox, Input, NavBar, Space, SpinLoading, TextArea, Toast } from 'antd-mobile';
 import { GET_PROMPT_QUERY } from '@/api/queries/aiProvider';
 import { FEATURE_LIST_QUERY } from '@/api/queries/feature';
 import { NODE_TREE_QUERY } from '@/api/queries/node';
@@ -257,12 +257,49 @@ export function FeaturePickerPage() {
               <SpinLoading />
             </div>
           ) : (
-            <FeatureList
-              items={features}
-              selectable
-              selectedIds={selectedFeatureIds}
-              onSelect={toggleFeature}
-            />
+            <>
+              {features.length > 0 && (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    padding: '4px 4px 8px',
+                    borderBottom: '1px solid var(--adm-color-border)',
+                    marginBottom: 8,
+                  }}
+                >
+                  <Checkbox
+                    checked={features.length > 0 && features.every((f) => selectedFeatureIds.has(f.id))}
+                    indeterminate={
+                      features.some((f) => selectedFeatureIds.has(f.id)) &&
+                      !features.every((f) => selectedFeatureIds.has(f.id))
+                    }
+                    onChange={(checked) => {
+                      setSelectedFeatureIds((prev) => {
+                        const next = new Set(prev);
+                        if (checked) {
+                          features.forEach((f) => next.add(f.id));
+                        } else {
+                          features.forEach((f) => next.delete(f.id));
+                        }
+                        return next;
+                      });
+                    }}
+                  >
+                    <span style={{ fontSize: 13, color: 'var(--adm-color-text)' }}>
+                      全选（{features.length} 条）
+                    </span>
+                  </Checkbox>
+                </div>
+              )}
+              <FeatureList
+                items={features}
+                selectable
+                selectedIds={selectedFeatureIds}
+                onSelect={toggleFeature}
+              />
+            </>
           )}
         </div>
       </div>

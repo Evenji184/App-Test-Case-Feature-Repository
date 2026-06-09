@@ -1,0 +1,35 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button
+    - generic [ref=e5]: APP 特征库管理系统
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: 未登录用户
+      - generic [ref=e9]:
+        - text: 当前账号：未登录 / 权限数：1
+        - button "修改密码" [ref=e10] [cursor=pointer]
+        - button "退出登录" [ref=e11] [cursor=pointer]
+    - generic [ref=e12]:
+      - generic [ref=e13]:
+        - generic [ref=e16]:
+          - generic [ref=e17]: 节点管理
+          - generic [ref=e18]: 勾选节点筛选特征，单选可编辑
+        - generic [ref=e19]:
+          - img [ref=e21]
+          - generic [ref=e27]: 暂无节点数据
+      - generic [ref=e28]:
+        - generic [ref=e29]:
+          - generic [ref=e31]:
+            - heading "特征库" [level=2] [ref=e32]
+            - paragraph [ref=e33]: 查看特征列表，管理操作按权限展示
+          - button "全选" [ref=e37] [cursor=pointer]
+        - generic [ref=e39]:
+          - img [ref=e41]
+          - generic "搜索框" [ref=e46]:
+            - searchbox "搜索框" [ref=e47]
+        - generic [ref=e48]:
+          - img [ref=e50]
+          - generic [ref=e56]: 暂无特征数据
+  - generic [ref=e59] [cursor=pointer]:
+    - img [ref=e62]
+    - generic [ref=e67]: 特征库
