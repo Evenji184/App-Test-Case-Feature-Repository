@@ -77,6 +77,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         fetchPolicy: 'network-only',
       });
 
+      if (!data.currentUser) {
+        get().clearAuth();
+        set({ initialized: true });
+        return;
+      }
+
       set({
         user: data.currentUser,
         token,

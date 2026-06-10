@@ -1,0 +1,42 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - button
+    - generic [ref=e5]: APP 特征库 · 选择特征
+  - generic [ref=e6]:
+    - generic [ref=e7]:
+      - generic [ref=e8]: 选择节点
+      - generic [ref=e27]:
+        - generic [ref=e29] [cursor=pointer]:
+          - generic [ref=e31]:
+            - generic [ref=e34]: 移动端 APP
+            - generic [ref=e35]: domain
+          - img [ref=e38]
+        - generic [ref=e48]:
+          - generic [ref=e52]:
+            - generic [ref=e54] [cursor=pointer]:
+              - generic [ref=e56]:
+                - generic [ref=e59]: 认证中心
+                - generic [ref=e60]: module
+              - img [ref=e63]
+            - generic [ref=e75]:
+              - generic [ref=e78]: 密码登录
+              - generic [ref=e79]: feature_group
+          - generic [ref=e83]:
+            - generic [ref=e85] [cursor=pointer]:
+              - generic [ref=e87]:
+                - generic [ref=e90]: 个人中心
+                - generic [ref=e91]: module
+              - img [ref=e94]
+            - generic [ref=e104]:
+              - generic [ref=e106]:
+                - generic [ref=e109]: 层级1
+                - generic [ref=e110]: folder
+              - generic [ref=e112]:
+                - generic [ref=e115]: 层级2
+                - generic [ref=e116]: folder
+    - generic [ref=e14]: 请先在上方选择节点
+  - generic [ref=e16]:
+    - button "清除已选 (0)" [disabled] [ref=e18]:
+      - generic [ref=e19]: 清除已选 (0)
+    - button "生成提示词 (0 条特征)" [disabled] [ref=e21]:
+      - generic [ref=e22]: 生成提示词 (0 条特征)
