@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { Button, Dialog, Form, Input, List, Selector, Space, Tag, Toast } from 'antd-mobile';
+import { Button, Dialog, Form, Input, List, Selector, Tag, Toast } from 'antd-mobile';
 import { DELETE_PROMPT_MUTATION, UPDATE_PROMPT_NAME_MUTATION } from '@/api/mutations/aiProvider';
 import { PROMPT_LIST_QUERY } from '@/api/queries/aiProvider';
+import { BottomActions } from '@/components/BottomActions';
 import { FormDrawer } from '@/components/FormDrawer';
 import { SearchBar } from '@/components/SearchBar';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,6 +36,7 @@ export function PromptManagePage() {
 
   const [deletePromptMut] = useMutation(DELETE_PROMPT_MUTATION);
   const [updateNameMut] = useMutation(UPDATE_PROMPT_NAME_MUTATION);
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const prompts = data?.promptList.items ?? [];
 
@@ -50,7 +52,10 @@ export function PromptManagePage() {
 
   const handleSearch = (val: string) => {
     setKeyword(val);
-    refetch({ pagination: { page: 1, pageSize: 50 }, keyword: val || undefined, createdBy: filterCreatedBy[0] || undefined });
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      refetch({ pagination: { page: 1, pageSize: 50 }, keyword: val || undefined, createdBy: filterCreatedBy[0] || undefined });
+    }, 300);
   };
 
   const handleFilterCreatedBy = (val: string[]) => {
@@ -98,18 +103,18 @@ export function PromptManagePage() {
   };
 
   return (
-    <div className="card-section" style={{ display: 'grid', gap: 12 }}>
-      <Space justify="between" block>
+    <div style={{ display: 'grid', gap: 12, overflowX: 'hidden' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
         <div>
           <h2 className="page-title">提示词管理</h2>
           <p className="page-subtitle">查看通过 AI 生成的测试要点提示词</p>
         </div>
-      </Space>
+      </div>
 
-      <SearchBar value={keyword} onChange={handleSearch} placeholder="搜索提示词名称或内容" />
+      <SearchBar value={keyword} onChange={handleSearch} placeholder="搜索名称或内容" />
 
       {initiatorOptions.length > 0 && (
-        <div>
+        <div style={{ maxWidth: '100%', overflowX: 'hidden' }}>
           <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 4 }}>按发起人筛选</div>
           <Selector
             options={initiatorOptions}
@@ -130,57 +135,29 @@ export function PromptManagePage() {
           暂无提示词记录
         </div>
       ) : (
-        <List>
+        <List style={{ '--extra-max-width': '60px' } as React.CSSProperties}>
           {prompts.map((prompt) => (
             <List.Item
               key={prompt.id}
-              description={`${prompt.createdByName ?? '未知'} · ${prompt.providerName} · ${prompt.model ?? ''}`}
               extra={
-                <Space>
-                  <Button size="mini" onClick={(e) => { e.stopPropagation(); openNameEditor(prompt); }}>
-                    改名
-                  </Button>
-                  <Button size="mini" onClick={() => handleView(prompt)}>
-                    查看
-                  </Button>
-                  {canDeletePrompt && (
-                    <Button
-                      size="mini"
-                      color="danger"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(prompt); }}
-                    >
-                      删除
-                    </Button>
-                  )}
-                </Space>
+                <BottomActions
+                  triggerText="操作"
+                  actions={[
+                    { key: 'view', text: '查看详情', onClick: () => handleView(prompt) },
+                    { key: 'rename', text: '修改名称', onClick: () => openNameEditor(prompt) },
+                    ...(canDeletePrompt ? [{ key: 'delete', text: '删除', danger: true, onClick: () => handleDelete(prompt) }] : []),
+                  ]}
+                />
               }
               onClick={() => handleView(prompt)}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <Tag color={prompt.name ? 'primary' : 'default'}>
-                  {prompt.name ?? '未命名'}
-                </Tag>
-                {prompt.name && (
-                  <span style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: 200,
-                  }}>
-                    {prompt.name}
-                  </span>
-                )}
-                {!prompt.name && (
-                  <span style={{
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'nowrap',
-                    maxWidth: 200,
-                    color: 'var(--color-text-muted)',
-                  }}>
-                    {prompt.content.slice(0, 40)}...
-                  </span>
-                )}
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--color-text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {prompt.name ?? <span style={{ color: 'var(--color-text-muted)', fontWeight: 400 }}>未命名</span>}
+                </div>
+                <div style={{ fontSize: 11, color: 'var(--color-text-secondary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {prompt.createdByName ?? '未知'} · {prompt.providerName} · {prompt.content.slice(0, 30)}
+                </div>
               </div>
             </List.Item>
           ))}
@@ -228,8 +205,6 @@ export function PromptManagePage() {
                 whiteSpace: 'pre-wrap',
                 fontSize: 13,
                 color: 'var(--color-text)',
-                maxHeight: 500,
-                overflowY: 'auto',
               }}>
                 {selected.content}
               </div>

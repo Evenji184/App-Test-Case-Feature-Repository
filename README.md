@@ -18,7 +18,6 @@ APP 特征库管理系统用于维护移动端 APP 的功能节点、特征条�
 | AI 调用 | CodeGPT JS SDK (overlay) + axios + AES-128-CBC（Fernet 兼容） | CodeGPT 浮窗 AI 助手替代后端生成，供应商管理仍保留 |
 | 数据库 | MySQL 8.0 (utf8mb4) | InnoDB, DYNAMIC row format |
 | 部署 | Docker Compose + Nginx | 开发/生产两套编排 |
-| 后端（Legacy） | FastAPI + Strawberry GraphQL + Prisma（Python） | 旧版后端，GraphQL 接口契约已完全保留于 Node.js 版 |
 
 ### 1.2 目录结构
 
@@ -53,16 +52,6 @@ APP 特征库管理系统用于维护移动端 APP 的功能节点、特征条�
 │  ├─ package.json          # scripts: dev / build / start / typecheck
 │  ├─ tsconfig.json
 │  └─ .env                  # 后端环境变量（见 4.2 节）
-├─ backend/                 # Legacy 后端：FastAPI + Strawberry GraphQL + Prisma（Python）
-│  ├─ app/
-│  │  ├─ core/              # config, security, context, logging
-│  │  ├─ db/                # Prisma 客户端管理
-│  │  ├─ graphql/           # schema, types, directives
-│  │  ├─ middleware/        # 请求日志中间件
-│  │  ├─ modules/           # auth / rbac / user / audit / feature_library / ai
-│  │  └─ utils/             # exceptions, pagination, tree
-│  ├─ prisma/               # schema.prisma + seed.py（种子数据仍用此脚本）
-│  └─ scripts/              # init-db.sh / init-db.bat
 ├─ frontend/                # React + Vite 前端
 │  └─ src/
 │     ├─ api/               # GraphQL queries / mutations / client / fragments
@@ -308,26 +297,6 @@ FeatureNode                          Feature
 ```
 
 > Node.js 版本要求：>=20
-
-### 2.2 后端 Python 依赖（Legacy）
-
-> 来源：`backend/requirements.txt`，仅在运行种子脚本（`seed.py`）或维护旧后端时需要。
-
-| 包 | 版本 | 用途 |
-|---|------|------|
-| fastapi | 0.115.12 | Web 框架 |
-| uvicorn[standard] | 0.34.2 | ASGI 服务器 |
-| strawberry-graphql[fastapi] | 0.275.5 | GraphQL Schema 与 Resolver |
-| prisma | 0.15.0 | 数据库 ORM（仅用于 seed.py） |
-| pydantic | 2.11.3 | 数据验证 |
-| pydantic-settings | 2.9.1 | 环境变量配置 |
-| bcrypt | >=4.0.0 | 密码哈希 |
-| python-jose[cryptography] | 3.4.0 | JWT 编解码 |
-| python-dotenv | 1.1.0 | .env 文件加载 |
-| httpx | >=0.27.0 | 异步 HTTP 客户端 |
-| cryptography | >=43.0.0 | API Key Fernet 加密存储 |
-
-> Python 版本要求：>=3.10
 
 ### 2.2 前端依赖
 
@@ -656,7 +625,6 @@ CREATE TABLE prompts (
 |------|----------|------|
 | Node.js | >= 20 | 主后端 + 前端 |
 | MySQL | 8.0 (utf8mb4, InnoDB) | 数据库 |
-| Python | >= 3.10 | 仅运行种子脚本 `seed.py` 时需要 |
 | mysql 命令行 | 任意 | 建库、导入 DDL |
 
 ### 4.2 配置环境变量
@@ -708,14 +676,13 @@ mysql -u evenji -pevenji -e "CREATE DATABASE IF NOT EXISTS app_feature_repositor
 mysql -u evenji -pevenji app_feature_repository < docs/init-tables.sql
 
 # 3. 写入种子数据（23 项权限、admin 用户、示例特征树）
-#    需要 Python >= 3.10 和 Prisma Client
-cd backend
-pip install -r requirements.txt
-python -m prisma generate
-python prisma/seed.py
+cd backend-node
+npm run seed
+# 等价于：ts-node-dev --transpile-only src/scripts/seed.ts
+# 也可以先 build 再执行：npm run build && node dist/scripts/seed.js
 ```
 
-> 种子脚本仍使用 Python（`backend/prisma/seed.py`），仅需运行一次。Node.js 主后端运行时不依赖 Python 环境。
+> 脚本是幂等的：重复执行不会报错，已存在的记录会跳过，只补充缺失数据。
 
 ### 4.4 启动后端
 
@@ -758,9 +725,7 @@ docker compose up --build
 
 启动后默认端口：Nginx 80 / 后端 8001 / 前端 3000 / MySQL 3306
 
-Docker Compose 会自动执行建表 SQL → 种子数据 → 启动 `backend-node`（Node.js）和前端。
-
-## 5. 默认账号与种子数据
+Docker Compose 会自动连接数据库、执行种子数据（seed.js）、启动 Node.js 后端和前端。
 
 | 项目 | 值 |
 |------|----|
@@ -943,10 +908,38 @@ Docker Compose 会自动执行建表 SQL → 种子数据 → 启动 `backend-no
 - 登录日志：登录成功/失败自动写入，记录 login_status/failure_reason/ip/user_agent
 - 服务端操作日志：所有 22 个 Mutation 均有 logger.info/warning 记录，时间戳精度到毫秒
 
+### 6.8 性能优化与配置统一
+
+**后端查询优化（N+1 消除）**
+
+- `userList`：原来每个用户触发一次 `getUserWithRolesAndPermissions`（20 用户 ≈ 241 次 DB 查询），现改为 `batchGetUsersWithRoles` 批量查询，一次 `Op.in` 覆盖所有用户，查询数从 ~241 次降至 3 次（≈80% 以上提升）
+- `roleList`：原来每个角色触发一次 `getRoleWithPermissions`（20 角色 ≈ 61 次 DB 查询），现改为 `batchGetRolesWithPermissions` 批量查询，查询数从 ~61 次降至 2 次
+
+**权限修复**
+
+- `savePrompt` resolver 补充 `requirePermission('ai:prompt:manage')` 检查，修复仅做 `requireAuth` 导致的权限漏洞
+
+**前端缓存与响应速度**
+
+- Apollo 缓存 keyArgs 修正：`featureList` 的 `keyArgs` 由错误的 `['nodeId']`（单数）改为 `['nodeIds', 'includeHidden']`，修复切换节点时数据串用同一缓存 key 的问题
+- `FeatureManage` 页加 `fetchPolicy: 'cache-and-network'`，有缓存先渲染再后台刷新，消除白屏等待
+- `PromptManage` 搜索框加 300ms 防抖，避免每次击键触发一次请求
+
+**前端冗余清理**
+
+- 删除 `PermissionSelector` 中多余的 `useEffect`（`useState` 初始化已设置 `activeKeys`，`useEffect` 重复同步导致二次渲染）
+- 删除 `api/queries/user.ts` 中的 `ROLE_LIST_FOR_USER_QUERY`（与 `role.ts` 中 `ROLE_LIST_QUERY` 内容完全相同）
+
+**配置统一管理**
+
+- 新增 `frontend/src/config/index.ts`，集中管理所有前端配置常量：GraphQL 端点、请求超时、localStorage 存储 key
+- `api/client.ts` 和 `utils/storage.ts` 均改为从 `@/config` 引入，消除散落的硬编码值
+- 后端 Node.js 配置已在 `backend-node/src/config.ts` 集中，CORS 白名单和 IP 白名单通过 `backend-node/.env` 的 `CORS_ORIGINS`/`IP_WHITELIST` 配置（逗号分隔）
+
 ## 7. 已知限制
 
 1. 数据库表需手动执行 `docs/init-tables.sql` 建表，Node.js 主后端启动时不自动建表（`sync({ alter: false })`）
-2. 种子数据脚本（`backend/prisma/seed.py`）仍为 Python，需一次性执行；Node.js 主后端运行时不依赖 Python 环境
+2. 种子数据通过 `npm run seed`（`backend-node/src/scripts/seed.ts`）写入，脚本幂等可重复执行
 3. 生产部署仍需补充 HTTPS、备份、监控与 CI/CD
 4. 更换 `SECRET_KEY` 后，已加密的 AI 供应商 API Key 将无法解密，需重新配置所有供应商
 5. CodeGPT SDK 加载依赖外部 CDN，离线或网络受限时 AI 助手功能不可用（不影响页面其他功能）

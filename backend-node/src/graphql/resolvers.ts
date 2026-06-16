@@ -1,6 +1,6 @@
 import { authenticate, changeMyPassword, resetPassword } from '../services/authService';
-import { listUsers, getUserWithRolesAndPermissions, createUser, updateUser, enableUser, disableUser, assignRolesToUser, deleteUser } from '../services/userService';
-import { listRoles, getRoleWithPermissions, createRole, updateRole, assignPermissionsToRole, deleteRole } from '../services/roleService';
+import { listUsers, getUserWithRolesAndPermissions, batchGetUsersWithRoles, createUser, updateUser, enableUser, disableUser, assignRolesToUser, deleteUser } from '../services/userService';
+import { listRoles, getRoleWithPermissions, batchGetRolesWithPermissions, createRole, updateRole, assignPermissionsToRole, deleteRole } from '../services/roleService';
 import { getPermissionTree, PermissionTree } from '../services/rbacService';
 import { getNodeTree, listNodes, getNodeDetail, searchNodes, createNode, updateNode, deleteNode, hideNode, showNode, copyNode, moveNode } from '../services/nodeService';
 import { listFeatures, getFeatureDetail, searchFeatures, createFeature, updateFeature, deleteFeature, hideFeature, showFeature, copyFeature, moveFeature } from '../services/featureService';
@@ -135,10 +135,8 @@ export const resolvers = {
       requirePermission(ctx, 'user:list');
       const { page, pageSize } = extractPagination(args.pagination);
       const result = await listUsers({ keyword: args.keyword, page, pageSize });
-      const items = await Promise.all(result.items.map(async (user) => {
-        const data = await getUserWithRolesAndPermissions(user.id);
-        return formatUser(user, (data?.roles ?? []).map(r => r.id));
-      }));
+      const roleMap = await batchGetUsersWithRoles(result.items.map(u => u.id));
+      const items = result.items.map(user => formatUser(user, roleMap.get(user.id) ?? []));
       return { items, pageInfo: buildPageInfo(result.total, page, pageSize) };
     },
 
@@ -146,10 +144,8 @@ export const resolvers = {
       requirePermission(ctx, 'role:list');
       const { page, pageSize } = extractPagination(args.pagination);
       const result = await listRoles({ page, pageSize });
-      const items = await Promise.all(result.items.map(async (role) => {
-        const data = await getRoleWithPermissions(role.id);
-        return formatRole(role, (data?.permissions ?? []).map(p => p.id));
-      }));
+      const permMap = await batchGetRolesWithPermissions(result.items.map(r => r.id));
+      const items = result.items.map(role => formatRole(role, permMap.get(role.id) ?? []));
       return { items, pageInfo: buildPageInfo(result.total, page, pageSize) };
     },
 
@@ -725,6 +721,7 @@ export const resolvers = {
     savePrompt: async (_: unknown, args: { input: { content: string; model?: string; name?: string; nodeIds?: string; featureIds?: string; customInstruction?: string } }, ctx: AppContext) => {
       try {
         requireAuth(ctx);
+        requirePermission(ctx, 'ai:prompt:manage');
         await savePrompt({ ...args.input, operatorId: ctx.userId! });
         return { success: true, message: '提示词保存成功', error: null };
       } catch (err) {

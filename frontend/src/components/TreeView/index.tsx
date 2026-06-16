@@ -25,37 +25,39 @@ function TreeNode({
   selectedIds?: Set<string>;
   onCheck?: (id: string) => void;
 }) {
-  const isSelected = selectedId === node.id;
-  const isChecked = selectedIds?.has(node.id) ?? false;
-
-  const handleNameClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!selectable) {
-      onSelect(node);
-    }
-  };
+  const isActive = selectable ? (selectedIds?.has(node.id) ?? false) : selectedId === node.id;
 
   const nameRow = (
     <div
+      onClick={(e) => {
+        e.stopPropagation();
+        if (selectable) {
+          onCheck?.(node.id);
+        }
+        onSelect(node);
+      }}
       style={{
         display: 'flex',
-        justifyContent: 'space-between',
-        gap: 8,
         alignItems: 'center',
-        background: (selectable ? isChecked : isSelected) ? 'var(--color-primary-alpha)' : 'transparent',
+        gap: 8,
+        background: isActive ? 'var(--color-primary-alpha)' : 'transparent',
         borderRadius: 8,
         padding: '4px 8px',
+        cursor: 'pointer',
+        transition: 'background 0.15s',
       }}
     >
       {selectable && (
         <Checkbox
-          checked={isChecked}
+          checked={selectedIds?.has(node.id) ?? false}
           onChange={() => onCheck?.(node.id)}
           onClick={(e) => e.stopPropagation()}
         />
       )}
-      <span style={{ flex: 1 }} onClick={handleNameClick}>{node.name}</span>
-      <Tag color={node.isVisible ? 'primary' : 'default'}>{node.nodeType}</Tag>
+      <span style={{ flex: 1, fontSize: 13 }}>{node.name}</span>
+      <Tag color={node.isVisible ? 'primary' : 'default'} style={{ fontSize: 10 }}>
+        {node.nodeType}
+      </Tag>
     </div>
   );
 
@@ -63,11 +65,11 @@ function TreeNode({
     return (
       <div
         style={{
-          padding: '10px 12px',
-          borderRadius: 12,
-          background: (selectable ? isChecked : isSelected) ? 'var(--color-primary-alpha)' : 'var(--bg-elevated)',
-          border: (selectable ? isChecked : isSelected) ? '1px solid var(--color-border-accent)' : '1px solid var(--color-border)',
-          marginBottom: 8,
+          borderRadius: 10,
+          background: isActive ? 'var(--color-primary-alpha)' : 'var(--bg-elevated)',
+          border: isActive ? '1px solid var(--color-border-accent)' : '1px solid var(--color-border)',
+          marginBottom: 6,
+          transition: 'background 0.15s, border-color 0.15s',
         }}
       >
         {nameRow}
@@ -76,11 +78,19 @@ function TreeNode({
   }
 
   return (
-    <Collapse defaultActiveKey={[node.id]}>
+    <Collapse defaultActiveKey={[node.id]} style={{ marginBottom: 6 }}>
       <Collapse.Panel key={node.id} title={nameRow}>
         <div style={{ paddingLeft: 8 }}>
           {node.children.map((child) => (
-            <TreeNode key={child.id} node={child} selectedId={selectedId} onSelect={onSelect} selectable={selectable} selectedIds={selectedIds} onCheck={onCheck} />
+            <TreeNode
+              key={child.id}
+              node={child}
+              selectedId={selectedId}
+              onSelect={onSelect}
+              selectable={selectable}
+              selectedIds={selectedIds}
+              onCheck={onCheck}
+            />
           ))}
         </div>
       </Collapse.Panel>
@@ -96,7 +106,15 @@ export function TreeView({ tree, selectedId, onSelect, selectable, selectedIds, 
   return (
     <div>
       {tree.map((node) => (
-        <TreeNode key={node.id} node={node} selectedId={selectedId} onSelect={onSelect} selectable={selectable} selectedIds={selectedIds} onCheck={onCheck} />
+        <TreeNode
+          key={node.id}
+          node={node}
+          selectedId={selectedId}
+          onSelect={onSelect}
+          selectable={selectable}
+          selectedIds={selectedIds}
+          onCheck={onCheck}
+        />
       ))}
     </div>
   );

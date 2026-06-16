@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Checkbox, Collapse } from 'antd-mobile';
 import type { PermissionModuleGroup } from '@/types/models';
 
@@ -10,10 +10,6 @@ interface Props {
 
 export function PermissionSelector({ value, options, onChange }: Props) {
   const [activeKeys, setActiveKeys] = useState<string[]>(() => options.map((m) => m.module));
-
-  useEffect(() => {
-    setActiveKeys(options.map((m) => m.module));
-  }, [options]);
 
   const toggle = (permissionId: string, checked: boolean) => {
     if (checked) {

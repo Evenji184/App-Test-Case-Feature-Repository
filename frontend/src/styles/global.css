@@ -53,6 +53,7 @@ body,
 #root {
   margin: 0;
   min-height: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -176,6 +177,13 @@ select {
   background: var(--bg-elevated) !important;
   border-radius: 10px !important;
   margin-bottom: 3px !important;
+  max-width: 100% !important;
+  overflow: hidden !important;
+}
+
+.adm-list-item-content {
+  max-width: 100% !important;
+  min-width: 0 !important;
 }
 
 .adm-list-item::after {
@@ -185,6 +193,8 @@ select {
 .adm-list-item-content-main {
   color: var(--color-text) !important;
   font-size: 14px !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
 }
 
 .adm-list-item-content-extra {
@@ -530,4 +540,55 @@ select {
 /* Collapse content area indent */
 .adm-collapse-panel-content-inner {
   padding: 8px 0 4px !important;
+}
+
+/* Tabs — dark theme */
+.adm-tabs-header {
+  background: var(--bg-surface) !important;
+  border-bottom: 1px solid var(--color-border) !important;
+}
+
+.adm-tabs-tab {
+  color: var(--color-text-secondary) !important;
+  font-size: 14px !important;
+}
+
+.adm-tabs-tab-active {
+  color: var(--color-text) !important;
+  font-weight: 600 !important;
+}
+
+.adm-tabs-tab-line {
+  background: var(--color-primary) !important;
+}
+
+/* FeaturePicker Tabs：内容区铺满剩余高度 */
+.feature-picker-tabs {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.feature-picker-tabs .adm-tabs-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.feature-picker-tabs .adm-tabs-tab-wrapper {
+  height: 100%;
+  overflow: hidden;
+}
+
+.feature-picker-tabs .adm-tabs-tab-wrapper > div {
+  height: 100%;
+}
+
+/* FeatureManage Tabs：内容区自然流动，不强制 overflow */
+.feature-manage-tabs {
+  display: block;
+}
+
+.feature-manage-tabs .adm-tabs-content {
+  overflow: visible;
 }

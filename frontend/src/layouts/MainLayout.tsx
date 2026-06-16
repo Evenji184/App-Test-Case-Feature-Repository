@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { AppOutline, LockOutline, TeamOutline, UnorderedListOutline, SetOutline, TextOutline } from 'antd-mobile-icons';
-import { Button, Form, Input, NavBar, SafeArea, TabBar, Toast } from 'antd-mobile';
+import { Form, Input, NavBar, SafeArea, TabBar, Toast } from 'antd-mobile';
 import { Navigate, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { CHANGE_MY_PASSWORD_MUTATION } from '@/api/mutations/user';
+import { BottomActions } from '@/components/BottomActions';
 import { FormDrawer } from '@/components/FormDrawer';
 import { useAuth } from '@/hooks/useAuth';
 import { useAuthStore } from '@/stores/auth';
@@ -35,34 +36,42 @@ export function MainLayout() {
   }
 
   return (
-    <div className="app-shell" style={{ paddingBottom: 64 }}>
+    <div className="app-shell" style={{ paddingBottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}>
       <SafeArea position="top" />
       <NavBar back={null}>{import.meta.env.VITE_APP_TITLE || 'APP 特征库管理系统'}</NavBar>
       <div className="page-container">
-        <div style={{ marginBottom: 12 }}>
-          <div className="page-title">{auth.displayName}</div>
-          <div className="page-subtitle">
-            当前账号：{auth.user?.username ?? '未登录'} / 权限数：{auth.permissions.length}
-            <Button size="mini" fill="outline" style={{ marginLeft: 8 }} onClick={() => setPasswordDrawerOpen(true)}>
-              修改密码
-            </Button>
-            <Button size="mini" fill="outline" color="danger" style={{ marginLeft: 8 }} onClick={() => void logout()}>
-              退出登录
-            </Button>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+          <div>
+            <div className="page-title">{auth.displayName}</div>
+            <div className="page-subtitle">{auth.user?.username ?? '未登录'}</div>
           </div>
+          <BottomActions
+            triggerText="账号"
+            actions={[
+              { key: 'password', text: '修改密码', onClick: () => setPasswordDrawerOpen(true) },
+              { key: 'logout', text: '退出登录', danger: true, onClick: () => void logout() },
+            ]}
+          />
         </div>
         <Outlet />
       </div>
       <TabBar
         activeKey={currentTab?.key ?? '/features'}
         onChange={(value) => navigate(value)}
-        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, borderTop: '1px solid rgba(255,255,255,0.07)', background: '#0e1220' }}
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)',
+          borderTop: '1px solid rgba(255,255,255,0.07)',
+          background: '#0e1220',
+        }}
       >
         {visibleTabs.map((item) => (
           <TabBar.Item key={item.key} icon={item.icon} title={item.title} />
         ))}
       </TabBar>
-      <SafeArea position="bottom" />
 
       <FormDrawer
         open={passwordDrawerOpen}

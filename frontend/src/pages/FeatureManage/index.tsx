@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
-import { Button, Dialog, Form, Input, Selector, Space, TextArea, Toast } from 'antd-mobile';
+import { Button, Dialog, Form, Input, Selector, Space, Tabs, TextArea, Toast } from 'antd-mobile';
 import {
   COPY_FEATURE_MUTATION,
   CREATE_FEATURE_MUTATION,
@@ -22,7 +22,7 @@ import { SearchBar } from '@/components/SearchBar';
 import { TreeView } from '@/components/TreeView';
 import { useAppStore } from '@/stores/app';
 import { useAuthStore } from '@/stores/auth';
-import type { FeatureItem, NodeItem } from '@/types/models';
+import type { FeatureItem, NodeItem, NodeTreeItem } from '@/types/models';
 import type { FeatureListQueryData, FeatureListQueryVariables, FeatureMutationData, NodeMutationData, NodeTreeQueryData } from '@/types/graphql';
 
 function findNodeById(nodes: NodeItem[], nodeId?: string): NodeItem | undefined {
@@ -47,6 +47,7 @@ export function FeatureManagePage() {
   const canManageNode = hasPermission('feature:node:manage');
   const canManageFeature = hasPermission('feature:item:manage');
   const canAiGenerate = hasPermission('ai:generate');
+  const [activeTab, setActiveTab] = useState<'nodes' | 'features'>('nodes');
   const [featureDrawerOpen, setFeatureDrawerOpen] = useState(false);
   const [nodeDrawerOpen, setNodeDrawerOpen] = useState(false);
   const [editingFeature, setEditingFeature] = useState<FeatureItem | null>(null);
@@ -68,6 +69,7 @@ export function FeatureManagePage() {
 
   const featureQuery = useQuery<FeatureListQueryData, FeatureListQueryVariables>(FEATURE_LIST_QUERY, {
     variables: { pagination: { page: 1, pageSize: 50 }, nodeIds: nodeIdsForQuery, includeHidden: true },
+    fetchPolicy: 'cache-and-network',
   });
 
   const [createFeature] = useMutation(CREATE_FEATURE_MUTATION);
@@ -83,7 +85,6 @@ export function FeatureManagePage() {
   const [copyNode] = useMutation<NodeMutationData>(COPY_NODE_MUTATION);
   const [moveNode] = useMutation<NodeMutationData>(MOVE_NODE_MUTATION);
 
-  
   const features = useMemo(() => {
     const items = featureQuery.data?.featureList.items ?? [];
     if (!keyword) {
@@ -98,9 +99,12 @@ export function FeatureManagePage() {
     return walk((nodeTreeQuery.data?.nodeTree ?? []) as NodeItem[]);
   }, [nodeTreeQuery.data]);
 
-  // 从 checkbox 选中集合派生当前可编辑节点
   const singleSelectedNodeId = selectedNodeIds.size === 1 ? Array.from(selectedNodeIds)[0] : undefined;
   const currentNode = findNodeById(flatNodes, singleSelectedNodeId);
+
+  const handleNodeSelect = (_node: NodeTreeItem) => {
+    setActiveTab('features');
+  };
 
   const openFeatureDrawer = (feature?: FeatureItem) => {
     setEditingFeature(feature ?? null);
@@ -136,213 +140,221 @@ export function FeatureManagePage() {
     setTargetNodeId(undefined);
   };
 
-  return (
-    <div className="split-layout">
-      <div className="card-section" style={{ display: 'grid', gap: 12 }}>
-        <Space justify="between" block>
-          <div>
-            <div style={{ fontSize: 18, fontWeight: 700 }}>节点管理</div>
-            <div className="page-subtitle">勾选节点筛选特征，单选可编辑</div>
-          </div>
-          {canManageNode && (
-            <Button size="small" color="primary" onClick={() => openNodeDrawer()}>
-              新建节点
-            </Button>
-          )}
-        </Space>
-        {selectedNodeIds.size > 0 && (
-          <Button block fill="outline" onClick={clearNodeSelection}>
-            清除筛选 ({selectedNodeIds.size} 个节点)
-          </Button>
-        )}
-        <TreeView
-          tree={nodeTreeQuery.data?.nodeTree ?? []}
-          selectable
-          selectedIds={selectedNodeIds}
-          onCheck={toggleNodeSelection}
-          selectedId={singleSelectedNodeId}
-          onSelect={() => {}}
-        />
-        {canManageNode && (
-          <Button
-            block
-            disabled={!singleSelectedNodeId}
-            onClick={() => {
-              if (currentNode) {
-                openNodeDrawer(currentNode);
-              }
-            }}
-          >
-            编辑当前节点
-          </Button>
-        )}
-        {canManageNode && (
-          <BottomActions
-          triggerText="节点更多操作"
-          actions={[
-            {
-              key: 'copy-node',
-              text: '复制当前节点',
-              disabled: !singleSelectedNodeId,
-              onClick: () => {
-                if (!currentNode) return;
-                setCopyingNode(currentNode);
-                setCopyNodeName(`${currentNode.name}-副本`);
-                setTargetNodeId(currentNode.parentId ?? undefined);
-              },
-            },
-            {
-              key: 'move-node',
-              text: '移动当前节点',
-              disabled: !singleSelectedNodeId,
-              onClick: () => {
-                if (!currentNode) return;
-                setMovingNode(currentNode);
-                setTargetNodeId(currentNode.parentId ?? undefined);
-              },
-            },
-          ]}
-        />
-        )}
-        {canManageNode && (
-          <Button
-            block
-            color="danger"
-            disabled={!singleSelectedNodeId}
-            onClick={async () => {
-              if (!singleSelectedNodeId) return;
-              const { data } = await deleteNode({ variables: { nodeId: singleSelectedNodeId } });
-              Toast.show({ content: data?.deleteNode?.message ?? '节点已删除' });
-              toggleNodeSelection(singleSelectedNodeId);
-              await nodeTreeQuery.refetch();
-              await featureQuery.refetch();
-            }}
-          >
-            删除当前节点
-          </Button>
-        )}
-      </div>
+  const nodeTabTitle = `节点${selectedNodeIds.size > 0 ? ` (${selectedNodeIds.size})` : ''}`;
 
-      <div className="card-section" style={{ display: 'grid', gap: 12 }}>
-        <Space justify="between" block>
-          <div>
-            <h2 className="page-title">特征库</h2>
-            <p className="page-subtitle">查看特征列表，管理操作按权限展示</p>
-          </div>
-          <Space>
-            {canAiGenerate && selectedFeatureIds.size > 0 && (
-              <Button
-                color="primary"
-                fill="outline"
-                loading={isGenerating}
-                onClick={async () => {
-                  const selectedFeatures = features.filter((f) => selectedFeatureIds.has(f.id));
-                  const nodeIds = [...new Set(selectedFeatures.map((f) => f.nodeId))];
-                  const { data } = await generatePrompt({
-                    variables: {
-                      input: {
-                        nodeIds,
-                        featureIds: Array.from(selectedFeatureIds),
-                      },
-                    },
-                  });
-                  const result = data?.generatePrompt;
-                  if (result?.success) {
-                    Toast.show({ content: '提示词已生成并保存', icon: 'success' });
-                    setSelectedFeatureIds(new Set());
-                  } else {
-                    Toast.show({ content: result?.error?.message ?? result?.message ?? '生成失败', icon: 'fail' });
-                  }
-                }}
-              >
-                AI 生成 ({selectedFeatureIds.size})
+  return (
+    <div>
+      <Tabs
+        activeKey={activeTab}
+        onChange={(k) => setActiveTab(k as 'nodes' | 'features')}
+        className="feature-manage-tabs"
+      >
+        {/* 节点 Tab */}
+        <Tabs.Tab title={nodeTabTitle} key="nodes">
+          <div style={{ padding: '12px 14px', display: 'grid', gap: 10 }}>
+            <Space justify="between" block>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 700 }}>节点管理</div>
+                <div className="page-subtitle">点击节点查看特征，单选可编辑</div>
+              </div>
+              {canManageNode && (
+                <Button size="small" color="primary" onClick={() => openNodeDrawer()}>
+                  新建节点
+                </Button>
+              )}
+            </Space>
+
+            {selectedNodeIds.size > 0 && (
+              <Button block fill="outline" size="small" onClick={clearNodeSelection}>
+                清除筛选 ({selectedNodeIds.size} 个节点)
               </Button>
             )}
-            <Button
-              size="small"
-              onClick={() => {
-                if (selectedFeatureIds.size > 0) {
-                  setSelectedFeatureIds(new Set());
-                } else {
-                  setSelectedFeatureIds(new Set(features.map((f) => f.id)));
-                }
-              }}
-            >
-              {selectedFeatureIds.size > 0 ? '取消选择' : '全选'}
-            </Button>
-            {canManageFeature && (
-              <Button color="primary" disabled={!singleSelectedNodeId} onClick={() => openFeatureDrawer()}>
-                新建特征
-              </Button>
-            )}
-          </Space>
-        </Space>
-        <SearchBar value={keyword} onChange={setKeyword} placeholder="筛选当前节点下特征" />
-        <FeatureList
-          items={features}
-          selectable
-          selectedIds={selectedFeatureIds}
-          onSelect={(id) => {
-            setSelectedFeatureIds((prev) => {
-              const next = new Set(prev);
-              if (next.has(id)) {
-                next.delete(id);
-              } else {
-                next.add(id);
-              }
-              return next;
-            });
-          }}
-          onClick={(item) => canManageFeature ? openFeatureDrawer(item) : undefined}
-          extra={(item) => {
-            if (!canManageFeature) return null;
-            return (
+
+            <TreeView
+              tree={nodeTreeQuery.data?.nodeTree ?? []}
+              selectable
+              selectedIds={selectedNodeIds}
+              onCheck={toggleNodeSelection}
+              selectedId={singleSelectedNodeId}
+              onSelect={handleNodeSelect}
+            />
+
+            {canManageNode && (
               <BottomActions
-              actions={[
-                { key: 'edit', text: '编辑', onClick: () => openFeatureDrawer(item) },
-                {
-                  key: 'toggle',
-                  text: item.isVisible ? '隐藏' : '显示',
-                  onClick: async () => {
-                    const { data } = item.isVisible
-                      ? await hideFeature({ variables: { featureId: item.id } })
-                      : await showFeature({ variables: { featureId: item.id } });
-                    Toast.show({ content: data?.hideFeature?.message ?? data?.showFeature?.message ?? '操作成功' });
-                    await featureQuery.refetch();
+                triggerText="节点操作"
+                actions={[
+                  {
+                    key: 'edit',
+                    text: '编辑节点',
+                    onClick: () => {
+                      if (currentNode) openNodeDrawer(currentNode);
+                    },
                   },
-                },
-                {
-                  key: 'copy',
-                  text: '复制',
-                  onClick: () => {
-                    setCopyingFeature(item);
-                    setTargetNodeId(item.nodeId);
+                  {
+                    key: 'copy-node',
+                    text: '复制节点',
+                    onClick: () => {
+                      if (!currentNode) return;
+                      setCopyingNode(currentNode);
+                      setCopyNodeName(`${currentNode.name}-副本`);
+                      setTargetNodeId(currentNode.parentId ?? undefined);
+                    },
                   },
-                },
-                {
-                  key: 'move',
-                  text: '移动',
-                  onClick: () => {
-                    setMovingFeature(item);
-                    setTargetNodeId(item.nodeId);
+                  {
+                    key: 'move-node',
+                    text: '移动节点',
+                    onClick: () => {
+                      if (!currentNode) return;
+                      setMovingNode(currentNode);
+                      setTargetNodeId(currentNode.parentId ?? undefined);
+                    },
                   },
-                },
-                {
-                  key: 'delete',
-                  text: '删除',
-                  danger: true,
-                  onClick: async () => {
-                    const { data } = await deleteFeature({ variables: { featureId: item.id } });
-                    Toast.show({ content: data?.deleteFeature?.message ?? '删除成功' });
-                    await featureQuery.refetch();
+                  {
+                    key: 'delete',
+                    text: '删除节点',
+                    danger: true,
+                    onClick: async () => {
+                      if (!singleSelectedNodeId) return;
+                      const confirmed = await Dialog.confirm({ content: `确定要删除节点「${currentNode?.name ?? ''}」吗？` });
+                      if (!confirmed) return;
+                      const { data } = await deleteNode({ variables: { nodeId: singleSelectedNodeId } });
+                      Toast.show({ content: data?.deleteNode?.message ?? '节点已删除' });
+                      toggleNodeSelection(singleSelectedNodeId);
+                      await nodeTreeQuery.refetch();
+                      await featureQuery.refetch();
+                    },
                   },
-                },
-              ]}
+                ]}
               />
-            );
-          }}
-        />
-      </div>
+            )}
+          </div>
+        </Tabs.Tab>
+
+        {/* 特征 Tab */}
+        <Tabs.Tab title="特征库" key="features">
+          <div style={{ padding: '12px 14px', display: 'grid', gap: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <div>
+                <h2 className="page-title" style={{ fontSize: 16, margin: 0 }}>特征库</h2>
+                <p className="page-subtitle" style={{ margin: 0 }}>管理操作按权限展示</p>
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+                {canAiGenerate && selectedFeatureIds.size > 0 && (
+                  <Button
+                    color="primary"
+                    fill="outline"
+                    size="small"
+                    loading={isGenerating}
+                    onClick={async () => {
+                      const selectedFeatures = features.filter((f) => selectedFeatureIds.has(f.id));
+                      const nodeIds = [...new Set(selectedFeatures.map((f) => f.nodeId))];
+                      const { data } = await generatePrompt({
+                        variables: {
+                          input: {
+                            nodeIds,
+                            featureIds: Array.from(selectedFeatureIds),
+                          },
+                        },
+                      });
+                      const result = data?.generatePrompt;
+                      if (result?.success) {
+                        Toast.show({ content: '提示词已生成并保存', icon: 'success' });
+                        setSelectedFeatureIds(new Set());
+                      } else {
+                        Toast.show({ content: result?.error?.message ?? result?.message ?? '生成失败', icon: 'fail' });
+                      }
+                    }}
+                  >
+                    AI ({selectedFeatureIds.size})
+                  </Button>
+                )}
+                <Button
+                  size="small"
+                  onClick={() => {
+                    if (selectedFeatureIds.size > 0) {
+                      setSelectedFeatureIds(new Set());
+                    } else {
+                      setSelectedFeatureIds(new Set(features.map((f) => f.id)));
+                    }
+                  }}
+                >
+                  {selectedFeatureIds.size > 0 ? '取消' : '全选'}
+                </Button>
+                {canManageFeature && (
+                  <Button size="small" color="primary" disabled={!singleSelectedNodeId} onClick={() => openFeatureDrawer()}>
+                    新建
+                  </Button>
+                )}
+              </div>
+            </div>
+            <SearchBar value={keyword} onChange={setKeyword} placeholder="筛选当前节点下特征" />
+            <FeatureList
+              items={features}
+              selectable
+              selectedIds={selectedFeatureIds}
+              onSelect={(id) => {
+                setSelectedFeatureIds((prev) => {
+                  const next = new Set(prev);
+                  if (next.has(id)) {
+                    next.delete(id);
+                  } else {
+                    next.add(id);
+                  }
+                  return next;
+                });
+              }}
+              onClick={(item) => canManageFeature ? openFeatureDrawer(item) : undefined}
+              extra={(item) => {
+                if (!canManageFeature) return null;
+                return (
+                  <BottomActions
+                    actions={[
+                      { key: 'edit', text: '编辑', onClick: () => openFeatureDrawer(item) },
+                      {
+                        key: 'toggle',
+                        text: item.isVisible ? '隐藏' : '显示',
+                        onClick: async () => {
+                          const { data } = item.isVisible
+                            ? await hideFeature({ variables: { featureId: item.id } })
+                            : await showFeature({ variables: { featureId: item.id } });
+                          Toast.show({ content: data?.hideFeature?.message ?? data?.showFeature?.message ?? '操作成功' });
+                          await featureQuery.refetch();
+                        },
+                      },
+                      {
+                        key: 'copy',
+                        text: '复制',
+                        onClick: () => {
+                          setCopyingFeature(item);
+                          setTargetNodeId(item.nodeId);
+                        },
+                      },
+                      {
+                        key: 'move',
+                        text: '移动',
+                        onClick: () => {
+                          setMovingFeature(item);
+                          setTargetNodeId(item.nodeId);
+                        },
+                      },
+                      {
+                        key: 'delete',
+                        text: '删除',
+                        danger: true,
+                        onClick: async () => {
+                          const { data } = await deleteFeature({ variables: { featureId: item.id } });
+                          Toast.show({ content: data?.deleteFeature?.message ?? '删除成功' });
+                          await featureQuery.refetch();
+                        },
+                      },
+                    ]}
+                  />
+                );
+              }}
+            />
+          </div>
+        </Tabs.Tab>
+      </Tabs>
 
       <FormDrawer
         open={featureDrawerOpen}
@@ -547,7 +559,6 @@ export function FeatureManagePage() {
           </div>
         }
       />
-
-      </div>
+    </div>
   );
 }

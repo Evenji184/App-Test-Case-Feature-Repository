@@ -1,13 +1,13 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import { Button, Checkbox, Input, NavBar, Space, SpinLoading, TextArea, Toast } from 'antd-mobile';
+import { Badge, Button, Checkbox, Input, NavBar, SearchBar, Space, SpinLoading, Tabs, TextArea, Toast } from 'antd-mobile';
 import { GET_PROMPT_QUERY } from '@/api/queries/aiProvider';
 import { FEATURE_LIST_QUERY } from '@/api/queries/feature';
 import { NODE_TREE_QUERY } from '@/api/queries/node';
 import { GENERATE_TEST_CASES_MUTATION } from '@/api/mutations/aiProvider';
 import { FeatureList } from '@/components/FeatureList';
 import { TreeView } from '@/components/TreeView';
-import type { FeatureItem, Prompt } from '@/types/models';
+import type { NodeTreeItem, Prompt } from '@/types/models';
 import type {
   AiGenerateMutationData,
   FeatureListQueryData,
@@ -20,8 +20,10 @@ import type {
 type View = 'select' | 'result';
 
 export function FeaturePickerPage() {
-  const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+  const [focusedNode, setFocusedNode] = useState<NodeTreeItem | null>(null);
   const [selectedFeatureIds, setSelectedFeatureIds] = useState<Set<string>>(new Set());
+  const [searchKeyword, setSearchKeyword] = useState('');
+  const [activeTab, setActiveTab] = useState<'nodes' | 'features'>('nodes');
   const [view, setView] = useState<View>('select');
   const [promptResult, setPromptResult] = useState<Prompt | null>(null);
   const [promptName, setPromptName] = useState('');
@@ -34,45 +36,40 @@ export function FeaturePickerPage() {
     {
       variables: {
         pagination: { page: 1, pageSize: 200 },
-        nodeIds: selectedNodeIds.size > 0 ? Array.from(selectedNodeIds) : null,
+        nodeIds: focusedNode ? [focusedNode.id] : null,
         includeHidden: false,
       },
-      skip: selectedNodeIds.size === 0,
+      skip: !focusedNode,
+      fetchPolicy: 'cache-first',
     },
   );
 
   const [generatePrompt] = useMutation<AiGenerateMutationData>(GENERATE_TEST_CASES_MUTATION);
   const [fetchPrompt] = useLazyQuery<GetPromptQueryData, GetPromptQueryVariables>(GET_PROMPT_QUERY);
 
-  const features = featureData?.featureList?.items ?? [];
+  const currentFeatures = featureData?.featureList?.items ?? [];
   const tree = nodeData?.nodeTree ?? [];
 
-  function toggleNode(id: string) {
-    setSelectedNodeIds((prevNodes) => {
-      const nextNodes = new Set(prevNodes);
-      const wasChecked = nextNodes.has(id);
-      if (wasChecked) {
-        nextNodes.delete(id);
-      } else {
-        nextNodes.add(id);
-      }
+  const filteredFeatures = useMemo(() => {
+    if (!searchKeyword.trim()) return currentFeatures;
+    const kw = searchKeyword.trim().toLowerCase();
+    return currentFeatures.filter(
+      (f) =>
+        f.title?.toLowerCase().includes(kw) ||
+        f.code?.toLowerCase().includes(kw) ||
+        f.summary?.toLowerCase().includes(kw),
+    );
+  }, [currentFeatures, searchKeyword]);
 
-      // 同步更新已选特征：勾选节点时全选该节点特征，取消时移除
-      const nodeFeatureIds = features.filter((f) => f.nodeId === id).map((f) => f.id);
-      if (nodeFeatureIds.length > 0) {
-        setSelectedFeatureIds((prevFeatures) => {
-          const nextFeatures = new Set(prevFeatures);
-          if (wasChecked) {
-            nodeFeatureIds.forEach((fid) => nextFeatures.delete(fid));
-          } else {
-            nodeFeatureIds.forEach((fid) => nextFeatures.add(fid));
-          }
-          return nextFeatures;
-        });
-      }
+  const currentAllChecked =
+    filteredFeatures.length > 0 && filteredFeatures.every((f) => selectedFeatureIds.has(f.id));
+  const currentSomeChecked =
+    filteredFeatures.some((f) => selectedFeatureIds.has(f.id)) && !currentAllChecked;
 
-      return nextNodes;
-    });
+  function handleNodeSelect(node: NodeTreeItem) {
+    setFocusedNode(node);
+    setSearchKeyword('');
+    setActiveTab('features');
   }
 
   function toggleFeature(id: string) {
@@ -82,6 +79,18 @@ export function FeaturePickerPage() {
         next.delete(id);
       } else {
         next.add(id);
+      }
+      return next;
+    });
+  }
+
+  function toggleAllCurrentFeatures(checked: boolean) {
+    setSelectedFeatureIds((prev) => {
+      const next = new Set(prev);
+      if (checked) {
+        filteredFeatures.forEach((f) => next.add(f.id));
+      } else {
+        filteredFeatures.forEach((f) => next.delete(f.id));
       }
       return next;
     });
@@ -98,7 +107,7 @@ export function FeaturePickerPage() {
       const { data } = await generatePrompt({
         variables: {
           input: {
-            nodeIds: Array.from(selectedNodeIds),
+            nodeIds: focusedNode ? [focusedNode.id] : [],
             featureIds: Array.from(selectedFeatureIds),
           },
         },
@@ -159,6 +168,8 @@ export function FeaturePickerPage() {
     setPromptResult(null);
     setPromptName('');
     setSelectedFeatureIds(new Set());
+    setFocusedNode(null);
+    setActiveTab('nodes');
   }
 
   if (view === 'result' && promptResult) {
@@ -212,104 +223,101 @@ export function FeaturePickerPage() {
     );
   }
 
+  const featureTabTitle = focusedNode
+    ? `特征 · ${focusedNode.name.length > 8 ? focusedNode.name.slice(0, 8) + '…' : focusedNode.name}`
+    : '特征';
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--adm-color-background)' }}>
       <NavBar back={null} style={{ borderBottom: '1px solid var(--adm-color-border)' }}>
         APP 特征库 · 选择特征
       </NavBar>
 
-      <div style={{ flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        {/* 节点树区域 */}
-        <div
-          style={{
-            flexShrink: 0,
-            maxHeight: '40%',
-            borderBottom: '1px solid var(--adm-color-border)',
-            overflow: 'auto',
-            padding: '8px 12px',
-            background: 'var(--adm-color-background)',
-          }}
-        >
-          <div style={{ fontSize: 12, color: 'var(--adm-color-weak)', marginBottom: 6 }}>选择节点</div>
-          {nodeLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 12 }}>
-              <SpinLoading />
+      <Tabs
+        activeKey={activeTab}
+        onChange={(k) => setActiveTab(k as 'nodes' | 'features')}
+        className="feature-picker-tabs"
+      >
+        {/* 节点 Tab */}
+        <Tabs.Tab title="节点" key="nodes">
+          <div style={{ height: '100%', overflow: 'auto', padding: '10px 14px' }}>
+            <div style={{ fontSize: 11, color: 'var(--adm-color-weak)', marginBottom: 8 }}>
+              点击节点查看对应特征
             </div>
-          ) : (
-            <TreeView
-              tree={tree}
-              selectable
-              selectedIds={selectedNodeIds}
-              onCheck={toggleNode}
-              onSelect={() => undefined}
-            />
-          )}
-        </div>
-
-        {/* 特征列表区域 */}
-        <div style={{ flex: 1, overflow: 'auto', padding: 8 }}>
-          {selectedNodeIds.size === 0 ? (
-            <div style={{ textAlign: 'center', color: 'var(--adm-color-weak)', paddingTop: 40, fontSize: 13 }}>
-              请先在上方选择节点
-            </div>
-          ) : featureLoading ? (
-            <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 24 }}>
-              <SpinLoading />
-            </div>
-          ) : (
-            <>
-              {features.length > 0 && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 8,
-                    padding: '4px 4px 8px',
-                    borderBottom: '1px solid var(--adm-color-border)',
-                    marginBottom: 8,
-                  }}
-                >
-                  <Checkbox
-                    checked={features.length > 0 && features.every((f) => selectedFeatureIds.has(f.id))}
-                    indeterminate={
-                      features.some((f) => selectedFeatureIds.has(f.id)) &&
-                      !features.every((f) => selectedFeatureIds.has(f.id))
-                    }
-                    onChange={(checked) => {
-                      setSelectedFeatureIds((prev) => {
-                        const next = new Set(prev);
-                        if (checked) {
-                          features.forEach((f) => next.add(f.id));
-                        } else {
-                          features.forEach((f) => next.delete(f.id));
-                        }
-                        return next;
-                      });
-                    }}
-                  >
-                    <span style={{ fontSize: 13, color: 'var(--adm-color-text)' }}>
-                      全选（{features.length} 条）
-                    </span>
-                  </Checkbox>
-                </div>
-              )}
-              <FeatureList
-                items={features}
-                selectable
-                selectedIds={selectedFeatureIds}
-                onSelect={toggleFeature}
+            {nodeLoading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 32 }}>
+                <SpinLoading />
+              </div>
+            ) : (
+              <TreeView
+                tree={tree}
+                selectedId={focusedNode?.id}
+                onSelect={handleNodeSelect}
               />
-            </>
-          )}
-        </div>
-      </div>
+            )}
+          </div>
+        </Tabs.Tab>
+
+        {/* 特征 Tab */}
+        <Tabs.Tab title={featureTabTitle} key="features">
+          <div style={{ height: '100%', overflow: 'auto', padding: '10px 14px', display: 'flex', flexDirection: 'column' }}>
+            {!focusedNode ? (
+              <div style={{ textAlign: 'center', color: 'var(--adm-color-weak)', paddingTop: 64, fontSize: 13 }}>
+                请先在「节点」Tab 中选择节点
+              </div>
+            ) : (
+              <>
+                {/* 搜索框 */}
+                {!featureLoading && currentFeatures.length > 0 && (
+                  <SearchBar
+                    placeholder="搜索特征名称 / 编码 / 摘要"
+                    value={searchKeyword}
+                    onChange={setSearchKeyword}
+                    onClear={() => setSearchKeyword('')}
+                    style={{ marginBottom: 6 }}
+                  />
+                )}
+
+                {/* 全选行 */}
+                {!featureLoading && filteredFeatures.length > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: 6 }}>
+                    <Checkbox
+                      checked={currentAllChecked}
+                      indeterminate={currentSomeChecked}
+                      onChange={toggleAllCurrentFeatures}
+                    >
+                      <span style={{ fontSize: 12, color: 'var(--adm-color-weak)' }}>
+                        全选（{filteredFeatures.length} 条）
+                      </span>
+                    </Checkbox>
+                  </div>
+                )}
+
+                {featureLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 32 }}>
+                    <SpinLoading />
+                  </div>
+                ) : (
+                  <FeatureList
+                    items={filteredFeatures}
+                    selectable
+                    selectedIds={selectedFeatureIds}
+                    onSelect={toggleFeature}
+                  />
+                )}
+              </>
+            )}
+          </div>
+        </Tabs.Tab>
+      </Tabs>
 
       {/* 底部操作栏 */}
       <div
         style={{
-          padding: '12px 16px',
+          padding: '10px 16px',
           borderTop: '1px solid var(--adm-color-border)',
           background: 'var(--adm-color-background)',
+          flexShrink: 0,
         }}
       >
         <Space style={{ width: '100%', justifyContent: 'space-between' }}>
@@ -318,7 +326,13 @@ export function FeaturePickerPage() {
             disabled={selectedFeatureIds.size === 0}
             onClick={() => setSelectedFeatureIds(new Set())}
           >
-            清除已选 ({selectedFeatureIds.size})
+            清除已选
+            {selectedFeatureIds.size > 0 && (
+              <Badge
+                content={String(selectedFeatureIds.size)}
+                style={{ '--right': '-6px', '--top': '-4px', fontSize: 10 }}
+              />
+            )}
           </Button>
           <Button
             color="primary"
@@ -326,7 +340,7 @@ export function FeaturePickerPage() {
             loading={isGenerating}
             onClick={handleGenerate}
           >
-            生成提示词 ({selectedFeatureIds.size} 条特征)
+            生成提示词 · {selectedFeatureIds.size} 条
           </Button>
         </Space>
       </div>

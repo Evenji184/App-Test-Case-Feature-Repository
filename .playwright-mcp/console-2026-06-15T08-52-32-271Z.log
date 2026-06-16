@@ -1,0 +1,25 @@
+[    8023ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5176/node_modules/.vite/deps/chunk-DE754Y3Q.js?v=6155487c:21550
+[    8149ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:5176/node_modules/.vite/deps/react-router-dom.js?v=6155487c:4435
+[    8149ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:5176/node_modules/.vite/deps/react-router-dom.js?v=6155487c:4435
+[    8197ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:5176/favicon.ico:0
+[    8271ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5176/login:0
+[   18081ms] [LOG] Download the Apollo DevTools for a better development experience: %s https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm @ http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:41
+[   36871ms] [ERROR] Access to fetch at 'http://172.21.38.119:8001/graphql' from origin 'http://localhost:5176' has been blocked by CORS policy: Response to preflight request doesn't pass access control check: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ http://localhost:5176/login:0
+[   36873ms] [ERROR] Failed to load resource: net::ERR_FAILED @ http://172.21.38.119:8001/graphql:0
+[   36874ms] [ERROR] Login error: ApolloError: Failed to fetch
+    at new ApolloError2 (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:11024:26)
+    at Object.error (http://localhost:5176/node_modules/.vite/deps/@apollo_client.js?v=6155487c:4945:63)
+    at notifySubscription (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:9404:18)
+    at onNotify (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:9438:3)
+    at SubscriptionObserver2.error (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:9478:5)
+    at Object.error (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:10510:24)
+    at notifySubscription (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:9404:18)
+    at onNotify (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:9438:3)
+    at SubscriptionObserver2.error (http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:9478:5)
+    at http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:10478:23 @ http://localhost:5176/src/stores/auth.ts:29
+[   84211ms] [LOG] [vite] server connection lost. Polling for restart... @ http://localhost:5176/@vite/client:559
+[   85654ms] [INFO] %cDownload the React DevTools for a better development experience: https://reactjs.org/link/react-devtools font-weight:bold @ http://localhost:5176/node_modules/.vite/deps/chunk-DE754Y3Q.js?v=6155487c:21550
+[   85746ms] [WARNING] ⚠️ React Router Future Flag Warning: React Router will begin wrapping state updates in `React.startTransition` in v7. You can use the `v7_startTransition` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_starttransition. @ http://localhost:5176/node_modules/.vite/deps/react-router-dom.js?v=6155487c:4435
+[   85746ms] [WARNING] ⚠️ React Router Future Flag Warning: Relative route resolution within Splat routes is changing in v7. You can use the `v7_relativeSplatPath` future flag to opt-in early. For more information, see https://reactrouter.com/v6/upgrading/future#v7_relativesplatpath. @ http://localhost:5176/node_modules/.vite/deps/react-router-dom.js?v=6155487c:4435
+[   85870ms] [VERBOSE] [DOM] Input elements should have autocomplete attributes (suggested: "current-password"): (More info: https://goo.gl/9p2vKq) %o @ http://localhost:5176/login:0
+[   95691ms] [LOG] Download the Apollo DevTools for a better development experience: %s https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm @ http://localhost:5176/node_modules/.vite/deps/chunk-CVMY5IBX.js?v=6155487c:41

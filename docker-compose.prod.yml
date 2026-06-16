@@ -11,17 +11,14 @@ services:
     volumes:
       - ./logs/backend:/app/logs
     environment:
-      DEBUG: "false"
-      ENVIRONMENT: production
+      NODE_ENV: production
       FRONTEND_HOST: ${FRONTEND_HOST:-localhost}
       FRONTEND_PORT: ${FRONTEND_PORT:-5173}
       FRONTEND_SCHEME: ${FRONTEND_SCHEME:-http}
       CORS_ORIGINS: ${CORS_ORIGINS:-}
       IP_WHITELIST: ${IP_WHITELIST:-}
     command: >
-      sh -c "prisma generate
-      && prisma db push
-      && uvicorn app.main:app --host 0.0.0.0 --port ${PORT:-8001} --workers 2"
+      sh -c "node dist/scripts/seed.js && node dist/index.js"
 
   frontend:
     restart: always

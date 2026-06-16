@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { Button, Card, Dialog, Form, Input, Selector, Space, Switch, Tag, TextArea, Toast } from 'antd-mobile';
+import { BottomActions } from '@/components/BottomActions';
 import {
   CREATE_AI_PROVIDER_MUTATION,
   DELETE_AI_PROVIDER_MUTATION,
@@ -111,9 +112,9 @@ export function AiProviderPage() {
       ) : (
         providers.map((provider) => (
           <Card key={provider.id}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <div style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
                   {provider.name}
                   {provider.isDefault && <Tag color="primary">默认</Tag>}
                   <Tag color={provider.status === 'active' ? 'success' : 'default'}>{provider.status === 'active' ? '活跃' : '禁用'}</Tag>
@@ -121,25 +122,22 @@ export function AiProviderPage() {
                 <div style={{ color: '#6b7280', fontSize: 12, marginTop: 4 }}>
                   模型: {provider.modelName} | 格式: {provider.providerFormat === 'anthropic' ? 'Anthropic' : 'OpenAI 兼容'}
                 </div>
-                <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
+                <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   URL: {provider.requestUrl}
                 </div>
-                <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2 }}>
+                <div style={{ color: '#6b7280', fontSize: 12, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   API Key: {provider.apiKeyHint}
                 </div>
               </div>
               {canManage ? (
-                <Space>
-                  <Button size="mini" onClick={() => handleTestConnection(provider)}>
-                    测试连接
-                  </Button>
-                  <Button size="mini" onClick={() => openDrawer(provider)}>
-                    编辑
-                  </Button>
-                  <Button size="mini" color="danger" onClick={() => handleDelete(provider)}>
-                    删除
-                  </Button>
-                </Space>
+                <BottomActions
+                  triggerText="操作"
+                  actions={[
+                    { key: 'test', text: '测试连接', onClick: () => handleTestConnection(provider) },
+                    { key: 'edit', text: '编辑', onClick: () => openDrawer(provider) },
+                    { key: 'delete', text: '删除', danger: true, onClick: () => handleDelete(provider) },
+                  ]}
+                />
               ) : null}
             </div>
           </Card>

@@ -1,6 +1,6 @@
-const TOKEN_KEY = 'app-feature-library-token';
-const USER_KEY = 'app-feature-library-user';
-const PERMISSION_KEY = 'app-feature-library-permissions';
+import { config } from '@/config';
+
+const { token: TOKEN_KEY, user: USER_KEY, permissions: PERMISSION_KEY } = config.storageKeys;
 
 export const storage = {
   getToken: () => localStorage.getItem(TOKEN_KEY),

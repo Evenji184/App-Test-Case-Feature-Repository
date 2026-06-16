@@ -1,5 +1,5 @@
 import { gql } from '@apollo/client';
-import { USER_BASE_FRAGMENT, ROLE_BASE_FRAGMENT } from '../fragments';
+import { USER_BASE_FRAGMENT } from '../fragments';
 
 export const USER_LIST_QUERY = gql`
   query UserList($pagination: PaginationInput!, $keyword: String) {
@@ -18,23 +18,4 @@ export const USER_LIST_QUERY = gql`
     }
   }
   ${USER_BASE_FRAGMENT}
-`;
-
-export const ROLE_LIST_FOR_USER_QUERY = gql`
-  query RoleListForUser($pagination: PaginationInput!) {
-    roleList(pagination: $pagination) {
-      items {
-        ...RoleBase
-      }
-      pageInfo {
-        total
-        page
-        pageSize
-        totalPages
-        hasNextPage
-        hasPreviousPage
-      }
-    }
-  }
-  ${ROLE_BASE_FRAGMENT}
 `;

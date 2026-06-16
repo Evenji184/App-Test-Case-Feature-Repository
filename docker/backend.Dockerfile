@@ -1,28 +1,28 @@
-FROM python:3.11-slim
-
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PIP_NO_CACHE_DIR=1
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends build-essential curl openssl \
-    && rm -rf /var/lib/apt/lists/*
-
-COPY requirements.txt ./requirements.txt
-RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+COPY package*.json ./
+RUN npm ci
 
 COPY . .
+RUN npm run build
 
-RUN useradd --create-home --shell /bin/bash appuser \
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm ci --omit=dev
+
+COPY --from=builder /app/dist ./dist
+
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
     && mkdir -p /app/logs \
-    && chown -R appuser:appuser /app
+    && chown -R appuser:appgroup /app
 
 USER appuser
 
 EXPOSE 8001
 
-CMD ["sh", "-c", "prisma generate && uvicorn app.main:app --host 0.0.0.0 --port 8001"]
-
+CMD ["node", "dist/index.js"]

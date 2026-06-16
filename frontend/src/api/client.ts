@@ -1,17 +1,13 @@
 import { ApolloClient, ApolloLink, HttpLink, InMemoryCache, from } from '@apollo/client';
 import { onError } from '@apollo/client/link/error';
+import { config } from '@/config';
 import { storage } from '@/utils/storage';
 
-const apiScheme = import.meta.env.VITE_API_SCHEME || 'http';
-const apiHost = import.meta.env.VITE_API_HOST || 'localhost';
-const apiPort = import.meta.env.VITE_API_PORT || '8001';
-const graphqlEndpoint = `${apiScheme}://${apiHost}:${apiPort}/graphql`;
-
 const httpLink = new HttpLink({
-  uri: graphqlEndpoint,
+  uri: config.graphqlEndpoint,
   fetch: (uri, options) => {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 300000);
+    const timer = setTimeout(() => controller.abort(), config.requestTimeoutMs);
     return fetch(uri, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
   },
 });
@@ -54,7 +50,7 @@ export const apolloClient = new ApolloClient({
       Query: {
         fields: {
           featureList: {
-            keyArgs: ['nodeId'],
+            keyArgs: ['nodeIds', 'includeHidden'],
           },
           searchFeatures: {
             keyArgs: ['keyword'],

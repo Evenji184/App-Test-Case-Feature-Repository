@@ -121,6 +121,21 @@ export async function assignPermissionsToRole(
   });
 }
 
+export async function batchGetRolesWithPermissions(roleIds: string[]): Promise<Map<string, string[]>> {
+  if (roleIds.length === 0) return new Map();
+  const rolePerms = await RolePermission.findAll({ where: { role_id: { [Op.in]: roleIds } } });
+  const permIds = [...new Set(rolePerms.map(rp => rp.permission_id))];
+  if (permIds.length > 0) {
+    await Permission.findAll({ where: { id: { [Op.in]: permIds }, deleted_at: null } });
+  }
+  const map = new Map<string, string[]>();
+  for (const rp of rolePerms) {
+    if (!map.has(rp.role_id)) map.set(rp.role_id, []);
+    map.get(rp.role_id)!.push(rp.permission_id);
+  }
+  return map;
+}
+
 export async function deleteRole(roleId: string, operatorId: string, operatorUsername: string, ipAddress?: string) {
   const role = await Role.findOne({ where: { id: roleId, deleted_at: null } });
   if (!role) throw new AppError('NOT_FOUND', '角色不存在');

@@ -165,6 +165,21 @@ export async function assignRolesToUser(
   });
 }
 
+export async function batchGetUsersWithRoles(userIds: string[]): Promise<Map<string, string[]>> {
+  if (userIds.length === 0) return new Map();
+  const userRoles = await UserRole.findAll({ where: { user_id: { [Op.in]: userIds } } });
+  const roleIds = [...new Set(userRoles.map(ur => ur.role_id))];
+  if (roleIds.length > 0) {
+    await Role.findAll({ where: { id: { [Op.in]: roleIds }, deleted_at: null } });
+  }
+  const map = new Map<string, string[]>();
+  for (const ur of userRoles) {
+    if (!map.has(ur.user_id)) map.set(ur.user_id, []);
+    map.get(ur.user_id)!.push(ur.role_id);
+  }
+  return map;
+}
+
 export async function deleteUser(userId: string, operatorId: string, operatorUsername: string, ipAddress?: string) {
   const user = await User.findOne({ where: { id: userId, deleted_at: null } });
   if (!user) throw new AppError('NOT_FOUND', '用户不存在');
