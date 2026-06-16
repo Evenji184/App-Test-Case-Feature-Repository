@@ -56,7 +56,6 @@ body,
 }
 
 body {
-  min-width: 320px;
   background: var(--bg-base);
 }
 
@@ -77,10 +76,12 @@ select {
 .app-shell {
   min-height: 100dvh;
   background: var(--bg-base);
+  overflow-x: hidden;
 }
 
 .page-container {
   padding: 12px;
+  overflow-x: hidden;
 }
 
 /* ─── Card / Surface ─── */

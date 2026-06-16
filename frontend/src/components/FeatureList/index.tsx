@@ -21,15 +21,13 @@ export function FeatureList({ items, onClick, extra, selectable, selectedIds, on
         {items.map((item) => (
           <div
             key={item.id}
-            onClick={() => onSelect?.(item.id)}
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: 10,
               padding: '10px 0',
               borderBottom: '1px solid var(--color-border)',
-              cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
+              overflow: 'hidden',
             }}
           >
             <Checkbox
@@ -37,7 +35,10 @@ export function FeatureList({ items, onClick, extra, selectable, selectedIds, on
               onClick={(e) => e.stopPropagation()}
               onChange={() => onSelect?.(item.id)}
             />
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div
+              onClick={() => onClick?.(item)}
+              style={{ flex: 1, minWidth: 0, cursor: onClick ? 'pointer' : 'default', WebkitTapHighlightColor: 'transparent' as unknown as string }}
+            >
               <div
                 style={{
                   fontSize: 14,
@@ -50,26 +51,10 @@ export function FeatureList({ items, onClick, extra, selectable, selectedIds, on
               >
                 {item.title}
               </div>
-              <div
-                style={{
-                  fontSize: 11,
-                  color: 'var(--color-text-secondary)',
-                  marginTop: 2,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                }}
-              >
-                {item.code}
-                {item.summary ? ` · ${item.summary}` : ''}
-              </div>
             </div>
-            <Tag
-              color={item.priority === 'high' ? 'danger' : item.priority === 'medium' ? 'warning' : 'default'}
-              style={{ fontSize: 10, flexShrink: 0 }}
-            >
-              {item.priority}
-            </Tag>
+            <div style={{ flexShrink: 0 }}>
+              {extra?.(item)}
+            </div>
           </div>
         ))}
       </div>

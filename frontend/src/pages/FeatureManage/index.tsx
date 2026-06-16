@@ -238,7 +238,7 @@ export function FeatureManagePage() {
                 <h2 className="page-title" style={{ fontSize: 16, margin: 0 }}>特征库</h2>
                 <p className="page-subtitle" style={{ margin: 0 }}>管理操作按权限展示</p>
               </div>
-              <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
                 {canAiGenerate && selectedFeatureIds.size > 0 && (
                   <Button
                     color="primary"

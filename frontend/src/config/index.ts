@@ -13,7 +13,7 @@ function pickHostByCurrentOrigin(): string {
 }
 
 export const config = {
-  graphqlEndpoint: `${apiScheme}://${candidateHosts[0]}:${apiPort}/graphql`,
+  graphqlEndpoint: `${apiScheme}://${pickHostByCurrentOrigin()}:${apiPort}/graphql`,
   requestTimeoutMs: 300_000,
   storageKeys: {
     token: 'app-feature-library-token',

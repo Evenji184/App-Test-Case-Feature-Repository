@@ -88,6 +88,22 @@ export function PromptManagePage() {
     setNameDrawerOpen(true);
   };
 
+  const fallbackCopy = (text: string) => {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:0;left:0;opacity:0';
+    document.body.appendChild(ta);
+    ta.focus();
+    ta.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(ta);
+    if (ok) {
+      Toast.show({ content: '已复制到剪贴板', icon: 'success' });
+    } else {
+      Toast.show({ content: '复制失败，请手动选择文本', icon: 'fail' });
+    }
+  };
+
   const handleSaveName = async () => {
     if (!editNameTarget) return;
     const { data: result } = await updateNameMut({
@@ -196,7 +212,28 @@ export function PromptManagePage() {
               </div>
             )}
             <div>
-              <div style={{ fontWeight: 600, marginBottom: 4 }}>提示词内容</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
+                <div style={{ fontWeight: 600 }}>提示词内容</div>
+                <Button
+                  size="mini"
+                  fill="outline"
+                  onClick={() => {
+                    try {
+                      if (navigator.clipboard?.writeText) {
+                        navigator.clipboard.writeText(selected.content)
+                          .then(() => Toast.show({ content: '已复制到剪贴板', icon: 'success' }))
+                          .catch(() => fallbackCopy(selected.content));
+                      } else {
+                        fallbackCopy(selected.content);
+                      }
+                    } catch {
+                      fallbackCopy(selected.content);
+                    }
+                  }}
+                >
+                  复制
+                </Button>
+              </div>
               <div style={{
                 background: 'var(--bg-elevated)',
                 border: '1px solid var(--color-border)',

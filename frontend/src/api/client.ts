@@ -4,11 +4,11 @@ import { config } from '@/config';
 import { storage } from '@/utils/storage';
 
 const httpLink = new HttpLink({
-  uri: config.graphqlEndpoint,
+  uri: () => config.graphqlEndpoint,
   fetch: (uri, options) => {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), config.requestTimeoutMs);
-    return fetch(uri, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
+    return fetch(uri as string, { ...options, signal: controller.signal }).finally(() => clearTimeout(timer));
   },
 });
 

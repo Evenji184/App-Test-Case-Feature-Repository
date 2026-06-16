@@ -17,7 +17,7 @@ export function FormDrawer({ open, title, onClose, onSubmit, submitText, childre
       visible={open}
       onClose={onClose}
       closeOnMaskClick
-      bodyStyle={{ width: 'min(100vw, 480px)', height: '100vh', display: 'flex', flexDirection: 'column' }}
+      bodyStyle={{ width: 'min(100vw, 480px)', height: '100dvh', display: 'flex', flexDirection: 'column' }}
     >
       <div style={{ padding: '16px 16px 0', flexShrink: 0, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div style={{ fontSize: 18, fontWeight: 700 }}>{title}</div>
@@ -28,7 +28,7 @@ export function FormDrawer({ open, title, onClose, onSubmit, submitText, childre
       <div style={{ padding: 16, flex: 1, overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {children}
       </div>
-      <div style={{ padding: '0 16px 16px', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+      <div style={{ padding: '0 16px calc(16px + env(safe-area-inset-bottom, 0px)) 16px', flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
         <Button onClick={onClose}>取消</Button>
         <Button color="primary" onClick={onSubmit}>
           {submitText ?? '提交'}
