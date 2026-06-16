@@ -53,7 +53,6 @@ body,
 #root {
   margin: 0;
   min-height: 100%;
-  overflow-x: hidden;
 }
 
 body {
@@ -178,7 +177,6 @@ select {
   border-radius: 10px !important;
   margin-bottom: 3px !important;
   max-width: 100% !important;
-  overflow: hidden !important;
 }
 
 .adm-list-item-content {
