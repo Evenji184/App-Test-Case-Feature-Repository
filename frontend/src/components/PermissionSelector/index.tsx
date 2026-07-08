@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Checkbox, Collapse } from 'antd-mobile';
 import type { PermissionModuleGroup } from '@/types/models';
 
@@ -9,7 +9,12 @@ interface Props {
 }
 
 export function PermissionSelector({ value, options, onChange }: Props) {
-  const [activeKeys, setActiveKeys] = useState<string[]>(() => options.map((m) => m.module));
+  const [activeKeys, setActiveKeys] = useState<string[]>([]);
+
+  // options 异步到达后默认展开全部模块，避免进抽屉看到全折叠
+  useEffect(() => {
+    setActiveKeys(options.map((m) => m.module));
+  }, [options]);
 
   const toggle = (permissionId: string, checked: boolean) => {
     if (checked) {

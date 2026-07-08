@@ -342,6 +342,8 @@ export function FeatureManagePage() {
                         text: '删除',
                         danger: true,
                         onClick: async () => {
+                          const confirmed = await Dialog.confirm({ content: `确定要删除特征「${item.title}」吗？` });
+                          if (!confirmed) return;
                           const { data } = await deleteFeature({ variables: { featureId: item.id } });
                           Toast.show({ content: data?.deleteFeature?.message ?? '删除成功' });
                           await featureQuery.refetch();

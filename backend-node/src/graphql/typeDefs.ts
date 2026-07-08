@@ -492,7 +492,7 @@ export const typeDefs = `#graphql
 
     # Prompt management
     generatePrompt(input: GeneratePromptInput!): AiGenerateResult!
-    savePrompt(input: SavePromptInput!): MutationResult!
+    savePrompt(input: SavePromptInput!): PromptMutationResult!
     deletePrompt(promptId: String!): MutationResult!
     updatePromptName(promptId: String!, name: String): MutationResult!
   }

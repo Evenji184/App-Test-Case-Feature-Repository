@@ -174,7 +174,7 @@ export function FeaturePickerPage() {
 
   if (view === 'result' && promptResult) {
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--adm-color-background)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--adm-color-background)' }}>
         <NavBar back={null} style={{ borderBottom: '1px solid var(--adm-color-border)' }}>
           提示词已生成
         </NavBar>
@@ -228,7 +228,7 @@ export function FeaturePickerPage() {
     : '特征';
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--adm-color-background)' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100dvh', background: 'var(--adm-color-background)' }}>
       <NavBar back={null} style={{ borderBottom: '1px solid var(--adm-color-border)' }}>
         APP 特征库 · 选择特征
       </NavBar>

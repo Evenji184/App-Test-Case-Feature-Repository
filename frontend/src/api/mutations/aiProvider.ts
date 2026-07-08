@@ -85,6 +85,7 @@ export const SAVE_PROMPT_MUTATION = gql`
       success
       message
       error { code message }
+      data { id name content }
     }
   }
 `;

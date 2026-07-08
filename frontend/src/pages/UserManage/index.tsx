@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMutation, useQuery } from '@apollo/client';
 import { Button, Form, Input, List, Selector, Space, Switch, Tag, TextArea, Toast } from 'antd-mobile';
 import {
@@ -47,6 +47,16 @@ export function UserManagePage() {
   useEffect(() => {
     void fetchRoles();
   }, [fetchRoles]);
+
+  const searchTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSearch = (val: string) => {
+    setKeyword(val);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      void refetch({ pagination: { page: 1, pageSize: 50 }, keyword: val || undefined });
+    }, 300);
+  };
 
   const openDrawer = (user?: User) => {
     setEditingUser(user ?? null);
@@ -117,7 +127,7 @@ export function UserManagePage() {
           </Button>
         )}
       </Space>
-      <SearchBar value={keyword} onChange={setKeyword} onSearch={() => void refetch()} placeholder="搜索用户名或邮箱" />
+      <SearchBar value={keyword} onChange={handleSearch} placeholder="搜索用户名或邮箱" />
       <List>
         {(data?.userList.items ?? []).map((user) => (
           <List.Item
@@ -127,7 +137,7 @@ export function UserManagePage() {
               user.isSuperAdmin ? (
                 <Tag color="primary">超级管理员</Tag>
               ) : (
-              <BottomActions actions={getUserActions(user)} />
+                <BottomActions actions={getUserActions(user)} />
               )
             }
           >

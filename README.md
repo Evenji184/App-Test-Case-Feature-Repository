@@ -253,12 +253,13 @@ FeatureNode                          Feature
 |------|------|------|
 | `aiProviderList(pagination)` | Query | 分页查询供应商列表 |
 | `promptList(pagination, keyword, createdBy)` | Query | 分页查询提示词列表，可按关键词搜索名称/内容，按发起人筛选 |
+| `getPrompt(id)` | Query | 按 ID 查询单条提示词完整详情（需 `ai:prompt:list` 权限） |
 | `createAiProvider(input)` | Mutation | 创建供应商（API Key 输入时为明文，存储时自动加密） |
 | `updateAiProvider(providerId, input)` | Mutation | 更新供应商（API Key 留空则不修改） |
 | `deleteAiProvider(providerId)` | Mutation | 软删除供应商 |
 | `testAiConnection(providerId)` | Mutation | 测试供应商连接是否可用 |
 | `generatePrompt(input)` | Mutation | 根据选中的节点/特征 ID 调用 AI 生成测试要点提示词，支持自定义名称（name），自动保存到数据库 |
-| `savePrompt(input)` | Mutation | 保存提示词到数据库（CodeGPT 回调自动调用，content 必填，其余可选） |
+| `savePrompt(input)` | Mutation | 保存提示词到数据库（CodeGPT 回调自动调用，content 必填，其余可选），返回 `PromptMutationResult` 含新建提示词 `data`（含 id），无需再查列表 |
 | `updatePromptName(promptId, name)` | Mutation | 修改提示词名称（留空则清除名称） |
 | `deletePrompt(promptId)` | Mutation | 软删除提示词记录（超级管理员或拥有 ai:provider:manage 权限） |
 
@@ -927,7 +928,7 @@ Docker Compose 会自动连接数据库、执行种子数据（seed.js）、启�
 
 **前端冗余清理**
 
-- 删除 `PermissionSelector` 中多余的 `useEffect`（`useState` 初始化已设置 `activeKeys`，`useEffect` 重复同步导致二次渲染）
+- `PermissionSelector` 面板默认展开跟随 options 异步到达：`activeKeys` 初值为空，`useEffect` 在权限树加载完成后默认展开全部模块，避免进入"分配权限"抽屉时面板全折叠（早期版本曾误删该 effect，因 options 实际为异步加载而非同步可用）
 - 删除 `api/queries/user.ts` 中的 `ROLE_LIST_FOR_USER_QUERY`（与 `role.ts` 中 `ROLE_LIST_QUERY` 内容完全相同）
 
 **配置统一管理**
@@ -935,6 +936,15 @@ Docker Compose 会自动连接数据库、执行种子数据（seed.js）、启�
 - 新增 `frontend/src/config/index.ts`，集中管理所有前端配置常量：GraphQL 端点、请求超时、localStorage 存储 key
 - `api/client.ts` 和 `utils/storage.ts` 均改为从 `@/config` 引入，消除散落的硬编码值
 - 后端 Node.js 配置已在 `backend-node/src/config.ts` 集中，CORS 白名单和 IP 白名单通过 `backend-node/.env` 的 `CORS_ORIGINS`/`IP_WHITELIST` 配置（逗号分隔）
+
+**移动端 UI 与交互修复（2026-06）**
+
+- `FormModal` 支持异步 `onConfirm`：确认按钮进入 loading、失败 Toast 提示且不关闭弹窗，修复复制/移动节点与特征在 mutation 失败时静默无反馈的问题
+- 特征删除补充 `Dialog.confirm` 二次确认，与节点删除交互对齐，降低误删风险
+- `PermissionManage` 列表行操作按钮由多按钮平铺改为 `BottomActions` 收纳，与其他管理页统一，并避免窄屏按钮挤压标题
+- `FeaturePicker` 与路由守卫加载态视口高度由 `100vh` 改为 `100dvh`，避免移动浏览器地址栏遮挡底部操作栏
+- `UserManage` 搜索改为 300ms 防抖触发后端查询，与 `PromptManage` 体验一致
+- `SearchBar` 组件透传 `rest` props（`style`/`onClear`/`clearable` 等），减少各页退回使用原生 antd-mobile SearchBar
 
 ## 7. 已知限制
 

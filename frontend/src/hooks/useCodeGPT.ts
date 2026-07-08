@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useMutation } from '@apollo/client';
+import { Toast } from 'antd-mobile';
 import { SAVE_PROMPT_MUTATION } from '@/api/mutations/aiProvider';
+import type { SavePromptMutationData } from '@/types/graphql';
 
 export function useCodeGPT() {
   const instanceRef = useRef<CodeGPTInstance | null>(null);
-  const [savePromptMut] = useMutation(SAVE_PROMPT_MUTATION);
+  const [savePromptMut] = useMutation<SavePromptMutationData>(SAVE_PROMPT_MUTATION);
   const savePromptRef = useRef(savePromptMut);
   savePromptRef.current = savePromptMut;
 
@@ -34,7 +36,18 @@ export function useCodeGPT() {
             model: result.data.modelType,
           },
         },
-      });
+      })
+        .then((res) => {
+          const saved = res.data?.savePrompt;
+          if (saved?.success) {
+            Toast.show({ content: saved.message ?? '提示词已保存', icon: 'success' });
+          } else {
+            Toast.show({ content: saved?.error?.message ?? '提示词保存失败', icon: 'fail' });
+          }
+        })
+        .catch(() => {
+          Toast.show({ content: '提示词保存失败，请稍后重试', icon: 'fail' });
+        });
     });
 
     instanceRef.current = inst;

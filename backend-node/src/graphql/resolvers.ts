@@ -29,6 +29,25 @@ function extractPagination(pagination: PaginationInput) {
   return { page, pageSize };
 }
 
+// 将 getPromptById 返回的带关联对象映射为 GraphQL PromptType 形状（snake_case → camelCase）
+function mapPrompt(p: Awaited<ReturnType<typeof getPromptById>>) {
+  return {
+    id: p.id,
+    name: p.name,
+    content: p.content,
+    model: p.model,
+    providerId: p.provider ? p.provider.id : null,
+    providerName: p.provider ? p.provider.name : null,
+    createdById: p.createdByUser ? p.createdByUser.id : (p.created_by ?? null),
+    createdByName: p.createdByUser ? (p.createdByUser.display_name ?? p.createdByUser.username) : null,
+    nodeIds: p.node_ids,
+    featureIds: p.feature_ids,
+    customInstruction: p.custom_instruction,
+    createdAt: p.created_at,
+    updatedAt: p.updated_at,
+  };
+}
+
 function formatUser(user: InstanceType<typeof import('../db/models').User>, roleIds: string[]) {
   return {
     id: user.id,
@@ -283,23 +302,7 @@ export const resolvers = {
     getPrompt: async (_: unknown, args: { id: string }, ctx: AppContext) => {
       requirePermission(ctx, 'ai:prompt:list');
       const p = await getPromptById(args.id);
-      return {
-        id: p.id,
-        name: p.name,
-        content: p.content,
-        model: p.model,
-        providerId: p.provider ? p.provider.id : null,
-        providerName: p.provider ? p.provider.name : null,
-        createdById: p.createdByUser ? p.createdByUser.id : null,
-        createdByName: p.createdByUser
-          ? (p.createdByUser.display_name ?? p.createdByUser.username)
-          : null,
-        nodeIds: p.node_ids,
-        featureIds: p.feature_ids,
-        customInstruction: p.custom_instruction,
-        createdAt: p.created_at,
-        updatedAt: p.updated_at,
-      };
+      return mapPrompt(p);
     },
   },
 
@@ -722,10 +725,11 @@ export const resolvers = {
       try {
         requireAuth(ctx);
         requirePermission(ctx, 'ai:prompt:manage');
-        await savePrompt({ ...args.input, operatorId: ctx.userId! });
-        return { success: true, message: '提示词保存成功', error: null };
+        const created = await savePrompt({ ...args.input, operatorId: ctx.userId! });
+        const full = await getPromptById(created.id);
+        return { success: true, message: '提示词保存成功', error: null, data: mapPrompt(full) };
       } catch (err) {
-        return makeErrorResult(err);
+        return { ...makeErrorResult(err), data: null };
       }
     },
 

@@ -8,7 +8,7 @@ export function RequireAuth() {
 
   if (!initialized) {
     return (
-      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh' }}>
         <DotLoading />
       </div>
     );
@@ -26,7 +26,7 @@ export function RequireGuest() {
 
   if (!initialized) {
     return (
-      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100vh' }}>
+      <div style={{ display: 'grid', placeItems: 'center', minHeight: '100dvh' }}>
         <DotLoading />
       </div>
     );

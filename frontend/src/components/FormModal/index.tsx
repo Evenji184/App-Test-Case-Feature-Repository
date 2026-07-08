@@ -1,4 +1,5 @@
-import { Modal } from 'antd-mobile';
+import { Modal, Toast } from 'antd-mobile';
+import { useState } from 'react';
 import type { ReactNode } from 'react';
 
 interface Props {
@@ -6,10 +7,28 @@ interface Props {
   title: string;
   content: ReactNode;
   onClose: () => void;
-  onConfirm?: () => void;
+  onConfirm?: () => Promise<void> | void;
 }
 
 export function FormModal({ open, title, content, onClose, onConfirm }: Props) {
+  const [loading, setLoading] = useState(false);
+
+  const handleConfirm = async () => {
+    if (!onConfirm || loading) return;
+    setLoading(true);
+    try {
+      await onConfirm();
+      onClose();
+    } catch (err) {
+      Toast.show({
+        content: err instanceof Error ? err.message : '操作失败，请稍后重试',
+        icon: 'fail',
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Modal
       visible={open}
@@ -17,8 +36,8 @@ export function FormModal({ open, title, content, onClose, onConfirm }: Props) {
       content={content}
       closeOnAction
       actions={[
-        { key: 'cancel', text: '取消', onClick: onClose },
-        { key: 'confirm', text: '确认', primary: true, onClick: onConfirm },
+        { key: 'cancel', text: '取消', disabled: loading, onClick: onClose },
+        { key: 'confirm', text: '确认', primary: true, loading, onClick: handleConfirm },
       ]}
     />
   );

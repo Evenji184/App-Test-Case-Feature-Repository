@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useMutation } from '@apollo/client';
 import { Button, Form, Input, List, Space, Tag, TextArea, Toast } from 'antd-mobile';
 import { ASSIGN_PERMISSIONS_TO_ROLE_MUTATION, CREATE_ROLE_MUTATION, DELETE_ROLE_MUTATION, UPDATE_ROLE_MUTATION } from '@/api/mutations/role';
+import { BottomActions } from '@/components/BottomActions';
 import { FormDrawer } from '@/components/FormDrawer';
 import { PermissionSelector } from '@/components/PermissionSelector';
 import { useAuth } from '@/hooks/useAuth';
@@ -35,6 +36,45 @@ export function PermissionManagePage() {
     [permissionTree],
   );
 
+  const getRoleActions = (role: Role) => {
+    const actions: Array<{ key: string; text: string; onClick: () => void; danger?: boolean }> = [];
+    if (canManageRole) {
+      actions.push(
+        {
+          key: 'edit',
+          text: '编辑',
+          onClick: () => {
+            setEditingRole(role);
+            form.setFieldsValue(role);
+            setDrawerOpen(true);
+          },
+        },
+        {
+          key: 'assign',
+          text: '分配权限',
+          onClick: () => {
+            setEditingRole(role);
+            setSelectedPermissionIds(role.permissionIds ?? []);
+            setPermissionDrawerOpen(true);
+          },
+        },
+      );
+    }
+    if (isSuperAdmin) {
+      actions.push({
+        key: 'delete',
+        text: '删除',
+        danger: true,
+        onClick: async () => {
+          const { data: result } = await deleteRole({ variables: { roleId: role.id } });
+          Toast.show({ content: result?.deleteRole?.message ?? '角色已删除' });
+          void fetchRoles();
+        },
+      });
+    }
+    return actions;
+  };
+
   return (
     <div className="card-section" style={{ display: 'grid', gap: 12 }}>
       <Space justify="between" block>
@@ -56,7 +96,7 @@ export function PermissionManagePage() {
         )}
       </Space>
 
-      <List>
+      <List style={{ '--extra-max-width': '60px' } as React.CSSProperties}>
         {roles.map((role) => (
           <List.Item
             key={role.id}
@@ -65,46 +105,7 @@ export function PermissionManagePage() {
               role.isSystem ? (
                 <Tag color="primary">系统角色</Tag>
               ) : (
-              <Space>
-                {canManageRole && (
-                  <Button
-                    size="mini"
-                    onClick={() => {
-                      setEditingRole(role);
-                      form.setFieldsValue(role);
-                      setDrawerOpen(true);
-                    }}
-                  >
-                    编辑
-                  </Button>
-                )}
-                {canManageRole && (
-                  <Button
-                    size="mini"
-                    color="primary"
-                    onClick={() => {
-                      setEditingRole(role);
-                      setSelectedPermissionIds(role.permissionIds ?? []);
-                      setPermissionDrawerOpen(true);
-                    }}
-                  >
-                    分配权限
-                  </Button>
-                )}
-                {isSuperAdmin && (
-                  <Button
-                    size="mini"
-                    color="danger"
-                    onClick={async () => {
-                      const { data: result } = await deleteRole({ variables: { roleId: role.id } });
-                      Toast.show({ content: result?.deleteRole?.message ?? '角色已删除' });
-                      void fetchRoles();
-                    }}
-                  >
-                    删除
-                  </Button>
-                )}
-              </Space>
+                <BottomActions triggerText="操作" actions={getRoleActions(role)} />
               )
             }
           >
