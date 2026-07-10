@@ -67,7 +67,7 @@ export function UserManagePage() {
   const roleOptions = roles.map((role) => ({ label: role.name, value: role.id }));
 
   const getUserActions = (user: User) => {
-    const actions: Array<{ key: string; text: string; onClick?: () => void; danger?: boolean }> = [
+    const actions: Array<{ key: string; text: string; onClick: () => void; danger?: boolean }> = [
       { key: 'edit', text: '编辑', onClick: () => openDrawer(user) },
     ];
     if (canManageUser) {

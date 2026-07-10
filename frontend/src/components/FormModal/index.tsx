@@ -34,10 +34,10 @@ export function FormModal({ open, title, content, onClose, onConfirm }: Props) {
       visible={open}
       title={title}
       content={content}
-      closeOnAction
+      closeOnAction={false}
       actions={[
         { key: 'cancel', text: '取消', disabled: loading, onClick: onClose },
-        { key: 'confirm', text: '确认', primary: true, loading, onClick: handleConfirm },
+        { key: 'confirm', text: loading ? '确认中...' : '确认', primary: true, disabled: loading, onClick: handleConfirm },
       ]}
     />
   );

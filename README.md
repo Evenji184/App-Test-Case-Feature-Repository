@@ -946,6 +946,12 @@ Docker Compose 会自动连接数据库、执行种子数据（seed.js）、启�
 - `UserManage` 搜索改为 300ms 防抖触发后端查询，与 `PromptManage` 体验一致
 - `SearchBar` 组件透传 `rest` props（`style`/`onClear`/`clearable` 等），减少各页退回使用原生 antd-mobile SearchBar
 
+**构建与交互修复（2026-07）**
+
+- `FormModal` 移除 antd-mobile `Modal` action 不支持的 `loading` 字段，改用禁用态和"确认中..."文案表达提交状态，修复前端 TypeScript 构建失败。
+- `FormModal` 关闭 `closeOnAction` 自动关闭行为，异步提交失败时保留弹窗并展示 Toast，避免用户输入丢失。
+- `UserManage` 收紧 `BottomActions` action 类型，保证每个操作项都提供 `onClick`，修复 `ActionItem[]` 类型不匹配导致的构建失败。
+
 ## 7. 已知限制
 
 1. 数据库表需手动执行 `docs/init-tables.sql` 建表，Node.js 主后端启动时不自动建表（`sync({ alter: false })`）
@@ -967,3 +973,14 @@ Docker Compose 会自动连接数据库、执行种子数据（seed.js）、启�
 8. [docs/frontend-pages.md](docs/frontend-pages.md)
 9. [docs/plugin-feature-picker.md](docs/plugin-feature-picker.md) — FeaturePicker 插件集成文档（iframe 嵌入、postMessage 协议、GraphQL 接口说明）
 9. [docs/deployment.md](docs/deployment.md)
+
+## 9. 贡献指南
+
+1. 修改前先阅读根目录 `AGENTS.md`、`CLAUDE.md` 和相关 `docs/` 文档，确认目录结构、命名和验证命令。
+2. 前端改动优先运行 `cd frontend && npm run build`；后端改动优先运行 `cd backend-node && npm run typecheck`。
+3. 涉及数据库表结构、环境变量、CI/CD、部署发布或敏感配置的改动，必须先评审方案再执行。
+4. 修改功能后同步更新 README 或 `docs/` 中对应文档，避免代码与说明脱节。
+
+## 10. 许可证
+
+当前仓库未提供独立 `LICENSE` 文件。默认视为内部项目，未经项目所有者明确授权不得公开分发或商用。
